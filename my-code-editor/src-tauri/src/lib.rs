@@ -7,15 +7,53 @@ struct FileEntry {
     is_dir: bool,
 }
 
+// #[tauri::command]
+// async fn run_command(
+//     app: tauri::AppHandle,
+//     command: String,
+//     cwd: Option<String>,
+//     shell: String, // ✅ nouveau paramètre
+// ) -> Result<String, String> {
+//     let mut cmd = match shell.as_str() {
+//         "bash" => app.shell().command("bash").args(["-c", &command]),
+//         _ => app.shell().command("cmd").args(["/C", &command]),
+//     };
+
+//     if let Some(dir) = cwd {
+//         cmd = cmd.current_dir(dir);
+//     }
+
+//     let output = cmd.output().await.map_err(|e| e.to_string())?;
+
+//     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+//     let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+
+//     Ok(format!("{}{}", stdout, stderr))
+// }
 #[tauri::command]
-async fn run_command(app: tauri::AppHandle, command: String) -> Result<String, String> {
-    let output = app
-        .shell()
-        .command("cmd")
-        .args(["/C", &command])
-        .output()
-        .await // ✅ on attend le Future
-        .map_err(|e| e.to_string())?;
+async fn run_command(
+    app: tauri::AppHandle,
+    command: String,
+    cwd: Option<String>,
+    shell: String,
+) -> Result<String, String> {
+    let mut cmd = match shell.as_str() {
+        "bash" => {
+            // ✅ Chemin Git Bash
+            let git_bash = r"C:\Program Files\Git\bin\bash.exe";
+
+            app.shell().command(git_bash).args(["-c", &command])
+        }
+
+        // ✅ CMD par défaut
+        _ => app.shell().command("cmd").args(["/C", &command]),
+    };
+
+    if let Some(dir) = cwd {
+        cmd = cmd.current_dir(dir);
+    }
+
+    let output = cmd.output().await.map_err(|e| e.to_string())?;
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     let stderr = String::from_utf8_lossy(&output.stderr).to_string();

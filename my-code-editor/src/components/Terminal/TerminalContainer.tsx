@@ -11,6 +11,11 @@ interface TerminalContainerProps {
   input: string;
   setInput: (value: string) => void;
   onRun: () => void;
+  terminalPrompt: string;
+  terminalShell: "cmd" | "bash";
+  setTerminalShell: (value: "cmd" | "bash") => void;
+  onHistoryUp: () => void;
+  onHistoryDown: () => void;
 }
 
 export default function TerminalContainer({
@@ -23,6 +28,11 @@ export default function TerminalContainer({
   input,
   setInput,
   onRun,
+  terminalPrompt,
+  terminalShell,
+  setTerminalShell,
+  onHistoryUp,
+  onHistoryDown,
 }: TerminalContainerProps) {
   if (!visible) return null;
 
@@ -30,22 +40,22 @@ export default function TerminalContainer({
 
   return (
     <>
+      {/* ✅ Handle */}
       <div
         onMouseDown={onResize}
-        style={{
-          width: isRight ? "5px" : "100%",
-          height: isRight ? "100%" : "5px",
-          cursor: isRight ? "col-resize" : "row-resize",
-          background: "#333",
-          flexShrink: 0,
-        }}
+        className={`terminal-handle ${
+          isRight ? "terminal-handle-vertical" : "terminal-handle-horizontal"
+        }`}
       />
 
+      {/* ✅ Terminal container */}
       <div
+        className={`terminal-wrapper ${
+          isRight ? "terminal-right" : "terminal-bottom"
+        }`}
         style={{
           width: isRight ? width : "100%",
           height: isRight ? "100%" : height,
-          flexShrink: 0,
         }}
       >
         <Terminal
@@ -53,6 +63,11 @@ export default function TerminalContainer({
           input={input}
           setInput={setInput}
           onRun={onRun}
+          terminalPrompt={terminalPrompt}
+          terminalShell={terminalShell} // ✅ AJOUTER
+          setTerminalShell={setTerminalShell} // ✅ AJOUTER
+          onHistoryUp={onHistoryUp}
+          onHistoryDown={onHistoryDown}
         />
       </div>
     </>

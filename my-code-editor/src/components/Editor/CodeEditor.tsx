@@ -1,16 +1,33 @@
+import { useRef, useEffect } from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
-// import * as monaco from "monaco-editor";
 import { registerHtmlSnippets } from "../../monaco/htmlSnippets";
+
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
+import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
+import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
+import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+
+self.MonacoEnvironment = {
+  getWorker(_, label) {
+    if (label === "json") return new jsonWorker();
+    if (label === "css") return new cssWorker();
+    if (label === "html") return new htmlWorker();
+    if (label === "typescript" || label === "javascript") return new tsWorker();
+    return new editorWorker();
+  },
+};
 
 type CodeEditorProps = {
   value: string;
   path: string;
+  theme: string;
   onChange?: (value: string) => void;
+  customTheme?: any;
 };
 
 function getLanguageFromPath(path: string | null): string {
   if (!path) return "plaintext";
-
   const ext = path.split(".").pop()?.toLowerCase();
 
   switch (ext) {
@@ -36,46 +53,86 @@ function getLanguageFromPath(path: string | null): string {
   }
 }
 
-export default function CodeEditor({ value, path, onChange }: CodeEditorProps) {
+export default function CodeEditor({
+  value,
+  path,
+  theme,
+  onChange,
+  customTheme,
+}: CodeEditorProps) {
+  const monacoRef = useRef<any>(null);
+  const editorRef = useRef<any>(null);
+
+  const lang = getLanguageFromPath(path);
+
   const handleMount: OnMount = (editor, monacoInstance) => {
+    monacoRef.current = monacoInstance;
+    editorRef.current = editor;
+
+    // ✅ Définir le thème custom si présent
+    if (customTheme) {
+      monacoInstance.editor.defineTheme(customTheme.name, {
+        base: customTheme.monaco.base,
+        inherit: false,
+        rules: customTheme.monaco.rules,
+        colors: customTheme.monaco.colors,
+      });
+    }
+
+    const themeToApply = customTheme ? customTheme.name : theme;
+    monacoInstance.editor.setTheme(themeToApply);
+
     registerHtmlSnippets(monacoInstance);
-    if (!path) {
-      // ✅ Aucun fichier ouvert → on ne crée pas de modèle
-      return;
-    }
 
-    const lang = getLanguageFromPath(path);
-    const uri = monacoInstance.Uri.file(path);
+    const uri = path
+      ? monacoInstance.Uri.file(path)
+      : monacoInstance.Uri.parse("untitled://default.js");
 
-    let model = monacoInstance.editor.getModel(uri);
-    if (!model) {
-      model = monacoInstance.editor.createModel(value, lang, uri);
-    }
-
+    const model = monacoInstance.editor.createModel(value, lang, uri);
     editor.setModel(model);
   };
 
-  // const handleMount: OnMount = (editor, monacoInstance) => {
-  //   if (!path) return;
+  // ✅ Quand le thème change → redéfinir + réappliquer
+  useEffect(() => {
+    if (!monacoRef.current || !editorRef.current) return;
 
-  //   const lang = getLanguageFromPath(path); // ✅ détecte le bon langage
-  //   const uri = monacoInstance.Uri.file(path);
+    const monaco = monacoRef.current;
 
-  //   let model = monacoInstance.editor.getModel(uri);
-  //   if (!model) {
-  //     model = monacoInstance.editor.createModel(value, lang, uri); // ✅ utilise le bon langage
-  //   }
+    if (customTheme) {
+      monaco.editor.defineTheme(customTheme.name, {
+        base: customTheme.monaco.base,
+        inherit: false,
+        rules: customTheme.monaco.rules,
+        colors: customTheme.monaco.colors,
+      });
+    }
 
-  //   editor.setModel(model);
-  // };
+    const themeToApply = customTheme ? customTheme.name : theme;
+    monaco.editor.setTheme(themeToApply);
+  }, [theme, customTheme]);
 
-  const lang = getLanguageFromPath(path); // ✅ utilisé aussi ici
+  // ✅ Recréer le modèle quand theme ou path change
+  useEffect(() => {
+    if (!monacoRef.current || !editorRef.current) return;
+
+    const monaco = monacoRef.current;
+    const editor = editorRef.current;
+
+    const uri = path
+      ? monaco.Uri.file(path)
+      : monaco.Uri.parse("untitled://default.js");
+
+    const oldModel = editor.getModel();
+    if (oldModel) oldModel.dispose();
+
+    const newModel = monaco.editor.createModel(value, lang, uri);
+    editor.setModel(newModel);
+  }, [path, theme, customTheme]);
 
   return (
     <Editor
       height="100%"
-      language={lang} // ✅ plus "typescript" forcé
-      theme="vs-dark"
+      language={lang}
       value={value}
       onMount={handleMount}
       onChange={(val) => onChange?.(val ?? "")}
@@ -90,14 +147,15 @@ export default function CodeEditor({ value, path, onChange }: CodeEditorProps) {
   );
 }
 
-// import { useState, useEffect } from "react";
 // import Editor, { OnMount } from "@monaco-editor/react";
-// import * as monaco from "monaco-editor";
+// // import * as monaco from "monaco-editor";
+// import { registerHtmlSnippets } from "../../monaco/htmlSnippets";
+// import { registerThemes } from "../../themes/themes.ts";
 
 // type CodeEditorProps = {
 //   value: string;
-//   language?: string;
-//   path: string; // <- chemin du fichier ouvert
+//   path: string;
+//   theme: string;
 //   onChange?: (value: string) => void;
 // };
 
@@ -116,7 +174,6 @@ export default function CodeEditor({ value, path, onChange }: CodeEditorProps) {
 //     case "js":
 //       return "javascript";
 //     case "ts":
-//       return "typescript";
 //     case "tsx":
 //       return "typescript";
 //     case "jsx":
@@ -133,27 +190,39 @@ export default function CodeEditor({ value, path, onChange }: CodeEditorProps) {
 // export default function CodeEditor({
 //   value,
 //   path,
-//   language = "typescript",
+//   theme,
 //   onChange,
 // }: CodeEditorProps) {
 //   const handleMount: OnMount = (editor, monacoInstance) => {
-//     if (!path) return;
+//     registerThemes(monacoInstance);
+//     monacoInstance.editor.setTheme(theme); // ✅ applique le thème manuellement
+//     registerHtmlSnippets(monacoInstance); // enregistrer le snipets l'instancier !!! Important sans ça pas détecter !!!
+//     if (!path) {
+//       const uri = monacoInstance.Uri.parse("untitled://default.js");
+//       const model = monacoInstance.editor.createModel(value, "javascript", uri);
+//       editor.setModel(model);
+//       // ✅ Aucun fichier ouvert → on ne crée pas de modèle
+//       return;
+//     }
 
+//     const lang = getLanguageFromPath(path);
 //     const uri = monacoInstance.Uri.file(path);
-//     let model = monacoInstance.editor.getModel(uri);
 
+//     let model = monacoInstance.editor.getModel(uri);
 //     if (!model) {
-//       model = monacoInstance.editor.createModel(value, language, uri);
+//       model = monacoInstance.editor.createModel(value, lang, uri);
 //     }
 
 //     editor.setModel(model);
 //   };
 
+//   const lang = getLanguageFromPath(path); // ✅ utilisé aussi ici
+
 //   return (
 //     <Editor
 //       height="100%"
-//       language={language}
-//       theme="vs-dark"
+//       language={lang} // ✅ plus "typescript" forcé
+//       theme={theme} //vs-dark"
 //       value={value}
 //       onMount={handleMount}
 //       onChange={(val) => onChange?.(val ?? "")}
@@ -163,42 +232,6 @@ export default function CodeEditor({ value, path, onChange }: CodeEditorProps) {
 //         wordWrap: "on",
 //         scrollBeyondLastLine: false,
 //         automaticLayout: true,
-//       }}
-//     />
-//   );
-// }
-
-// export default function CodeEditor({
-//   value,
-//   language = "typescript",
-//   onChange,
-// }: CodeEditorProps) {
-//   const [internalValue, setInternalValue] = useState(value);
-
-//   useEffect(() => {
-//     setInternalValue(value);
-//   }, [value]);
-
-//   return (
-//     <Editor
-//       height="100%"
-//       language={language}
-//       value={internalValue}
-//       theme="vs-dark"
-//       onChange={(val) => {
-//         const v = val ?? "";
-//         setInternalValue(v);
-//         onChange?.(v);
-//       }}
-//       options={{
-//         minimap: { enabled: false },
-//         fontSize: 13,
-//         smoothScrolling: false,
-//         renderWhitespace: "none",
-//         fontLigatures: false,
-//         automaticLayout: true,
-//         scrollBeyondLastLine: false,
-//         wordWrap: "on",
 //       }}
 //     />
 //   );
