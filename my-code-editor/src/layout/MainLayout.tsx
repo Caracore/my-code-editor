@@ -41,6 +41,10 @@ interface MainLayoutProps {
   toggleFolder: (node: any) => void;
   onHistoryUp: () => void;
   onHistoryDown: () => void;
+  onTrashFile: (path: string) => void; // ✅ AJOUT
+  onDeleteFile: (path: string) => void;
+  onCreateFileFromContext: (folder: string, name: string) => void;
+  onCreateFolderFromContext: (folder: string, name: string) => void;
 }
 
 export default function MainLayout({
@@ -75,6 +79,10 @@ export default function MainLayout({
   toggleFolder,
   onHistoryUp,
   onHistoryDown,
+  onTrashFile,
+  onDeleteFile,
+  onCreateFileFromContext,
+  onCreateFolderFromContext,
 }: MainLayoutProps) {
   // const { themeName, setThemeName } = useTheme();
   // const { themeName, currentTheme } = useTheme();
@@ -111,6 +119,10 @@ export default function MainLayout({
           onCreateFile={onCreateFile}
           onOpenFile={onOpenFileFromTree}
           onToggleFolder={toggleFolder}
+          onTrashFile={onTrashFile} // ✅ AJOUT
+          onDeleteFile={onDeleteFile}
+          onCreateFileFromContext={onCreateFileFromContext}
+          onCreateFolderFromContext={onCreateFolderFromContext}
         />
 
         {/* ✅ Editor + Terminal */}

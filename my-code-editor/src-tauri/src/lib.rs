@@ -1,3 +1,4 @@
+use std::fs;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_shell::ShellExt;
 
@@ -8,28 +9,11 @@ struct FileEntry {
 }
 
 // #[tauri::command]
-// async fn run_command(
-//     app: tauri::AppHandle,
-//     command: String,
-//     cwd: Option<String>,
-//     shell: String, // ✅ nouveau paramètre
-// ) -> Result<String, String> {
-//     let mut cmd = match shell.as_str() {
-//         "bash" => app.shell().command("bash").args(["-c", &command]),
-//         _ => app.shell().command("cmd").args(["/C", &command]),
-//     };
-
-//     if let Some(dir) = cwd {
-//         cmd = cmd.current_dir(dir);
-//     }
-
-//     let output = cmd.output().await.map_err(|e| e.to_string())?;
-
-//     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-//     let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-
-//     Ok(format!("{}{}", stdout, stderr))
+// fn create_folder(path: String) -> Result<(), String> {
+//     fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+//     Ok(())
 // }
+
 #[tauri::command]
 async fn run_command(
     app: tauri::AppHandle,
@@ -124,6 +108,22 @@ fn rename_file(old_path: String, new_path: String) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn trash_file(path: String) -> Result<(), String> {
+    trash::delete(path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_file(path: String) -> Result<(), String> {
+    std::fs::remove_file(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn create_directory(path: String) -> Result<(), String> {
+    std::fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -137,6 +137,9 @@ pub fn run() {
             run_command,
             create_file,
             rename_file,
+            trash_file,
+            delete_file,
+            create_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

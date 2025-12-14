@@ -32,3 +32,8 @@
     border: 1px solid var(--sidebar-input-border, #555);
     font-size: 12px;
 }
+.context-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999; /* juste en dessous du menu */
+}

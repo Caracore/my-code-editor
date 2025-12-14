@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { FileNode } from "./types/FileNode";
 import { useFileTree } from "./hooks/useFileTree";
 import { ThemeProvider } from "./context/ThemeContext";
+import { confirm } from "@tauri-apps/plugin-dialog";
 
 const LazyCodeEditor = React.lazy(
   () => import("./components/Editor/CodeEditor"),
@@ -29,6 +30,119 @@ export default function App() {
     "bottom",
   );
 
+  const onTrashFile = async (path: string) => {
+    const fileName = path.split("\\").pop();
+
+    const ok = await confirm(
+      `Voulez-vous vraiment envoyer « ${fileName} » à la corbeille ?`,
+      {
+        title: "Envoyer à la corbeille",
+        kind: "warning",
+        okLabel: "Envoyer",
+        cancelLabel: "Annuler",
+      },
+    );
+
+    if (!ok) return;
+
+    try {
+      await invoke("trash_file", { path });
+
+      if (currentPath === path) {
+        setCurrentPath(null);
+        setCode("");
+      }
+
+      await refreshTree();
+    } catch (e) {
+      console.error("Erreur corbeille:", e);
+    }
+  };
+
+  // const onTrashFile = async (path: string) => {
+  //   try {
+  //     await invoke("trash_file", { path });
+
+  //     // ✅ Si le fichier supprimé était ouvert → fermer l’éditeur
+  //     if (currentPath === path) {
+  //       setCurrentPath(null);
+  //       setCode("");
+  //     }
+
+  //     // ✅ Rafraîchir l’arborescence
+  //     if (tree.length > 0) {
+  //       const root = tree[0];
+  //       const children = await loadFolder(root.path);
+  //       root.children = children;
+  //       setTree([...tree]);
+  //     }
+  //   } catch (e) {
+  //     console.error("Erreur corbeille:", e);
+  //   }
+  // };
+
+  // const onDeleteFile = async (path: string) => {
+  //   try {
+  //     await invoke("delete_file", { path });
+
+  //     // ✅ Si le fichier supprimé était ouvert → fermer l’éditeur
+  //     if (currentPath === path) {
+  //       setCurrentPath(null);
+  //       setCode("");
+  //     }
+
+  //     // ✅ Rafraîchir l’arborescence
+  //     if (tree.length > 0) {
+  //       const root = tree[0];
+  //       const children = await loadFolder(root.path);
+  //       root.children = children;
+  //       setTree([...tree]);
+  //     }
+  //   } catch (e) {
+  //     console.error("Erreur suppression définitive:", e);
+  //   }
+  // };
+
+  const onDeleteFile = async (path: string) => {
+    const fileName = path.split("\\").pop();
+
+    const ok = await confirm(
+      `⚠️ SUPPRESSION DÉFINITIVE ⚠️
+
+  Voulez-vous vraiment supprimer « ${fileName} » ?
+  Cette action est irréversible.`,
+      {
+        title: "Suppression définitive",
+        kind: "error",
+        okLabel: "Supprimer",
+        cancelLabel: "Annuler",
+      },
+    );
+
+    if (!ok) return;
+
+    try {
+      await invoke("delete_file", { path });
+      // ... ton code de refresh
+      if (currentPath === path) {
+        setCurrentPath(null);
+        setCode("");
+      }
+
+      await refreshTree();
+    } catch (e) {
+      console.error("Erreur suppression définitive:", e);
+    }
+  };
+  async function refreshTree() {
+    if (tree.length === 0) return;
+
+    const root = tree[0];
+    const children = await loadFolder(root.path);
+    root.children = children;
+    setTree([...tree]);
+  }
+
   // function utilitaire terminal // Prompt Custom:
   function getPrompt() {
     return `${terminalShell} ${terminalCwd ?? ""}> `;
@@ -42,17 +156,6 @@ export default function App() {
   function handleHistoryDown() {
     setTerminalInput("");
   }
-
-  // // Hook useEffect Theme :
-  // useEffect(() => {
-  //   const vars = UI_THEMES[theme];
-
-  //   Object.entries(vars).forEach(([key, value]) => {
-  //     document.body.style.setProperty(key, value as string);
-  //   });
-
-  //   monaco.editor.setTheme(theme);
-  // }, [theme]);
 
   // ✅ Resize vertical (terminal en bas)
   const startResizeBottom = (e: React.MouseEvent) => {
@@ -161,13 +264,31 @@ export default function App() {
       return;
     }
 
-    const root = tree[0];
-    const children = await loadFolder(root.path);
-    root.children = children;
-    setTree([...tree]);
+    await refreshTree();
 
     if (currentPath === oldPath) {
       setCurrentPath(newPath);
+    }
+  }
+  async function onCreateFileFromContext(folderPath: string, name: string) {
+    const newPath = `${folderPath}\\${name}`;
+
+    try {
+      await invoke("create_file", { path: newPath });
+      await refreshTree();
+    } catch (e) {
+      console.error("Erreur création fichier:", e);
+    }
+  }
+
+  async function onCreateFolderFromContext(folderPath: string, name: string) {
+    const newPath = `${folderPath}\\${name}`;
+
+    try {
+      await invoke("create_directory", { path: newPath });
+      await refreshTree();
+    } catch (e) {
+      console.error("Erreur création dossier:", e);
     }
   }
 
@@ -254,8 +375,6 @@ export default function App() {
         onCreateFile={handleCreateFile}
         onOpenFolder={handleOpenFolder}
         currentPath={currentPath}
-        // theme={theme}
-        // setTheme={setTheme}
         terminalVisible={terminalVisible}
         terminalPosition={terminalPosition}
         terminalWidth={terminalWidth}
@@ -280,6 +399,10 @@ export default function App() {
         LazyCodeEditor={LazyCodeEditor}
         onOpenFileFromTree={handleOpenFileFromTree}
         toggleFolder={(node) => toggleFolder(node, tree, setTree)}
+        onTrashFile={onTrashFile}
+        onDeleteFile={onDeleteFile}
+        onCreateFileFromContext={onCreateFileFromContext}
+        onCreateFolderFromContext={onCreateFolderFromContext}
       />
     </ThemeProvider>
   );

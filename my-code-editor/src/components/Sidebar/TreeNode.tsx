@@ -1,6 +1,6 @@
 import { FileNode } from "../../types/FileNode";
-import { useState } from "react";
 import "./TreeNode.css";
+import { useState } from "react";
 
 interface TreeNodeProps {
   node: FileNode;
@@ -9,6 +9,16 @@ interface TreeNodeProps {
   onRenameFile: (oldPath: string, newName: string) => void;
   selectedPath: string | null;
   setSelectedPath: (path: string) => void;
+  renamingPath: string | null;
+  setRenamingPath: (path: string | null) => void;
+  setContextMenu: React.Dispatch<
+    React.SetStateAction<{
+      x: number;
+      y: number;
+      path: string;
+      isDir: boolean;
+    } | null>
+  >;
 }
 
 export default function TreeNode({
@@ -18,16 +28,28 @@ export default function TreeNode({
   onRenameFile,
   selectedPath,
   setSelectedPath,
+  renamingPath,
+  setRenamingPath,
+  setContextMenu,
 }: TreeNodeProps) {
-  const [renaming, setRenaming] = useState(false);
-  const [newName, setNewName] = useState(node.name);
   const isSelected = selectedPath === node.path;
+  const isRenaming = renamingPath === node.path;
+
+  const [tempName, setTempName] = useState(node.name);
+
+  const finishRename = () => {
+    if (tempName.trim() && tempName !== node.name) {
+      onRenameFile(node.path, tempName.trim());
+    }
+    setRenamingPath(null);
+  };
+
   function getFileIcon(filename: string) {
     const ext = filename.split(".").pop()?.toLowerCase();
 
     switch (ext) {
       case "html":
-        return "🌐"; // ou une icône HTML personnalisée
+        return "🌐";
       case "css":
         return "🎨";
       case "js":
@@ -58,38 +80,36 @@ export default function TreeNode({
         style={{ cursor: "pointer", padding: 2 }}
         onClick={() => {
           setSelectedPath(node.path);
-
           if (node.isDir) onToggle(node);
           else onOpenFile(node.path);
         }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setSelectedPath(node.path);
+
+          setContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            path: node.path,
+            isDir: node.isDir,
+          });
+        }}
       >
-        {/*{node.isDir ? (node.expanded ? "📂" : "📁") : "📄"} {node.name}*/}
-        {renaming ? (
+        {isRenaming ? (
           <input
             autoFocus
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            value={tempName}
+            onChange={(e) => setTempName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                onRenameFile(node.path, newName.trim());
-                setRenaming(false);
-              }
-              if (e.key === "Escape") {
-                setRenaming(false);
-              }
+              if (e.key === "Enter") finishRename();
+              if (e.key === "Escape") setRenamingPath(null);
             }}
-            onBlur={() => setRenaming(false)}
-            style={{
-              padding: 2,
-              background: "#333",
-              color: "white",
-              border: "1px solid #555",
-              fontSize: 12,
-            }}
+            onBlur={finishRename}
+            className="sidebar-input"
+            style={{ fontSize: 12 }}
           />
         ) : (
           <>
-            {/*{node.isDir ? (node.expanded ? "📂" : "📁") : "📄"} {node.name}*/}
             {node.isDir
               ? node.expanded
                 ? "📂"
@@ -100,7 +120,7 @@ export default function TreeNode({
               style={{ marginLeft: 8, fontSize: 10 }}
               onClick={(e) => {
                 e.stopPropagation();
-                setRenaming(true);
+                setRenamingPath(node.path);
               }}
             >
               Renommer
@@ -119,6 +139,9 @@ export default function TreeNode({
             onRenameFile={onRenameFile}
             selectedPath={selectedPath}
             setSelectedPath={setSelectedPath}
+            renamingPath={renamingPath}
+            setRenamingPath={setRenamingPath}
+            setContextMenu={setContextMenu}
           />
         ))}
     </div>

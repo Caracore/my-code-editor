@@ -1,3 +1,6 @@
+# NIVEAU CRITIQUE:
+METTRE A JOUR REACT CAR FAILLE SYSTEM.
+!!!! ET RUST EN 2024 au lieu de 2021 ! 
 # Ce qui est a changé !!!
 
 # CORRIGER ET OPTIMISER POUR RASBERRY PI500+:
@@ -17,7 +20,7 @@ lire le fichier texte.
 
 impl l'interpréteur python et d'autres languages.
 
-
+#DRAG AND DROP DE SIDEBAR !!! DEPLACER FICHIER ET DOC
 # Terminal :
 Si tu veux, je peux aussi t’aider à gérer :
 
@@ -97,3 +100,25 @@ Si tu veux aller plus loin, je peux t’aider à :
     ✅ “Réinitialiser le thème” → qui supprime le custom → remet joe-dark → nettoie le localStorage
     
     Ça te tente ?
+    Si tu veux, je peux t’aider à :
+    
+        rendre le menu contextuel animé (fade-in / fade-out)
+    
+        ajouter un hover highlight façon VS Code
+    
+        ajouter un sous-menu (ex : "Nouveau fichier", "Nouveau dossier")
+    
+        ajouter un menu intelligent (désactiver "Renommer" pour les dossiers racine)
+    
+    Tu veux pousser le menu au niveau premium VS Code ?
+    ✅ Bonus : tu veux que je t’aide à ajouter un petit effet visuel sur le refresh ?
+    
+    Par exemple :
+    
+        fade-in des nouveaux fichiers
+    
+        highlight temporaire du fichier renommé
+    
+        animation subtile sur les icônes
+    
+    Je peux te générer ça en CSS + React sans alourdir ton code.
