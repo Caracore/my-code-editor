@@ -2,7 +2,8 @@
 METTRE A JOUR REACT CAR FAILLE SYSTEM.
 !!!! ET RUST EN 2024 au lieu de 2021 ! 
 # Ce qui est a changé !!!
-
+SI html fichier faire un clique droit qui ouvre la page pour visualiser dans mon IDE. Introduire Emmet addons sur mon IDE...
+## Changer le terminal par un persistant pour activer des commandes comme cd...
 # CORRIGER ET OPTIMISER POUR RASBERRY PI500+:
 -Bug à la sauvegarder éviter de fermer le fichier sauvegarder ou soit rajouter une option save and quit pour cela... URGENT !!!
 # Bugs:
@@ -10,7 +11,7 @@ METTRE A JOUR REACT CAR FAILLE SYSTEM.
 - Ajouter un ID pour chaque thème différent pour empêcher de si il a le même nom que l'ancien thème il remette des lignes de l ancien thème....
 
 # Optimisation:
-
+Ajouter un bouton refresh pour actualiser la sidebar manuellement.
 
 # Installation:
 C:\Users\jm214\Desktop\Mon Editor\my-code-editor\src-tauri\target\release\bundle
@@ -20,7 +21,7 @@ lire le fichier texte.
 
 impl l'interpréteur python et d'autres languages.
 
-
+#DRAG AND DROP DE SIDEBAR !!! DEPLACER FICHIER ET DOC
 # Terminal :
 Si tu veux, je peux aussi t’aider à gérer :
 
@@ -71,7 +72,7 @@ Faire tout les CSS manque plus que Main Layout.
 
 # touche premium:
 thème perso, check
-faire un json theme pour import export facilement un theme. !!!
+faire un json theme pour import export facilement un theme. !!! Ajouter theme export fonctionnelle.
 Ajouter plus de personnalisation dans toolbar et monaco editor comme les couleurs syntaxique !!!
 animation subtile,
 raccourcis clavier intuitif,
@@ -122,3 +123,45 @@ Si tu veux aller plus loin, je peux t’aider à :
         animation subtile sur les icônes
     
     Je peux te générer ça en CSS + React sans alourdir ton code.
+    Si tu veux, je peux aussi t’aider à :
+    
+    ✅ intégrer les raccourcis clavier dans ton store global ✅ faire un hover-delay comme VS Code ✅ ajouter la navigation clavier (Alt → F → S) ✅ rendre le menu responsive selon le thème
+    
+    Tu veux pousser le menu encore plus loin ?
+    Si tu veux, je peux maintenant te générer :
+    
+        ✅ la barre d’onglets complète (style VS Code / Zed)
+    
+        ✅ l’indicateur de fichier modifié (●)
+    
+        ✅ le clic du milieu pour fermer un onglet
+    
+        ✅ le glisser-déposer des onglets
+    
+        ✅ la navigation Ctrl+Tab
+    
+    Tu veux qu’on ajoute quoi en premier ?
+    ✅ Tu veux qu’on améliore quoi maintenant ?
+    
+    Voici quelques options premium :
+    
+        🟣 Ajouter l’indicateur ● fichier modifié
+    
+        🟣 Fermer un onglet avec clic du milieu
+    
+        🟣 Glisser-déposer des onglets pour les réordonner
+    
+        🟣 Navigation Ctrl+Tab / Ctrl+Shift+Tab
+    
+        🟣 Confirmation UX avant de fermer un onglet modifié
+    
+        🟣 Affichage du nom du shell dans le terminal (cmd / bash)
+    
+        🟣 Ajout d’un bouton “Créer fichier” dans le terminal (comme Zed)
+    
+    Dis-moi ce que tu veux en premier, je te le prépare.
+
+### FICHIER CSS SUR MAINLAYOUT & TREENODE
+
+
+##### TOUT PARAMETRER PLUS TARD le délais menu, etc, raccourcis ...

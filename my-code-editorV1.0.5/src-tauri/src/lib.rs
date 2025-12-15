@@ -1,3 +1,4 @@
+// use std::fs;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_shell::ShellExt;
 
@@ -111,6 +112,12 @@ fn delete_file(path: String) -> Result<(), String> {
     std::fs::remove_file(&path).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn create_directory(path: String) -> Result<(), String> {
+    std::fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -126,6 +133,7 @@ pub fn run() {
             rename_file,
             trash_file,
             delete_file,
+            create_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,0 +1,55 @@
+{
+  "name": "dracula-pro",
+  "palette": {
+    "--sidebar-bg": "#1E1F29",
+    "--sidebar-fg": "#F8F8F2",
+    "--sidebar-button-bg": "#2A2B37",
+    "--sidebar-button-fg": "#F8F8F2",
+    "--sidebar-button-border": "#44475A",
+    "--toolbar-bg": "#1E1F29",
+    "--toolbar-fg": "#F8F8F2",
+    "--editor-bg": "#1E1F29",
+    "--editor-fg": "#F8F8F2",
+    "--panel-bg": "#1E1F29",
+
+    "--terminal-bg": "#1E1F29",
+    "--terminal-fg": "#50FA7B",
+    "--terminal-input-bg": "#2A2B37",
+    "--terminal-input-fg": "#F8F8F2",
+    "--terminal-prompt-fg": "#BD93F9",
+    "--terminal-button-bg": "#44475A",
+    "--terminal-button-hover-bg": "#5A5F78",
+    "--terminal-button-fg": "#F8F8F2",
+    "--terminal-button-border": "#BD93F9",
+    "--terminal-border": "#44475A"
+  },
+  "typography": {
+    "fontFamily": "JetBrains Mono",
+    "fontSize": 14
+  },
+  "monaco": {
+    "base": "vs-dark",
+    "rules": [
+      { "token": "comment", "foreground": "#6272A4" },
+      { "token": "keyword", "foreground": "#FF79C6" },
+      { "token": "string", "foreground": "#F1FA8C" },
+      { "token": "number", "foreground": "#BD93F9" },
+      { "token": "type", "foreground": "#8BE9FD" },
+      { "token": "function", "foreground": "#50FA7B" },
+      { "token": "variable", "foreground": "#F8F8F2" },
+      { "token": "delimiter", "foreground": "#F8F8F2" }
+    ],
+    "colors": {
+      "editor.background": "#1E1F29",
+      "editor.foreground": "#F8F8F2",
+      "editorCursor.foreground": "#FF79C6",
+      "editor.lineHighlightBackground": "#44475A55",
+      "editor.selectionBackground": "#44475A88",
+      "editor.inactiveSelectionBackground": "#44475A44",
+      "editorLineNumber.foreground": "#6272A4",
+      "editorActiveLineNumber.foreground": "#F8F8F2",
+      "editorIndentGuide.background": "#3B3D4A",
+      "editorIndentGuide.activeBackground": "#6272A4"
+    }
+  }
+}

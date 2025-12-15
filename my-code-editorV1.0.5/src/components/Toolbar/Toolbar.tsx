@@ -2,12 +2,12 @@ import "./Toolbar.css";
 import type { ThemeName } from "../../types/theme";
 
 interface ToolbarProps {
-  currentPath: string | null;
+  // currentPath: string | null;
   terminalVisible: boolean;
   terminalPosition: "bottom" | "right";
   onCreateFile: (name: string) => void;
-  onOpen: () => void;
-  onSave: () => void;
+  // onOpen: () => void;
+  // onSave: () => void;
   onToggleTerminal: () => void;
   onChangeTerminalPosition: (pos: "bottom" | "right") => void;
   theme: ThemeName;
@@ -18,11 +18,11 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({
-  currentPath,
+  // currentPath,
   terminalVisible,
   terminalPosition,
-  onOpen,
-  onSave,
+  // onOpen,
+  // onSave,
   onToggleTerminal,
   onChangeTerminalPosition,
   theme,
@@ -44,10 +44,10 @@ export default function Toolbar({
       </select>
       {/* ✅ Bouton Theme Manager (en dehors du select !) */}
       <button onClick={onOpenThemeManager}>🎨 Thèmes</button>
-      <button onClick={onOpen}>Ouvrir Fichier</button>
-      <button onClick={onSave} disabled={!currentPath}>
-        Sauvegarder
-      </button>
+      {/*<button onClick={onOpen}>Ouvrir Fichier</button>*/}
+      {/*<button onClick={onSave} disabled={!currentPath}>*/}
+      {/*Sauvegarder*/}
+      {/*</button>*/}
       <button onClick={onToggleTerminal}>
         {terminalVisible ? "Fermer terminal" : "Ouvrir terminal"}
       </button>
@@ -80,10 +80,10 @@ export default function Toolbar({
       >
         {terminalShell === "cmd" ? "Switch to Bash" : "Switch to CMD"}
       </button>*/}
-      <span style={{ marginLeft: "auto", opacity: 0.7 }}>
-        {currentPath ?? "Nouveau fichier"}
-        {/*Supprimer le current path à l'affichage plus tard peut-être ?*/}
-      </span>
+      {/*<span style={{ marginLeft: "auto", opacity: 0.7 }}>
+        {currentPath ?? "Nouveau fichier"}*/}
+      {/*Supprimer le current path à l'affichage plus tard peut-être ?*/}
+      {/*</span>*/}
     </div>
   );
 }

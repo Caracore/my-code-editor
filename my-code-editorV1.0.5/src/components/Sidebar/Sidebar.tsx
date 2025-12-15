@@ -3,9 +3,13 @@ import { FileNode } from "../../types/FileNode";
 import TreeNode from "./TreeNode";
 import "./Sidebar.css";
 import ContextMenu from "./ContextMenu";
+import { useTabs } from "../../context/TabsContext";
+
+import { invoke } from "@tauri-apps/api/core";
 
 interface SidebarProps {
   tree: FileNode[];
+  sidebarVisible: boolean;
   onRenameFile: (oldPath: string, newName: string) => void;
   onOpenFolder: () => void;
   onOpenFile: (path: string) => void;
@@ -13,18 +17,26 @@ interface SidebarProps {
   onCreateFile: (name: string) => void;
   onTrashFile: (path: string) => void;
   onDeleteFile: (path: string) => void;
+  onCreateFileFromContext: (folder: string, name: string) => void;
+  onCreateFolderFromContext: (folder: string, name: string) => void;
 }
 
 export default function Sidebar({
   tree,
+  sidebarVisible,
   onRenameFile,
   onOpenFolder,
-  onOpenFile,
+  // onOpenFile,
   onToggleFolder,
   onCreateFile,
   onTrashFile, // ✅ manquait !
   onDeleteFile,
+  onCreateFileFromContext,
+  onCreateFolderFromContext,
 }: SidebarProps) {
+  const { openTab } = useTabs();
+  console.log("Sidebar openTab ===", openTab);
+
   const [creating, setCreating] = useState(false);
   const [newFileName, setNewFileName] = useState("");
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
@@ -33,6 +45,10 @@ export default function Sidebar({
     y: number;
     path: string;
     isDir: boolean;
+  } | null>(null);
+  const [creatingFromContext, setCreatingFromContext] = useState<{
+    folder: string;
+    type: "file" | "folder";
   } | null>(null);
 
   // ✅ La sélection est gérée ici, pas en props
@@ -47,9 +63,17 @@ export default function Sidebar({
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [selectedPath]);
+  function handleOpenFile(path: string) {
+    invoke<string>("read_file", { path })
+      .then((content) => {
+        console.log("✅ openTab appelé avec :", path, content);
+        openTab(path, content);
+      })
+      .catch((err) => console.error("Erreur lecture fichier:", err));
+  }
 
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${sidebarVisible ? "" : "hidden"}`}>
       <button onClick={onOpenFolder}>Ouvrir un dossier</button>
       <button onClick={() => setCreating(true)}>Nouveau fichier</button>
 
@@ -110,9 +134,53 @@ export default function Sidebar({
                 onDeleteFile(path);
               }, 0);
             }}
+            onCreateFile={() => {
+              const folder = contextMenu.path;
+              setContextMenu(null);
+              setCreatingFromContext({ folder, type: "file" });
+              // setTimeout(() => onCreateFileFromContext(folder), 0);
+            }}
+            onCreateFolder={() => {
+              const folder = contextMenu.path;
+              setContextMenu(null);
+              setCreatingFromContext({ folder, type: "folder" });
+              // setTimeout(() => onCreateFolderFromContext(folder), 0);
+            }}
             onClose={() => setContextMenu(null)}
           />
         </>
+      )}
+      {creatingFromContext && (
+        <div style={{ marginTop: 8, marginLeft: 8 }}>
+          <input
+            autoFocus
+            placeholder={
+              creatingFromContext.type === "file"
+                ? "Nouveau fichier..."
+                : "Nouveau dossier..."
+            }
+            className="sidebar-input"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const name = e.currentTarget.value.trim();
+                if (!name) return;
+
+                if (creatingFromContext.type === "file") {
+                  onCreateFileFromContext(creatingFromContext.folder, name);
+                } else {
+                  onCreateFolderFromContext(creatingFromContext.folder, name);
+                }
+
+                setCreatingFromContext(null);
+              }
+
+              if (e.key === "Escape") {
+                setCreatingFromContext(null);
+              }
+            }}
+            onBlur={() => setCreatingFromContext(null)}
+          />
+        </div>
       )}
 
       {tree.map((node: FileNode) => (
@@ -120,7 +188,7 @@ export default function Sidebar({
           key={node.path}
           node={node}
           onToggle={onToggleFolder}
-          onOpenFile={onOpenFile}
+          onOpenFile={handleOpenFile}
           onRenameFile={onRenameFile}
           selectedPath={selectedPath}
           setSelectedPath={setSelectedPath}

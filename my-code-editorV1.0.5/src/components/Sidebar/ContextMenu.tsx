@@ -9,6 +9,8 @@ interface Props {
   onRename: () => void;
   onTrash: () => void;
   onDelete: () => void;
+  onCreateFile: () => void;
+  onCreateFolder: () => void;
   onClose: () => void;
 }
 
@@ -20,6 +22,8 @@ export default function ContextMenu({
   onRename,
   onTrash,
   onDelete,
+  onCreateFile,
+  onCreateFolder,
   // onClose,
 }: Props) {
   return createPortal(
@@ -28,6 +32,25 @@ export default function ContextMenu({
       style={{ top: y, left: x }}
       onClick={(e) => e.stopPropagation()} // ✅ Empêche la fermeture automatique
     >
+      <div
+        className="context-item"
+        onClick={(e) => {
+          e.stopPropagation();
+          onCreateFile();
+        }}
+      >
+        📄 Nouveau fichier
+      </div>
+
+      <div
+        className="context-item"
+        onClick={(e) => {
+          e.stopPropagation();
+          onCreateFolder();
+        }}
+      >
+        📁 Nouveau dossier
+      </div>
       <div
         className="context-item"
         onClick={(e) => {
@@ -60,22 +83,4 @@ export default function ContextMenu({
     </div>,
     document.body, // ✅ rendu hors du sidebar
   );
-  // <div
-  //   className="context-menu"
-  //   style={{ top: y, left: x }}
-  //   onClick={onClose}
-  //   data-path={path} // ✅ UTILISATION
-  //   data-isdir={isDir}
-  // >
-  //   <div className="context-item" onClick={onRename}>
-  //     ✏️ Renommer
-  //   </div>
-  //   <div className="context-item" onClick={onTrash}>
-  //     🗑️ Envoyer à la corbeille
-  //   </div>
-  //   <div className="context-item danger" onClick={onDelete}>
-  //     ❌ Supprimer définitivement
-  //   </div>
-  // </div>
-  // );
 }

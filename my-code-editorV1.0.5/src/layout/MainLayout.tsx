@@ -4,19 +4,20 @@ import Terminal from "../components/Terminal/Terminal";
 import ResizeHandle from "../components/Terminal/ResizeHandle";
 import { Suspense, useState } from "react";
 import ThemeManager from "../components/ThemeManager/ThemeManager";
+import TopMenu from "../components/TopMenu/TopMenu";
+import { useTabs } from "../context/TabsContext";
+
+import TabsBar from "../components/TabsBar/TabsBar";
 
 import "./MainLayout.css";
-// import type { ThemeName } from "../types/theme";
 import { useTheme } from "../context/ThemeContext";
 
 interface MainLayoutProps {
   tree: any[];
-  // setTheme: (value: ThemeName) => void;
-  // theme: ThemeName;
+  sidebarVisible: boolean;
   onRenameFile: (oldPath: string, newName: string) => void;
   onCreateFile: (name: string) => void;
   onOpenFolder: () => void;
-  currentPath: string | null;
   terminalVisible: boolean;
   terminalPosition: "bottom" | "right";
   terminalWidth: number;
@@ -31,28 +32,25 @@ interface MainLayoutProps {
   terminalShell: "cmd" | "bash";
   setTerminalShell: React.Dispatch<React.SetStateAction<"cmd" | "bash">>;
   onOpen: () => void;
-  onSave: () => void;
   onToggleTerminal: () => void;
   onChangeTerminalPosition: (pos: "bottom" | "right") => void;
-  code: string;
-  setCode: (value: string) => void;
   LazyCodeEditor: React.ComponentType<any>;
   onOpenFileFromTree: (path: string) => void;
   toggleFolder: (node: any) => void;
   onHistoryUp: () => void;
   onHistoryDown: () => void;
-  onTrashFile: (path: string) => void; // ✅ AJOUT
+  onTrashFile: (path: string) => void;
   onDeleteFile: (path: string) => void;
+  onCreateFileFromContext: (folder: string, name: string) => void;
+  onCreateFolderFromContext: (folder: string, name: string) => void;
 }
 
 export default function MainLayout({
   tree,
-  // theme,
-  // setTheme,
+  sidebarVisible,
   onRenameFile,
   onCreateFile,
   onOpenFolder,
-  currentPath,
   terminalVisible,
   terminalPosition,
   terminalWidth,
@@ -66,12 +64,8 @@ export default function MainLayout({
   terminalShell,
   setTerminalShell,
   terminalPrompt,
-  onOpen,
-  onSave,
   onToggleTerminal,
   onChangeTerminalPosition,
-  code,
-  setCode,
   LazyCodeEditor,
   onOpenFileFromTree,
   toggleFolder,
@@ -79,47 +73,54 @@ export default function MainLayout({
   onHistoryDown,
   onTrashFile,
   onDeleteFile,
+  onCreateFileFromContext,
+  onCreateFolderFromContext,
 }: MainLayoutProps) {
-  // const { themeName, setThemeName } = useTheme();
-  // const { themeName, currentTheme } = useTheme();
   const { themeName, setThemeName, currentTheme } = useTheme();
+  const { tabs, activeTab } = useTabs();
+
+  const activeModel = tabs.find((t) => t.path === activeTab)?.model ?? null;
   const [showThemeManager, setShowThemeManager] = useState(false);
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* ✅ Toolbar */}
+      {/* Top Menu */}
+      <TopMenu />
+
+      {/* Toolbar */}
       <Toolbar
-        currentPath={currentPath}
         terminalVisible={terminalVisible}
         terminalPosition={terminalPosition}
         onCreateFile={onCreateFile}
-        onOpen={onOpen}
-        onSave={onSave}
         onToggleTerminal={onToggleTerminal}
         onChangeTerminalPosition={onChangeTerminalPosition}
         terminalShell={terminalShell}
         setTerminalShell={setTerminalShell}
-        // ✅ Themes :
         theme={themeName}
         setTheme={setThemeName}
         onOpenThemeManager={() => setShowThemeManager((v) => !v)}
       />
+
       {showThemeManager && <ThemeManager />}
-      {/* ✅ Main content */}
+
+      {/* Main content */}
       <div style={{ flex: 1, display: "flex", minHeight: 0, minWidth: 0 }}>
-        {/* ✅ Sidebar */}
+        {/* Sidebar */}
         <Sidebar
           tree={tree}
+          sidebarVisible={sidebarVisible}
+          onOpenFile={onOpenFileFromTree}
           onRenameFile={onRenameFile}
           onOpenFolder={onOpenFolder}
           onCreateFile={onCreateFile}
-          onOpenFile={onOpenFileFromTree}
           onToggleFolder={toggleFolder}
-          onTrashFile={onTrashFile} // ✅ AJOUT
+          onTrashFile={onTrashFile}
           onDeleteFile={onDeleteFile}
+          onCreateFileFromContext={onCreateFileFromContext}
+          onCreateFolderFromContext={onCreateFolderFromContext}
         />
 
-        {/* ✅ Editor + Terminal */}
+        {/* Editor + Terminal */}
         <div
           style={{
             flex: 1,
@@ -130,7 +131,10 @@ export default function MainLayout({
             overflow: "hidden",
           }}
         >
-          {/* ✅ Editor */}
+          {/* Tabs bar */}
+          <TabsBar />
+
+          {/* Editor */}
           <div
             style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: "hidden" }}
           >
@@ -138,16 +142,14 @@ export default function MainLayout({
               fallback={<div style={{ color: "white" }}>Chargement...</div>}
             >
               <LazyCodeEditor
-                value={code}
-                path={currentPath} // ✅ indispensable !
-                onChange={setCode}
+                model={activeModel}
                 theme={themeName}
-                customTheme={currentTheme} // ✅ AJOUT CRUCIAL
+                customTheme={currentTheme}
               />
             </Suspense>
           </div>
 
-          {/* ✅ Terminal RIGHT */}
+          {/* Terminal RIGHT */}
           {terminalVisible && terminalPosition === "right" && (
             <>
               <ResizeHandle
@@ -161,8 +163,8 @@ export default function MainLayout({
                   setInput={setTerminalInput}
                   onRun={onRunCommand}
                   terminalPrompt={terminalPrompt}
-                  terminalShell={terminalShell} // ✅ AJOUTER
-                  setTerminalShell={setTerminalShell} // ✅ AJOUTER
+                  terminalShell={terminalShell}
+                  setTerminalShell={setTerminalShell}
                   onHistoryUp={onHistoryUp}
                   onHistoryDown={onHistoryDown}
                 />
@@ -170,7 +172,7 @@ export default function MainLayout({
             </>
           )}
 
-          {/* ✅ Terminal BOTTOM */}
+          {/* Terminal BOTTOM */}
           {terminalVisible && terminalPosition === "bottom" && (
             <>
               <ResizeHandle
@@ -184,8 +186,8 @@ export default function MainLayout({
                   setInput={setTerminalInput}
                   onRun={onRunCommand}
                   terminalPrompt={terminalPrompt}
-                  terminalShell={terminalShell} // ✅ AJOUTER
-                  setTerminalShell={setTerminalShell} // ✅ AJOUTER
+                  terminalShell={terminalShell}
+                  setTerminalShell={setTerminalShell}
                   onHistoryUp={onHistoryUp}
                   onHistoryDown={onHistoryDown}
                 />

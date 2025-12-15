@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "./layout/MainLayout";
 import { registerWorkspace } from "./monaco/monacoWorkspace";
 import { invoke } from "@tauri-apps/api/core";
@@ -6,14 +6,27 @@ import { FileNode } from "./types/FileNode";
 import { useFileTree } from "./hooks/useFileTree";
 import { ThemeProvider } from "./context/ThemeContext";
 import { confirm } from "@tauri-apps/plugin-dialog";
+import { TabsProvider } from "./context/TabsContext";
 
 const LazyCodeEditor = React.lazy(
   () => import("./components/Editor/CodeEditor"),
 );
 
 export default function App() {
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (e.detail === "view:toggleSidebar") {
+        setSidebarVisible((v) => !v);
+      }
+    };
+
+    window.addEventListener("menu-action", handler);
+    return () => window.removeEventListener("menu-action", handler);
+  }, []);
+
   // ✅ States globaux
-  const [code, setCode] = useState("");
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  // const [code, setCode] = useState(""); // A voir pour enlever...
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const [tree, setTree] = useState<FileNode[]>([]);
   // const [theme, setTheme] = useState<ThemeName>("joe-dark");
@@ -50,7 +63,7 @@ export default function App() {
 
       if (currentPath === path) {
         setCurrentPath(null);
-        setCode("");
+        // setCode("");
       }
 
       await refreshTree();
@@ -58,50 +71,6 @@ export default function App() {
       console.error("Erreur corbeille:", e);
     }
   };
-
-  // const onTrashFile = async (path: string) => {
-  //   try {
-  //     await invoke("trash_file", { path });
-
-  //     // ✅ Si le fichier supprimé était ouvert → fermer l’éditeur
-  //     if (currentPath === path) {
-  //       setCurrentPath(null);
-  //       setCode("");
-  //     }
-
-  //     // ✅ Rafraîchir l’arborescence
-  //     if (tree.length > 0) {
-  //       const root = tree[0];
-  //       const children = await loadFolder(root.path);
-  //       root.children = children;
-  //       setTree([...tree]);
-  //     }
-  //   } catch (e) {
-  //     console.error("Erreur corbeille:", e);
-  //   }
-  // };
-
-  // const onDeleteFile = async (path: string) => {
-  //   try {
-  //     await invoke("delete_file", { path });
-
-  //     // ✅ Si le fichier supprimé était ouvert → fermer l’éditeur
-  //     if (currentPath === path) {
-  //       setCurrentPath(null);
-  //       setCode("");
-  //     }
-
-  //     // ✅ Rafraîchir l’arborescence
-  //     if (tree.length > 0) {
-  //       const root = tree[0];
-  //       const children = await loadFolder(root.path);
-  //       root.children = children;
-  //       setTree([...tree]);
-  //     }
-  //   } catch (e) {
-  //     console.error("Erreur suppression définitive:", e);
-  //   }
-  // };
 
   const onDeleteFile = async (path: string) => {
     const fileName = path.split("\\").pop();
@@ -126,7 +95,7 @@ export default function App() {
       // ... ton code de refresh
       if (currentPath === path) {
         setCurrentPath(null);
-        setCode("");
+        // setCode("");
       }
 
       await refreshTree();
@@ -270,6 +239,27 @@ export default function App() {
       setCurrentPath(newPath);
     }
   }
+  async function onCreateFileFromContext(folderPath: string, name: string) {
+    const newPath = `${folderPath}\\${name}`;
+
+    try {
+      await invoke("create_file", { path: newPath });
+      await refreshTree();
+    } catch (e) {
+      console.error("Erreur création fichier:", e);
+    }
+  }
+
+  async function onCreateFolderFromContext(folderPath: string, name: string) {
+    const newPath = `${folderPath}\\${name}`;
+
+    try {
+      await invoke("create_directory", { path: newPath });
+      await refreshTree();
+    } catch (e) {
+      console.error("Erreur création dossier:", e);
+    }
+  }
 
   async function handleCreateFile(name: string) {
     if (!name.trim()) return;
@@ -300,22 +290,22 @@ export default function App() {
     setTree([...tree]);
 
     setCurrentPath(newPath);
-    setCode("");
+    // setCode("");
   }
 
   async function handleOpen() {
     const path = await invoke<string | null>("open_file_dialog");
     if (!path) return;
 
-    const content = await invoke<string>("read_file", { path });
+    await invoke<string>("read_file", { path });
     setCurrentPath(path);
-    setCode(content);
+    // setCode(content);
   }
 
   async function handleOpenFileFromTree(path: string) {
-    const content = await invoke<string>("read_file", { path });
+    await invoke<string>("read_file", { path });
     setCurrentPath(path);
-    setCode(content);
+    // setCode(content);
   }
 
   async function handleOpenFolder() {
@@ -341,46 +331,52 @@ export default function App() {
     await registerWorkspace(newTree);
   }
 
-  async function handleSave() {
-    if (!currentPath) return;
-    await invoke("save_file", { path: currentPath, content: code });
-  }
+  // async function handleSave() {
+  //   if (!currentPath) return;
+  //   await invoke("save_file", { path: currentPath, content: code });
+  // }
 
   return (
     <ThemeProvider>
-      <MainLayout
-        tree={tree}
-        onRenameFile={handleRenameFile}
-        onCreateFile={handleCreateFile}
-        onOpenFolder={handleOpenFolder}
-        currentPath={currentPath}
-        terminalVisible={terminalVisible}
-        terminalPosition={terminalPosition}
-        terminalWidth={terminalWidth}
-        terminalHeight={terminalHeight}
-        startResizeRight={startResizeRight}
-        startResizeBottom={startResizeBottom}
-        terminalOutput={terminalOutput}
-        terminalInput={terminalInput}
-        setTerminalInput={setTerminalInput}
-        onRunCommand={handleRunCommand}
-        terminalShell={terminalShell}
-        setTerminalShell={setTerminalShell}
-        terminalPrompt={getPrompt()}
-        onHistoryUp={handleHistoryUp}
-        onHistoryDown={handleHistoryDown}
-        onOpen={handleOpen}
-        onSave={handleSave}
-        onToggleTerminal={() => setTerminalVisible((v) => !v)}
-        onChangeTerminalPosition={setTerminalPosition}
-        code={code}
-        setCode={setCode}
-        LazyCodeEditor={LazyCodeEditor}
-        onOpenFileFromTree={handleOpenFileFromTree}
-        toggleFolder={(node) => toggleFolder(node, tree, setTree)}
-        onTrashFile={onTrashFile}
-        onDeleteFile={onDeleteFile}
-      />
+      <TabsProvider>
+        <MainLayout
+          tree={tree}
+          sidebarVisible={sidebarVisible}
+          // onToggleSidebar={() => setSidebarVisible((v) => !v)}
+          onRenameFile={handleRenameFile}
+          onCreateFile={handleCreateFile}
+          onOpenFolder={handleOpenFolder}
+          // currentPath={currentPath}
+          terminalVisible={terminalVisible}
+          terminalPosition={terminalPosition}
+          terminalWidth={terminalWidth}
+          terminalHeight={terminalHeight}
+          startResizeRight={startResizeRight}
+          startResizeBottom={startResizeBottom}
+          terminalOutput={terminalOutput}
+          terminalInput={terminalInput}
+          setTerminalInput={setTerminalInput}
+          onRunCommand={handleRunCommand}
+          terminalShell={terminalShell}
+          setTerminalShell={setTerminalShell}
+          terminalPrompt={getPrompt()}
+          onHistoryUp={handleHistoryUp}
+          onHistoryDown={handleHistoryDown}
+          onOpen={handleOpen}
+          // onSave={handleSave}
+          onToggleTerminal={() => setTerminalVisible((v) => !v)}
+          onChangeTerminalPosition={setTerminalPosition}
+          // code={code}
+          // setCode={setCode}
+          LazyCodeEditor={LazyCodeEditor}
+          onOpenFileFromTree={handleOpenFileFromTree}
+          toggleFolder={(node) => toggleFolder(node, tree, setTree)}
+          onTrashFile={onTrashFile}
+          onDeleteFile={onDeleteFile}
+          onCreateFileFromContext={onCreateFileFromContext}
+          onCreateFolderFromContext={onCreateFolderFromContext}
+        />
+      </TabsProvider>
     </ThemeProvider>
   );
 }
