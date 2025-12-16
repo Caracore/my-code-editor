@@ -25,9 +25,8 @@ export default function Terminal() {
         cursor: "#00ff88",
         selectionBackground: "#ffffff40",
       },
-      // Désactiver les séquences ANSI automatiques qui font planter cmd.exe
-      windowsMode: true,
-      convertEol: true,
+      windowsMode: false,
+      convertEol: false,
     });
 
     const fitAddon = new FitAddon();
@@ -42,48 +41,34 @@ export default function Terminal() {
     let unlisten: (() => void) | null = null;
 
     const setup = async () => {
-      try {
-        // Tenter d'arrêter le terminal existant d'abord
-        try {
-          await invoke("stop_terminal", { id: "terminal-1" });
-          console.log("Stopped existing terminal");
-          // Attendre que le processus se termine vraiment
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (err) {
-          console.log("No existing terminal to stop");
-        }
-
-        // Le backend gère automatiquement le nettoyage si le terminal existe encore
-        await invoke("start_terminal", { id: "terminal-1" });
-        console.log("Terminal started successfully");
-      } catch (err) {
-        console.error("Failed to start terminal:", err);
-        xterm.writeln("\r\n\x1b[31mError: Failed to start terminal\x1b[0m");
-        xterm.writeln(String(err));
-      }
-
-      // Écouter les sorties du terminal EN PREMIER
+      // Écouter les sorties AVANT de démarrer le terminal
       unlisten = await listen("terminal-output", (event: any) => {
-        console.log("Received from terminal:", event.payload);
+        console.log("📥 Terminal event received:", event.payload);
         const { id, data } = event.payload;
-        console.log("Terminal ID:", id, "Data:", data);
         if (id === "terminal-1" && data) {
+          console.log("✍️ Writing to xterm:", data);
           xterm.write(data);
         }
       });
 
-      // Envoyer les entrées utilisateur au backend (filtrer les séquences de contrôle)
+      console.log("👂 Listener registered, starting terminal...");
+
+      try {
+        const result = await invoke("start_terminal", { id: "terminal-1" });
+        console.log("✅ Terminal started:", result);
+      } catch (err) {
+        console.error("❌ Failed to start terminal:", err);
+        xterm.writeln("\r\n\x1b[31mError: Failed to start terminal\x1b[0m");
+        xterm.writeln(String(err));
+      }
+
+      // Envoyer les entrées utilisateur au backend
       xterm.onData(async (data) => {
-        // Ignorer les séquences ANSI de contrôle automatiques
-        if (data.includes('\x1b[6n') || data.includes('\x1b[?')) {
-          console.log("Ignoring control sequence:", data);
-          return;
-        }
-        console.log("Sending to terminal:", data);
+        console.log("⌨️ User input:", data);
         try {
           await invoke("write_to_terminal", { id: "terminal-1", data });
         } catch (err) {
-          console.error("Failed to write to terminal:", err);
+          console.error("❌ Failed to write:", err);
         }
       });
     };
@@ -105,7 +90,10 @@ export default function Terminal() {
     return () => {
       window.removeEventListener("resize", handleResize);
       if (unlisten) unlisten();
-      invoke("stop_terminal", { id: "terminal-1" }).catch(console.error);
+      // Arrêter et nettoyer le terminal
+      invoke("stop_terminal", { id: "terminal-1" })
+        .then(() => console.log("Terminal stopped"))
+        .catch((err) => console.error("Error stopping terminal:", err));
       xterm.dispose();
     };
   }, []);

@@ -6,6 +6,7 @@ import { FileNode } from "./types/FileNode";
 import { useFileTree } from "./hooks/useFileTree";
 import { useFileSystem } from "./hooks/useFileSystem";
 import { TerminalProvider } from "./context/TerminalContext";
+import { SettingsProvider } from "./context/SettingsContext";
 
 const LazyCodeEditor = React.lazy(
   () => import("./components/Editor/CodeEditor"),
@@ -52,7 +53,8 @@ export default function App() {
     <ThemeProvider>
       <TabsProvider>
         <TerminalProvider>
-          <MainLayout
+          <SettingsProvider>
+            <MainLayout
             tree={tree}
             sidebarVisible={sidebarVisible}
             onRenameFile={handleRenameFile}
@@ -64,6 +66,7 @@ export default function App() {
             onCreateFileFromContext={onCreateFileFromContext}
             onCreateFolderFromContext={onCreateFolderFromContext}
           />
+          </SettingsProvider>
         </TerminalProvider>
       </TabsProvider>
     </ThemeProvider>

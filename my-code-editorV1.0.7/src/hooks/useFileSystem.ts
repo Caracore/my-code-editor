@@ -70,10 +70,15 @@ export function useFileSystem({
   }
 
   async function handleOpenFolder() {
+    console.log("📁 Opening folder dialog...");
     const folder = await invoke<string | null>("open_folder_dialog");
+    console.log("📁 Selected folder:", folder);
+    
     if (!folder) return;
 
+    console.log("📂 Loading folder contents...");
     const children = await loadFolder(folder);
+    console.log("📂 Loaded children:", children);
 
     const newTree = [
       {
@@ -85,8 +90,12 @@ export function useFileSystem({
       },
     ];
 
+    console.log("🌳 Setting tree:", newTree);
     setTree(newTree);
+    
+    console.log("🔗 Registering workspace...");
     await registerWorkspace(newTree);
+    console.log("✅ Folder opened successfully!");
   }
 
   return {

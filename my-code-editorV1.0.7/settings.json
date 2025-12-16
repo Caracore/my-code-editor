@@ -1,0 +1,24 @@
+{
+  "shortcuts": {
+    "file:new": "Ctrl+N",
+    "folder:new": "Ctrl+Shift+N",
+    "file:open": "Ctrl+O",
+    "file:save": "Ctrl+S",
+    "file:saveAs": "Ctrl+Shift+S",
+    "edit:undo": "Ctrl+Z",
+    "edit:redo": "Ctrl+Y",
+    "edit:copy": "Ctrl+C",
+    "edit:paste": "Ctrl+V",
+    "view:toggleTerminal": "Ctrl+ù",
+    "view:toggleSidebar": "Ctrl+B",
+    "terminal:new": "Ctrl+Shift+`"
+  },
+  "theme": {
+    "default": "vs-dark"
+  },
+  "editor": {
+    "fontSize": 14,
+    "tabSize": 2,
+    "wordWrap": "on"
+  }
+}

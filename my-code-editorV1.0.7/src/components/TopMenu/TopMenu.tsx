@@ -1,9 +1,13 @@
-import { menuConfig } from "./menuConfig";
+import { getMenuConfig } from "./menuConfig";
 import { useState, useRef } from "react";
 import MenuDropdown from "./MenuDropdown";
+import { useSettingsContext } from "../../context/SettingsContext";
 import "./TopMenu.css";
 
 export default function TopMenu() {
+  const { shortcuts } = useSettingsContext();
+  const menuConfig = getMenuConfig(shortcuts);
+  
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   // const closeTimeout = useRef<NodeJS.Timeout | null>(null);
   const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);

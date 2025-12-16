@@ -1,12 +1,15 @@
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar/Sidebar";
 import Toolbar from "../components/Toolbar/Toolbar";
 import ThemeManager from "../components/ThemeManager/ThemeManager";
 import TopMenu from "../components/TopMenu/TopMenu";
 import TabsBar from "../components/TabsBar/TabsBar";
+import SettingsPanel from "../components/SettingsPanel/SettingsPanel";
 import { useTabs } from "../context/TabsContext";
 import { useTheme } from "../context/ThemeContext";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import Terminal from "../components/terminal/Terminal";
+import TodoList from "../components/TodoList/TodoList";
 
 import "./MainLayout.css";
 
@@ -37,10 +40,29 @@ export default function MainLayout({
 }: MainLayoutProps) {
   const { themeName, setThemeName, currentTheme } = useTheme();
   const { tabs, activeTab } = useTabs();
+  useKeyboardShortcuts();
 
   const activeModel = tabs.find((t) => t.path === activeTab)?.model ?? null;
   const [showThemeManager, setShowThemeManager] = useState(false);
   const [showTerminal, setShowTerminal] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Écouter l'action toggle terminal depuis le menu
+  useEffect(() => {
+    const handleMenuAction = (e: CustomEvent) => {
+      if (e.detail === "view:toggleTerminal") {
+        setShowTerminal((prev) => !prev);
+      }
+      if (e.detail === "settings:open") {
+        setShowSettings(true);
+      }
+    };
+
+    window.addEventListener("menu-action", handleMenuAction as EventListener);
+    return () => {
+      window.removeEventListener("menu-action", handleMenuAction as EventListener);
+    };
+  }, []);
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -54,19 +76,26 @@ export default function MainLayout({
       />
 
       {showThemeManager && <ThemeManager />}
+      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
       <div style={{ flex: 1, display: "flex", minHeight: 0, minWidth: 0 }}>
-        <Sidebar
-          tree={tree}
-          sidebarVisible={sidebarVisible}
-          onOpenFile={onOpenFileFromTree}
-          onRenameFile={onRenameFile}
-          onOpenFolder={onOpenFolder}
-          onCreateFile={onCreateFile}
-          onToggleFolder={toggleFolder}
-          onCreateFileFromContext={onCreateFileFromContext}
-          onCreateFolderFromContext={onCreateFolderFromContext}
-        />
+        {sidebarVisible ? (
+          <Sidebar
+            tree={tree}
+            sidebarVisible={sidebarVisible}
+            onOpenFile={onOpenFileFromTree}
+            onRenameFile={onRenameFile}
+            onOpenFolder={onOpenFolder}
+            onCreateFile={onCreateFile}
+            onToggleFolder={toggleFolder}
+            onCreateFileFromContext={onCreateFileFromContext}
+            onCreateFolderFromContext={onCreateFolderFromContext}
+          />
+        ) : (
+          <div style={{ width: "250px", borderRight: "1px solid #333" }}>
+            <TodoList />
+          </div>
+        )}
 
         {/* Zone Éditeur */}
         <div

@@ -53,29 +53,28 @@ impl TerminalState {
     pub fn spawn(&self, id: String, app: AppHandle) -> Result<String, String> {
         let mut terminals = self.terminals.lock().unwrap();
 
-        // Si le terminal existe déjà, le tuer d'abord
-        if let Some(mut existing) = terminals.remove(&id) {
-            println!("Killing existing terminal: {}", id);
-            let _ = existing.child.kill();
-            drop(existing); // Libérer les ressources
-            drop(terminals); // Libérer le lock pendant l'attente
-            std::thread::sleep(std::time::Duration::from_millis(500)); // Attendre plus longtemps
-            terminals = self.terminals.lock().unwrap(); // Re-acquérir le lock
-            println!("Cleaned up existing terminal");
+        // Si le terminal existe déjà, retourner une erreur (on ne recrée pas)
+        if terminals.contains_key(&id) {
+            return Ok(id);
         }
 
         let size = *self.size.lock().unwrap();
 
+        println!("🚀 Starting terminal: {}", id);
+        
         let pty_system = NativePtySystem::default();
         let pair = pty_system.openpty(size).map_err(|e| e.to_string())?;
 
-        // Configuration la plus simple - juste le shell par défaut
-        let shell_path = default_shell();
-        println!("Spawning shell: {}", shell_path);
-        let cmd = CommandBuilder::new(&shell_path);
+        println!("✅ PTY opened for: {}", id);
+
+        // Utiliser PowerShell avec les bons arguments pour qu'il reste ouvert
+        let mut cmd = CommandBuilder::new("powershell.exe");
+        cmd.arg("-NoExit");  // NE PAS quitter après exécution
+        cmd.arg("-NoLogo");  // Pas de logo au démarrage
 
         let child = pair.slave.spawn_command(cmd).map_err(|e| e.to_string())?;
-        println!("Shell spawned successfully");
+        
+        println!("✅ PowerShell spawned for: {}", id);
         let master = pair.master;
 
         let writer = master
@@ -98,10 +97,12 @@ impl TerminalState {
             let mut reader = reader;
             let mut buf = [0u8; 8192];
 
+            println!("📖 Terminal reader thread started for: {}", terminal_id);
+
             loop {
                 match reader.read(&mut buf) {
                     Ok(0) => {
-                        println!("Terminal reader: process exited");
+                        println!("⚠️ Terminal {} exited", terminal_id);
                         let _ = app_clone.emit(
                             "terminal-output",
                             TerminalOutput {
@@ -113,7 +114,7 @@ impl TerminalState {
                     }
                     Ok(n) => {
                         let chunk = String::from_utf8_lossy(&buf[..n]).to_string();
-                        println!("Terminal reader: received {} bytes: {:?}", n, &chunk);
+                        println!("📤 Emitting {} bytes from {}: {:?}", n, terminal_id, &chunk[..n.min(50)]);
                         let _ = app_clone.emit(
                             "terminal-output",
                             TerminalOutput {
@@ -123,7 +124,7 @@ impl TerminalState {
                         );
                     }
                     Err(err) => {
-                        println!("Terminal reader error: {}", err);
+                        println!("❌ Terminal {} read error: {}", terminal_id, err);
                         let _ = app_clone.emit(
                             "terminal-output",
                             TerminalOutput {
@@ -203,7 +204,7 @@ impl TerminalState {
 fn default_shell() -> String {
     #[cfg(windows)]
     {
-        std::env::var("COMSPEC").unwrap_or("C:\\Windows\\System32\\cmd.exe".into())
+        "powershell.exe".into()
     }
 
     #[cfg(unix)]

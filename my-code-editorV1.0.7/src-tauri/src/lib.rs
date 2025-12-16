@@ -1,6 +1,84 @@
 mod terminal;
 
 use tauri::AppHandle;
+use tauri_plugin_dialog::DialogExt;
+
+#[derive(serde::Serialize)]
+struct FileEntry {
+    path: String,
+    is_dir: bool,
+}
+
+#[tauri::command]
+async fn open_folder_dialog(app: tauri::AppHandle) -> Option<String> {
+    let folder = app.dialog().file().blocking_pick_folder()?;
+
+    match folder {
+        tauri_plugin_dialog::FilePath::Path(path_buf) => {
+            Some(path_buf.to_string_lossy().to_string())
+        }
+        tauri_plugin_dialog::FilePath::Url(url) => Some(url.to_string()),
+    }
+}
+
+#[tauri::command]
+async fn list_directory(path: String) -> Result<Vec<FileEntry>, String> {
+    let mut entries = vec![];
+
+    for entry in std::fs::read_dir(&path).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let metadata = entry.metadata().map_err(|e| e.to_string())?;
+
+        entries.push(FileEntry {
+            path: entry.path().to_string_lossy().to_string(),
+            is_dir: metadata.is_dir(),
+        });
+    }
+
+    Ok(entries)
+}
+
+#[tauri::command]
+async fn read_file(path: String) -> Result<String, String> {
+    std::fs::read_to_string(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn save_file(path: String, content: String) -> Result<(), String> {
+    std::fs::write(&path, content).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn create_file(path: String) -> Result<(), String> {
+    std::fs::write(&path, "").map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn create_directory(path: String) -> Result<(), String> {
+    std::fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn rename_file(old_path: String, new_path: String) -> Result<(), String> {
+    std::fs::rename(&old_path, &new_path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn read_settings(path: String) -> Result<String, String> {
+    std::fs::read_to_string(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn write_settings(path: String, content: String) -> Result<(), String> {
+    // Créer le répertoire parent si nécessaire
+    if let Some(parent) = std::path::Path::new(&path).parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    std::fs::write(&path, content).map_err(|e| e.to_string())
+}
 
 #[tauri::command]
 fn start_terminal(
@@ -22,7 +100,6 @@ fn write_to_terminal(
     data: String,
     state: tauri::State<terminal::TerminalState>,
 ) -> Result<(), String> {
-    println!("WRITE TO TERMINAL {}: {:?}", id, data);
     state.write(id, data)
 }
 
@@ -51,10 +128,31 @@ fn switch_shell(shell: String, state: tauri::State<terminal::TerminalState>) -> 
     state.set_shell(shell)
 }
 
+#[tauri::command]
+fn change_terminal_directory(
+    id: String,
+    path: String,
+    state: tauri::State<terminal::TerminalState>,
+) -> Result<(), String> {
+    // Envoyer la commande cd au terminal
+    let cmd = format!("cd /d \"{}\"\r\n", path);
+    state.write(id, cmd)
+}
+
 pub fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(terminal::TerminalState::default())
         .invoke_handler(tauri::generate_handler![
+            open_folder_dialog,
+            list_directory,
+            read_file,
+            save_file,
+            create_file,
+            create_directory,
+            rename_file,            read_settings,
+            write_settings,            read_settings,
+            write_settings,
             start_terminal,
             stop_terminal,
             write_to_terminal,
@@ -62,6 +160,7 @@ pub fn main() {
             list_terminals,
             stop_all_terminals,
             switch_shell,
+            change_terminal_directory,
         ])
         .setup(|_app| Ok(()))
         .run(tauri::generate_context!())
