@@ -53,8 +53,15 @@ impl TerminalState {
     pub fn spawn(&self, id: String, app: AppHandle) -> Result<String, String> {
         let mut terminals = self.terminals.lock().unwrap();
 
-        if terminals.contains_key(&id) {
-            return Err(format!("terminal with id '{}' already exists", id));
+        // Si le terminal existe déjà, le tuer d'abord
+        if let Some(mut existing) = terminals.remove(&id) {
+            println!("Killing existing terminal: {}", id);
+            let _ = existing.child.kill();
+            drop(existing); // Libérer les ressources
+            drop(terminals); // Libérer le lock pendant l'attente
+            std::thread::sleep(std::time::Duration::from_millis(500)); // Attendre plus longtemps
+            terminals = self.terminals.lock().unwrap(); // Re-acquérir le lock
+            println!("Cleaned up existing terminal");
         }
 
         let size = *self.size.lock().unwrap();
@@ -62,12 +69,13 @@ impl TerminalState {
         let pty_system = NativePtySystem::default();
         let pair = pty_system.openpty(size).map_err(|e| e.to_string())?;
 
-        let mut cmd = CommandBuilder::new("powershell.exe");
-        cmd.arg("-NoLogo");
-        cmd.arg("-NoExit");
-        cmd.env("TERM", "xterm-256color");
+        // Configuration la plus simple - juste le shell par défaut
+        let shell_path = default_shell();
+        println!("Spawning shell: {}", shell_path);
+        let cmd = CommandBuilder::new(&shell_path);
 
         let child = pair.slave.spawn_command(cmd).map_err(|e| e.to_string())?;
+        println!("Shell spawned successfully");
         let master = pair.master;
 
         let writer = master
@@ -88,22 +96,24 @@ impl TerminalState {
 
         thread::spawn(move || {
             let mut reader = reader;
-            let mut buf = [0u8; 4096];
+            let mut buf = [0u8; 8192];
 
             loop {
                 match reader.read(&mut buf) {
                     Ok(0) => {
+                        println!("Terminal reader: process exited");
                         let _ = app_clone.emit(
                             "terminal-output",
                             TerminalOutput {
                                 id: terminal_id.clone(),
-                                data: "\n[process exited]\n".into(),
+                                data: "\r\n[process exited]\r\n".into(),
                             },
                         );
                         break;
                     }
                     Ok(n) => {
                         let chunk = String::from_utf8_lossy(&buf[..n]).to_string();
+                        println!("Terminal reader: received {} bytes: {:?}", n, &chunk);
                         let _ = app_clone.emit(
                             "terminal-output",
                             TerminalOutput {
@@ -113,11 +123,12 @@ impl TerminalState {
                         );
                     }
                     Err(err) => {
+                        println!("Terminal reader error: {}", err);
                         let _ = app_clone.emit(
                             "terminal-output",
                             TerminalOutput {
                                 id: terminal_id.clone(),
-                                data: format!("\n[terminal error: {err}]\n"),
+                                data: format!("\r\n[terminal error: {err}]\r\n"),
                             },
                         );
                         break;
