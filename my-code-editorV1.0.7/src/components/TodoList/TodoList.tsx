@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { confirm } from "@tauri-apps/plugin-dialog";
+import { appDataDir } from "@tauri-apps/api/path";
 import "./TodoList.css";
 
 interface Todo {
@@ -14,19 +17,43 @@ export default function TodoList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
+  const [todosPath, setTodosPath] = useState<string>("");
 
-  // Charger depuis localStorage
+  // Initialiser le chemin du fichier todos.json
   useEffect(() => {
-    const saved = localStorage.getItem("todos");
-    if (saved) {
-      setTodos(JSON.parse(saved));
-    }
+    appDataDir().then((dir) => {
+      const path = `${dir}todos.json`;
+      setTodosPath(path);
+      loadTodos(path);
+    });
   }, []);
 
-  // Sauvegarder dans localStorage
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+  // Charger depuis le fichier JSON
+  async function loadTodos(path: string) {
+    try {
+      const content = await invoke<string>("read_settings", { path });
+      setTodos(JSON.parse(content));
+      console.log("✅ Todos chargés depuis:", path);
+    } catch (err) {
+      console.log("📝 Aucun fichier todos existant, démarrage avec liste vide");
+      setTodos([]);
+    }
+  }
+
+  // Sauvegarder dans le fichier JSON
+  async function saveTodos(newTodos: Todo[]) {
+    if (!todosPath) return;
+    
+    try {
+      await invoke("write_settings", {
+        path: todosPath,
+        content: JSON.stringify(newTodos, null, 2),
+      });
+      console.log("💾 Todos sauvegardés dans:", todosPath);
+    } catch (err) {
+      console.error("❌ Erreur sauvegarde todos:", err);
+    }
+  }
 
   // CREATE
   const handleCreate = () => {
@@ -40,28 +67,45 @@ export default function TodoList() {
       completed: false,
     };
 
-    setTodos([newTodo, ...todos]);
+    const newTodos = [newTodo, ...todos];
+    setTodos(newTodos);
+    saveTodos(newTodos);
     setNewTitle("");
     setNewContent("");
   };
 
   // UPDATE
   const handleUpdate = (id: string, updates: Partial<Todo>) => {
-    setTodos(todos.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+    const newTodos = todos.map((t) => (t.id === id ? { ...t, ...updates } : t));
+    setTodos(newTodos);
+    saveTodos(newTodos);
   };
 
   // DELETE
-  const handleDelete = (id: string) => {
-    if (confirm("Supprimer cette note ?")) {
-      setTodos(todos.filter((t) => t.id !== id));
-    }
+  const handleDelete = async (id: string) => {
+    const todo = todos.find((t) => t.id === id);
+    
+    const ok = await confirm(`Supprimer la note "${todo?.title}" ?`, {
+      title: "Supprimer la note",
+      kind: "warning",
+      okLabel: "Supprimer",
+      cancelLabel: "Annuler",
+    });
+    
+    if (!ok) return;
+    
+    const newTodos = todos.filter((t) => t.id !== id);
+    setTodos(newTodos);
+    saveTodos(newTodos);
   };
 
   // Toggle completed
   const toggleComplete = (id: string) => {
-    handleUpdate(id, {
-      completed: !todos.find((t) => t.id === id)?.completed,
-    });
+    const newTodos = todos.map((t) => 
+      t.id === id ? { ...t, completed: !t.completed } : t
+    );
+    setTodos(newTodos);
+    saveTodos(newTodos);
   };
 
   return (
