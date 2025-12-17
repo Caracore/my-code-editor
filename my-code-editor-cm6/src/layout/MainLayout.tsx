@@ -10,6 +10,7 @@ import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
 import TodoList from "../components/TodoList/TodoList";
 
 import { useTabs } from "../context/TabsContext";
+import { useTheme } from "../context/ThemeContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { invoke } from "@tauri-apps/api/core";
 import type { FileNode } from "../types/FileNode";
@@ -54,6 +55,9 @@ export default function MainLayout({
     updateTabContent,
     markTabAsSaved,
   } = useTabs();
+
+  // ✅ Utiliser le thème
+  const { themeName, setThemeName } = useTheme();
 
   // ✅ Activer les raccourcis clavier
   useKeyboardShortcuts();
@@ -164,6 +168,8 @@ export default function MainLayout({
       <Toolbar
         onCreateFile={() => onCreateFile("nouveau fichier")}
         onOpenThemeManager={() => setShowThemeManager((v) => !v)}
+        theme={themeName}
+        setTheme={setThemeName}
       />
 
       {showThemeManager && <ThemeManager />}

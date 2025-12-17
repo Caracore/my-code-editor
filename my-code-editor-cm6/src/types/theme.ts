@@ -1,25 +1,16 @@
-export type ThemeName = "joe-dark" | "joe-light" | "custom";
+export type ThemeName = "dark" | "light" | "custom" | string;
 
 export type CustomTheme = {
   name: string;
-  palette: Record<string, string>;
-  // palette: {
-  //   background: string;
-  //   foreground: string;
-  //   accent: string;
-  //   error: string;
-  //   success: string;
-  //   warning: string;
-  //   [key: string]: string;
-  // };
+  palette: Record<string, string>; // Variables CSS (ex: --editor-bg: "#000000")
   typography: {
     fontFamily: string;
     fontSize: number;
     [key: string]: string | number;
   };
-  monaco: {
-    base: "vs" | "vs-dark";
-    rules: Array<{ token: string; foreground: string }>;
-    colors: Record<string, string>;
+  codemirror?: {
+    dark?: boolean; // true pour thème sombre, false pour clair
+    highlightActiveLine?: boolean; // Mettre en surbrillance la ligne active
+    highlightActiveLineGutter?: boolean; // Mettre en surbrillance le numéro de ligne active
   };
 };

@@ -2,14 +2,15 @@
     display: flex;
     align-items: center;
     height: 32px;
-    background: #1e1e1e;
-    border-bottom: 1px solid #333;
+    background: var(--tabs-bg);
+    border-bottom: 1px solid var(--tabs-border);
     overflow-x: auto;
     white-space: nowrap;
 }
 
 .tabs-empty {
-    color: #666;
+    color: var(--tabs-fg);
+    opacity: 0.6;
     padding-left: 12px;
     font-size: 13px;
 }
@@ -20,20 +21,20 @@
     gap: 8px;
     padding: 0 12px;
     cursor: pointer;
-    color: #ccc;
+    color: var(--tabs-fg);
     height: 100%;
-    border-right: 1px solid #333;
+    border-right: 1px solid var(--tabs-border);
     min-width: 0;
     max-width: 200px;
 }
 
 .tab.active {
-    background: #252525;
-    color: white;
+    background: var(--tab-active-bg);
+    color: var(--tab-active-fg);
 }
 
 .tab:hover {
-    background: #2a2a2a;
+    background: var(--tab-hover-bg);
 }
 
 .tab-label {
@@ -54,19 +55,19 @@
 .tab-close {
     background: transparent;
     border: none;
-    color: #888;
+    color: var(--tab-close-fg);
     cursor: pointer;
     font-size: 14px;
     flex-shrink: 0;
 }
 
 .tab-close:hover {
-    color: white;
+    color: var(--tab-close-hover-fg);
 }
 .dirty-dot {
   width: 6px;
   height: 6px;
-  background: #f59e0b;
+  background: var(--tab-dirty-indicator);
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;

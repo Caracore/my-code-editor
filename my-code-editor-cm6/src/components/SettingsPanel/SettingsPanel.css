@@ -9,8 +9,8 @@
 }
 
 .settings-panel {
-  background: var(--sidebar-bg, #1e1e1e);
-  color: var(--sidebar-fg, #ddd);
+  background: var(--settings-bg);
+  color: var(--settings-fg);
   width: 600px;
   max-height: 80vh;
   border-radius: 8px;
@@ -25,7 +25,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .settings-header h2 {
@@ -36,7 +36,7 @@
 .close-btn {
   background: none;
   border: none;
-  color: #ddd;
+  color: var(--settings-fg);
   font-size: 24px;
   cursor: pointer;
   padding: 0;
@@ -45,7 +45,7 @@
 }
 
 .close-btn:hover {
-  color: #fff;
+  color: var(--settings-fg);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
@@ -89,10 +89,10 @@
 }
 
 .shortcut-display kbd {
-  background: #2a2a2a;
+  background: var(--settings-input-bg);
   padding: 4px 8px;
   border-radius: 4px;
-  border: 1px solid #444;
+  border: 1px solid var(--settings-input-border);
   font-family: monospace;
   font-size: 12px;
 }
@@ -117,9 +117,9 @@
 }
 
 .shortcut-input {
-  background: #2a2a2a;
-  color: #ddd;
-  border: 1px solid #4a90e2;
+  background: var(--settings-input-bg);
+  color: var(--settings-input-fg);
+  border: 1px solid var(--accent-color);
   padding: 4px 8px;
   border-radius: 4px;
   font-family: monospace;
@@ -128,15 +128,15 @@
 }
 
 .shortcut-edit button {
-  background: #2a2a2a;
-  color: #ddd;
-  border: 1px solid #444;
+  background: var(--settings-input-bg);
+  color: var(--settings-fg);
+  border: 1px solid var(--settings-input-border);
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .shortcut-edit button:hover {
-  background: #333;
-  border-color: #4a90e2;
+  background: var(--sidebar-button-hover);
+  border-color: var(--accent-color);
 }

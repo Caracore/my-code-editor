@@ -14,16 +14,39 @@ export default function Terminal() {
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    // Créer l'instance xterm
+    // Récupérer les couleurs depuis les variables CSS
+    const getComputedColor = (varName: string) => {
+      return getComputedStyle(document.documentElement)
+        .getPropertyValue(varName)
+        .trim();
+    };
+
+    // Créer l'instance xterm avec les variables CSS
     const xterm = new XTerm({
       cursorBlink: true,
       fontSize: 14,
       fontFamily: 'Consolas, "Courier New", monospace',
       theme: {
-        background: "#0d0d0d",
-        foreground: "#e5e5e5",
-        cursor: "#00ff88",
-        selectionBackground: "#ffffff40",
+        background: getComputedColor("--terminal-bg") || "#0d0d0d",
+        foreground: getComputedColor("--terminal-fg") || "#e5e5e5",
+        cursor: getComputedColor("--editor-cursor") || "#00ff88",
+        selectionBackground: getComputedColor("--terminal-selection-bg") || "#ffffff40",
+        black: getComputedColor("--xterm-black") || "#000000",
+        red: getComputedColor("--xterm-red") || "#cd3131",
+        green: getComputedColor("--xterm-green") || "#0dbc79",
+        yellow: getComputedColor("--xterm-yellow") || "#e5e510",
+        blue: getComputedColor("--xterm-blue") || "#2472c8",
+        magenta: getComputedColor("--xterm-magenta") || "#bc3fbc",
+        cyan: getComputedColor("--xterm-cyan") || "#11a8cd",
+        white: getComputedColor("--xterm-white") || "#e5e5e5",
+        brightBlack: getComputedColor("--xterm-bright-black") || "#666666",
+        brightRed: getComputedColor("--xterm-bright-red") || "#f14c4c",
+        brightGreen: getComputedColor("--xterm-bright-green") || "#23d18b",
+        brightYellow: getComputedColor("--xterm-bright-yellow") || "#f5f543",
+        brightBlue: getComputedColor("--xterm-bright-blue") || "#3b8eea",
+        brightMagenta: getComputedColor("--xterm-bright-magenta") || "#d670d6",
+        brightCyan: getComputedColor("--xterm-bright-cyan") || "#29b8db",
+        brightWhite: getComputedColor("--xterm-bright-white") || "#ffffff",
       },
       windowsMode: false,
       convertEol: false,

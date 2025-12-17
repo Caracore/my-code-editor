@@ -2,24 +2,26 @@
     display: flex;
     gap: 20px;
     padding: 6px 12px;
-    background: #1e1e1e;
-    color: #ddd;
+    background: var(--menu-bg);
+    color: var(--menu-fg);
     font-size: 13px;
     user-select: none;
 }
 
 .menu-item:hover {
-    color: white;
+    color: var(--menu-fg);
+    background: var(--menu-hover-bg);
 }
 
 .menu-dropdown {
     position: absolute;
     margin-top: 4px;
-    background: #2a2a2a;
-    border: 1px solid #333;
+    background: var(--context-menu-bg);
+    border: 1px solid var(--menu-border);
     border-radius: 6px;
     padding: 6px 0;
     min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .dropdown-item {
@@ -30,7 +32,7 @@
 }
 
 .dropdown-item:hover {
-    background: #3a3a3a;
+    background: var(--menu-hover-bg);
 }
 
 .shortcut {

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { ThemeName, CustomTheme } from "../types/theme";
 import { UI_THEMES } from "../themes/ui-themes";
+import "../utils/themeDebug"; // Import pour rendre les fonctions debug disponibles
 
 type ThemeContextType = {
   themeName: ThemeName; // ✅ contient un nom réel (joe-dark, joe-light, joe-rose…)
@@ -12,18 +13,49 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [themeName, setThemeName] = useState<ThemeName>("joe-dark");
+  const [themeName, setThemeName] = useState<ThemeName>("dark");
   const [currentTheme, setCurrentTheme] = useState<CustomTheme | null>(null);
 
-  // ✅ Applique un thème UI (joe-dark / joe-light)
+  // ✅ Applique un thème UI (dark / light)
   const applyUITheme = (name: ThemeName) => {
-    if (!(name in UI_THEMES)) return; // ✅ évite l’erreur TS7053
+    console.log("🎨 applyUITheme called with:", name);
+    
+    if (!(name in UI_THEMES)) {
+      console.warn("⚠️ Theme not found in UI_THEMES:", name);
+      return;
+    }
 
     const vars = UI_THEMES[name as keyof typeof UI_THEMES];
+    console.log("✅ Applying", Object.keys(vars).length, "CSS variables for theme:", name);
+    
+    // Log quelques valeurs pour debug
+    console.log("📝 Sample values:", {
+      "--primary-bg": vars["--primary-bg"],
+      "--toolbar-bg": vars["--toolbar-bg"],
+      "--sidebar-bg": vars["--sidebar-bg"]
+    });
 
+    // Applique les variables CSS au document root
     Object.entries(vars).forEach(([key, value]) => {
       document.documentElement.style.setProperty(key, value as string);
     });
+    
+    // Vérification après application
+    const applied = getComputedStyle(document.documentElement).getPropertyValue("--primary-bg");
+    console.log("✅ Verification: --primary-bg after apply =", applied);
+
+    // Applique l'attribut data-theme pour permettre le ciblage CSS
+    if (name === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+      document.body.style.backgroundColor = vars["--primary-bg"] as string;
+      document.body.style.color = vars["--primary-fg"] as string;
+      console.log("🌞 Light theme attribute set + body styles applied");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      document.body.style.backgroundColor = vars["--primary-bg"] as string;
+      document.body.style.color = vars["--primary-fg"] as string;
+      console.log("🌙 Dark theme (no attribute) + body styles applied");
+    }
   };
 
   // ✅ Applique un thème custom (UI uniquement)
@@ -52,6 +84,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const savedThemeName = localStorage.getItem("themeName");
     const savedCustom = localStorage.getItem("customTheme");
 
+    console.log("💾 Loading saved theme:", { savedThemeName, hasCustom: !!savedCustom });
+
     if (savedCustom) {
       const parsed = JSON.parse(savedCustom) as CustomTheme;
       setCurrentTheme(parsed);
@@ -64,12 +98,15 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (savedThemeName) {
       setThemeName(savedThemeName as ThemeName);
+    } else {
+      // Appliquer le thème par défaut (dark) au premier chargement
+      applyUITheme("dark");
     }
   }, []);
 
   // ✅ Quand themeName change → appliquer UI
-  useEffect(() => {
-    // ✅ Si c’est un thème custom → appliquer palette custom
+  useEffect(() => {    console.log("🎨 Applying theme:", themeName, "Custom:", currentTheme?.name);
+        // ✅ Si c’est un thème custom → appliquer palette custom
     if (currentTheme && themeName === currentTheme.name) {
       applyCustomTheme(currentTheme);
       return;
@@ -81,6 +118,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   // ✅ Mise à jour du thème UI
   const updateThemeName = (name: ThemeName) => {
+    // Si on change vers un thème built-in (dark/light), effacer le custom theme
+    if (name === "dark" || name === "light") {
+      setCurrentTheme(null);
+      localStorage.removeItem("customTheme");
+    }
+    
     setThemeName(name);
     localStorage.setItem("themeName", name);
   };
