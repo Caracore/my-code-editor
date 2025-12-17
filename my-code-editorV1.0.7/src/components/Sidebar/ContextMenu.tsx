@@ -7,8 +7,8 @@ interface Props {
   path: string;
   isDir: boolean;
   onRename: () => void;
-  // onTrash: () => void;
-  // onDelete: () => void;
+  onTrash: () => void;
+  onDelete: () => void;
   onCreateFile: () => void;
   onCreateFolder: () => void;
   onClose: () => void;
@@ -20,8 +20,8 @@ export default function ContextMenu({
   // path,
   // isDir,
   onRename,
-  // onTrash,
-  // onDelete,
+  onTrash,
+  onDelete,
   onCreateFile,
   onCreateFolder,
   // onClose,
@@ -64,8 +64,8 @@ export default function ContextMenu({
       <div
         className="context-item"
         onClick={(e) => {
-          e.stopPropagation(); // ✅ Empêche la fermeture
-          // onTrash();
+          e.stopPropagation();
+          onTrash();
         }}
       >
         🗑️ Envoyer à la corbeille
@@ -74,8 +74,8 @@ export default function ContextMenu({
       <div
         className="context-item danger"
         onClick={(e) => {
-          e.stopPropagation(); // ✅ Empêche la fermeture
-          // onDelete();
+          e.stopPropagation();
+          onDelete();
         }}
       >
         ❌ Supprimer définitivement

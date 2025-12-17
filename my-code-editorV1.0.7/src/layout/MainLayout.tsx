@@ -24,6 +24,8 @@ interface MainLayoutProps {
   toggleFolder: (node: any) => void;
   onCreateFileFromContext: (folder: string, name: string) => void;
   onCreateFolderFromContext: (folder: string, name: string) => void;
+  onTrashFile: (path: string) => Promise<boolean>;
+  onDeleteFile: (path: string) => Promise<boolean>;
 }
 
 export default function MainLayout({
@@ -37,6 +39,8 @@ export default function MainLayout({
   toggleFolder,
   onCreateFileFromContext,
   onCreateFolderFromContext,
+  onTrashFile,
+  onDeleteFile,
 }: MainLayoutProps) {
   const { themeName, setThemeName, currentTheme } = useTheme();
   const { tabs, activeTab } = useTabs();
@@ -56,13 +60,24 @@ export default function MainLayout({
       if (e.detail === "settings:open") {
         setShowSettings(true);
       }
+      if (e.detail === "file:new") {
+        // Déclencher la création dans la sidebar
+        window.dispatchEvent(new CustomEvent("sidebar-action", { detail: "sidebar:createFile" }));
+      }
+      if (e.detail === "folder:new") {
+        // Déclencher la création dans la sidebar
+        window.dispatchEvent(new CustomEvent("sidebar-action", { detail: "sidebar:createFolder" }));
+      }
+      if (e.detail === "file:open") {
+        onOpenFolder();
+      }
     };
 
     window.addEventListener("menu-action", handleMenuAction as EventListener);
     return () => {
       window.removeEventListener("menu-action", handleMenuAction as EventListener);
     };
-  }, []);
+  }, [onOpenFolder]);
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -90,6 +105,8 @@ export default function MainLayout({
             onToggleFolder={toggleFolder}
             onCreateFileFromContext={onCreateFileFromContext}
             onCreateFolderFromContext={onCreateFolderFromContext}
+            onTrashFile={onTrashFile}
+            onDeleteFile={onDeleteFile}
           />
         ) : (
           <div style={{ width: "250px", borderRight: "1px solid #333" }}>

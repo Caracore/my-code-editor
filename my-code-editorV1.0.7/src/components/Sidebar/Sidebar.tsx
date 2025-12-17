@@ -15,8 +15,8 @@ interface SidebarProps {
   onOpenFile: (path: string) => void;
   onToggleFolder: (node: FileNode) => void;
   onCreateFile: (name: string) => void;
-  // onTrashFile: (path: string) => void;
-  // onDeleteFile: (path: string) => void;
+  onTrashFile: (path: string) => Promise<boolean>;
+  onDeleteFile: (path: string) => Promise<boolean>;
   onCreateFileFromContext: (folder: string, name: string) => void;
   onCreateFolderFromContext: (folder: string, name: string) => void;
 }
@@ -29,8 +29,8 @@ export default function Sidebar({
   // onOpenFile,
   onToggleFolder,
   onCreateFile,
-  // onTrashFile, // ✅ manquait !
-  // onDeleteFile,
+  onTrashFile,
+  onDeleteFile,
   onCreateFileFromContext,
   onCreateFolderFromContext,
 }: SidebarProps) {
@@ -38,8 +38,11 @@ export default function Sidebar({
   console.log("Sidebar openTab ===", openTab);
 
   const [creating, setCreating] = useState(false);
+  const [creatingFolder, setCreatingFolder] = useState(false);
   const [newFileName, setNewFileName] = useState("");
+  const [newFolderName, setNewFolderName] = useState("");
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
+  const [draggedPath, setDraggedPath] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -53,6 +56,7 @@ export default function Sidebar({
 
   // ✅ La sélection est gérée ici, pas en props
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "F2" && selectedPath) {
@@ -63,6 +67,33 @@ export default function Sidebar({
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [selectedPath]);
+
+  // Écouter les actions de création depuis les raccourcis
+  useEffect(() => {
+    const handleCreateAction = (e: CustomEvent) => {
+      if (e.detail === "sidebar:createFile") {
+        if (selectedPath) {
+          // Créer dans le dossier sélectionné
+          setCreatingFromContext({ folder: selectedPath, type: "file" });
+        } else {
+          // Créer à la racine
+          setCreating(true);
+        }
+      }
+      if (e.detail === "sidebar:createFolder") {
+        if (selectedPath) {
+          // Créer dans le dossier sélectionné
+          setCreatingFromContext({ folder: selectedPath, type: "folder" });
+        } else {
+          // Créer à la racine
+          setCreatingFolder(true);
+        }
+      }
+    };
+
+    window.addEventListener("sidebar-action", handleCreateAction as EventListener);
+    return () => window.removeEventListener("sidebar-action", handleCreateAction as EventListener);
+  }, [selectedPath]);
   function handleOpenFile(path: string) {
     invoke<string>("read_file", { path })
       .then((content) => {
@@ -72,10 +103,36 @@ export default function Sidebar({
       .catch((err) => console.error("Erreur lecture fichier:", err));
   }
 
+  function handleMoveFile(sourcePath: string, targetPath: string, targetIsDir: boolean) {
+    const fileName = sourcePath.split(/[/\\]/).pop() || "";
+    let newPath: string;
+
+    if (targetIsDir) {
+      // Drop sur un dossier → mettre dedans
+      const separator = targetPath.includes("/") ? "/" : "\\";
+      newPath = `${targetPath}${targetPath.endsWith(separator) ? "" : separator}${fileName}`;
+    } else {
+      // Drop sur un fichier → mettre à côté (dans le même parent)
+      const targetParts = targetPath.split(/[/\\]/);
+      targetParts.pop(); // Enlever le nom du fichier cible
+      const parentPath = targetParts.join("\\");
+      newPath = `${parentPath}\\${fileName}`;
+    }
+
+    invoke("rename_file", { oldPath: sourcePath, newPath })
+      .then(() => {
+        console.log(`✅ Déplacé: ${sourcePath} → ${newPath}`);
+        // Rafraîchir l'arborescence
+        window.location.reload();
+      })
+      .catch((err) => console.error("Erreur déplacement:", err));
+  }
+
   return (
     <div className={`sidebar ${sidebarVisible ? "" : "hidden"}`}>
       <button onClick={onOpenFolder}>Ouvrir un dossier</button>
       <button onClick={() => setCreating(true)}>Nouveau fichier</button>
+      <button onClick={() => setCreatingFolder(true)}>Nouveau dossier</button>
 
       {creating && (
         <div style={{ marginTop: 8, marginLeft: 8 }}>
@@ -105,6 +162,36 @@ export default function Sidebar({
           />
         </div>
       )}
+      
+      {creatingFolder && (
+        <div style={{ marginTop: 8, marginLeft: 8 }}>
+          <input
+            autoFocus
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                if (newFolderName.trim()) {
+                  onCreateFolderFromContext(".", newFolderName.trim());
+                }
+                setNewFolderName("");
+                setCreatingFolder(false);
+              }
+              if (e.key === "Escape") {
+                setNewFolderName("");
+                setCreatingFolder(false);
+              }
+            }}
+            onBlur={() => {
+              setNewFolderName("");
+              setCreatingFolder(false);
+            }}
+            placeholder="Nom du dossier..."
+            className="sidebar-input"
+          />
+        </div>
+      )}
+      
       {contextMenu && (
         <>
           <div
@@ -121,30 +208,29 @@ export default function Sidebar({
               setRenamingPath(contextMenu.path);
               setContextMenu(null);
             }}
-            // onTrash={() => {
-            //   const path = contextMenu.path;
-            //   setContextMenu(null);
-            //   setTimeout(() => onTrashFile(path), 0);
-            // }}
-            // onDelete={() => {
-            //   const path = contextMenu.path;
-            //   setContextMenu(null);
-            //   setTimeout(() => {
-            //     console.log("DELETE CALLBACK OK", path);
-            //     onDeleteFile(path);
-            //   }, 0);
-            // }}
+            onTrash={async () => {
+              const path = contextMenu.path;
+              const success = await onTrashFile(path);
+              if (success) {
+                setContextMenu(null);
+              }
+            }}
+            onDelete={async () => {
+              const path = contextMenu.path;
+              const success = await onDeleteFile(path);
+              if (success) {
+                setContextMenu(null);
+              }
+            }}
             onCreateFile={() => {
               const folder = contextMenu.path;
               setContextMenu(null);
               setCreatingFromContext({ folder, type: "file" });
-              // setTimeout(() => onCreateFileFromContext(folder), 0);
             }}
             onCreateFolder={() => {
               const folder = contextMenu.path;
               setContextMenu(null);
               setCreatingFromContext({ folder, type: "folder" });
-              // setTimeout(() => onCreateFolderFromContext(folder), 0);
             }}
             onClose={() => setContextMenu(null)}
           />
@@ -195,6 +281,9 @@ export default function Sidebar({
           renamingPath={renamingPath}
           setRenamingPath={setRenamingPath}
           setContextMenu={setContextMenu}
+          draggedPath={draggedPath}
+          setDraggedPath={setDraggedPath}
+          onMoveFile={handleMoveFile}
         />
       ))}
     </div>

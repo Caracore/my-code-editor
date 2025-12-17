@@ -30,6 +30,8 @@ export default function App() {
     handleOpenFolder,
     onCreateFileFromContext,
     onCreateFolderFromContext,
+    handleTrashFile,
+    handleDeleteFile,
   } = useFileSystem({
     tree,
     setTree,
@@ -65,6 +67,8 @@ export default function App() {
             toggleFolder={handleToggleFolder}
             onCreateFileFromContext={onCreateFileFromContext}
             onCreateFolderFromContext={onCreateFolderFromContext}
+            onTrashFile={handleTrashFile}
+            onDeleteFile={handleDeleteFile}
           />
           </SettingsProvider>
         </TerminalProvider>

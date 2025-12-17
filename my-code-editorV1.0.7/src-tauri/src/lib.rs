@@ -80,6 +80,35 @@ fn write_settings(path: String, content: String) -> Result<(), String> {
     std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
+#[derive(serde::Serialize)]
+struct IsDirResult {
+    is_dir: bool,
+}
+
+#[tauri::command]
+fn check_is_dir(path: String) -> Result<IsDirResult, String> {
+    let metadata = std::fs::metadata(&path).map_err(|e| e.to_string())?;
+    Ok(IsDirResult {
+        is_dir: metadata.is_dir(),
+    })
+}
+
+#[tauri::command]
+fn trash_file(path: String) -> Result<(), String> {
+    trash::delete(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_file(path: String) -> Result<(), String> {
+    let metadata = std::fs::metadata(&path).map_err(|e| e.to_string())?;
+    
+    if metadata.is_dir() {
+        std::fs::remove_dir_all(&path).map_err(|e| e.to_string())
+    } else {
+        std::fs::remove_file(&path).map_err(|e| e.to_string())
+    }
+}
+
 #[tauri::command]
 fn start_terminal(
     id: String,
@@ -150,8 +179,11 @@ pub fn main() {
             save_file,
             create_file,
             create_directory,
-            rename_file,            read_settings,
-            write_settings,            read_settings,
+            rename_file,
+            check_is_dir,
+            trash_file,
+            delete_file,
+            read_settings,
             write_settings,
             start_terminal,
             stop_terminal,

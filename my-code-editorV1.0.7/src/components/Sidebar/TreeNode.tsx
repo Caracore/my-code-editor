@@ -19,6 +19,9 @@ interface TreeNodeProps {
       isDir: boolean;
     } | null>
   >;
+  draggedPath: string | null;
+  setDraggedPath: (path: string | null) => void;
+  onMoveFile: (sourcePath: string, targetPath: string, targetIsDir: boolean) => void;
 }
 
 export default function TreeNode({
@@ -31,9 +34,14 @@ export default function TreeNode({
   renamingPath,
   setRenamingPath,
   setContextMenu,
+  draggedPath,
+  setDraggedPath,
+  onMoveFile,
 }: TreeNodeProps) {
   const isSelected = selectedPath === node.path;
   const isRenaming = renamingPath === node.path;
+  const isDragging = draggedPath === node.path;
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const [tempName, setTempName] = useState(node.name);
 
@@ -73,11 +81,53 @@ export default function TreeNode({
         marginLeft: 12,
         border: isSelected ? "1px solid #4A90E2" : "1px solid transparent",
         borderRadius: 4,
-        background: isSelected ? "rgba(74, 144, 226, 0.15)" : "transparent",
+        background: isDragOver
+          ? "rgba(74, 226, 144, 0.25)"
+          : isSelected
+          ? "rgba(74, 144, 226, 0.15)"
+          : "transparent",
+        opacity: isDragging ? 0.5 : 1,
       }}
     >
       <div
-        style={{ cursor: "pointer", padding: 2 }}
+        draggable
+        style={{ cursor: isDragging ? "grabbing" : "grab", padding: 2 }}
+        onDragStart={(e) => {
+          e.stopPropagation();
+          setDraggedPath(node.path);
+          e.dataTransfer.effectAllowed = "move";
+        }}
+        onDragEnd={() => {
+          setDraggedPath(null);
+          setIsDragOver(false);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          if (draggedPath && draggedPath !== node.path) {
+            e.dataTransfer.dropEffect = "move";
+            setIsDragOver(true);
+          } else {
+            e.dataTransfer.dropEffect = "none";
+            setIsDragOver(false);
+          }
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragOver(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragOver(false);
+
+          if (draggedPath && draggedPath !== node.path) {
+            // Si c'est un dossier, mettre dedans. Sinon, mettre à côté.
+            onMoveFile(draggedPath, node.path, node.isDir);
+          }
+        }}
         onClick={() => {
           setSelectedPath(node.path);
           if (node.isDir) onToggle(node);
@@ -142,6 +192,9 @@ export default function TreeNode({
             renamingPath={renamingPath}
             setRenamingPath={setRenamingPath}
             setContextMenu={setContextMenu}
+            draggedPath={draggedPath}
+            setDraggedPath={setDraggedPath}
+            onMoveFile={onMoveFile}
           />
         ))}
     </div>
