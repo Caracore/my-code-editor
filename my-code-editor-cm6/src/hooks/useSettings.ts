@@ -27,6 +27,7 @@ const DEFAULT_SETTINGS: Settings = {
     "edit:paste": "Ctrl+V",
     "view:toggleTerminal": "Ctrl+ù",
     "view:toggleSidebar": "Ctrl+B",
+    "view:toggleTodoList": "Ctrl+T",
     "terminal:new": "Ctrl+Shift+`",
     "settings:open": "Ctrl+,"
   },

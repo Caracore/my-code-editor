@@ -35,6 +35,11 @@ export const getMenuConfig = (shortcuts: Record<string, string>) => [
         shortcut: shortcuts["view:toggleSidebar"] || "",
         action: "view:toggleSidebar",
       },
+      {
+        label: "Toggle Todo List",
+        shortcut: shortcuts["view:toggleTodoList"] || "",
+        action: "view:toggleTodoList",
+      },
     ],
   },
   {

@@ -7,6 +7,7 @@ import Terminal from "../components/Terminal/Terminal";
 import ThemeManager from "../components/ThemeManager/ThemeManager";
 import SettingsPanel from "../components/SettingsPanel/SettingsPanel";
 import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
+import TodoList from "../components/TodoList/TodoList";
 
 import { useTabs } from "../context/TabsContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
@@ -16,6 +17,7 @@ import type { FileNode } from "../types/FileNode";
 interface MainLayoutProps {
   tree: FileNode[];
   sidebarVisible: boolean;
+  setSidebarVisible: (visible: boolean) => void;
   onRenameFile: (oldPath: string, newName: string) => void;
   onCreateFile: (name: string) => void;
   onOpenFolder: () => void;
@@ -31,6 +33,7 @@ interface MainLayoutProps {
 export default function MainLayout({
   tree,
   sidebarVisible,
+  setSidebarVisible,
   onRenameFile,
   onCreateFile,
   onOpenFolder,
@@ -58,6 +61,7 @@ export default function MainLayout({
   const [showThemeManager, setShowThemeManager] = useState(false);
   const [showTerminal, setShowTerminal] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTodoList, setShowTodoList] = useState(false);
 
   // ✅ Ctrl+S → sauvegarde
   useEffect(() => {
@@ -107,10 +111,23 @@ export default function MainLayout({
           document.execCommand('paste');
           break;
         case "view:toggleSidebar":
-          // Géré dans App.tsx déjà
+          setSidebarVisible((v) => !v);
+          if (showTodoList) {
+            setShowTodoList(false);
+          }
           break;
         case "view:toggleTerminal":
           setShowTerminal((v) => !v);
+          break;
+        case "view:toggleTodoList":
+          console.log("🔍 Toggle TodoList - Current state:", { showTodoList, sidebarVisible });
+          if (showTodoList) {
+            setShowTodoList(false);
+          } else {
+            setSidebarVisible(true);
+            setShowTodoList(true);
+          }
+          console.log("🔍 Toggle TodoList - New state:", { showTodoList: !showTodoList, sidebarVisible: true });
           break;
         case "view:themeManager":
           setShowThemeManager((v) => !v);
@@ -125,7 +142,7 @@ export default function MainLayout({
 
     window.addEventListener("menu-action", handler as EventListener);
     return () => window.removeEventListener("menu-action", handler as EventListener);
-  }, [tabs, activeTab, onCreateFile, onOpenFolder]);
+  }, [tabs, activeTab, onCreateFile, onOpenFolder, showTodoList, showTerminal, setSidebarVisible]);
 
   // ✅ Sauvegarde
   async function saveActiveFile() {
@@ -154,19 +171,23 @@ export default function MainLayout({
 
       <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {sidebarVisible && (
-          <Sidebar
-            tree={tree}
-            sidebarVisible={sidebarVisible}
-            onRenameFile={onRenameFile}
-            onOpenFolder={onOpenFolder}
-            onOpenFile={onOpenFileFromTree}
-            onToggleFolder={toggleFolder}
-            onCreateFile={onCreateFile}
-            onCreateFileFromContext={onCreateFileFromContext}
-            onCreateFolderFromContext={onCreateFolderFromContext}
-            onTrashFile={onTrashFile}
-            onDeleteFile={onDeleteFile}
-          />
+          showTodoList ? (
+            <TodoList />
+          ) : (
+            <Sidebar
+              tree={tree}
+              sidebarVisible={sidebarVisible}
+              onRenameFile={onRenameFile}
+              onOpenFolder={onOpenFolder}
+              onOpenFile={onOpenFileFromTree}
+              onToggleFolder={toggleFolder}
+              onCreateFile={onCreateFile}
+              onCreateFileFromContext={onCreateFileFromContext}
+              onCreateFolderFromContext={onCreateFolderFromContext}
+              onTrashFile={onTrashFile}
+              onDeleteFile={onDeleteFile}
+            />
+          )
         )}
 
         {/* Zone centrale */}

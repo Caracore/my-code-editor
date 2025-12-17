@@ -47,18 +47,7 @@ function AppContent() {
     tabs,
   });
 
-  // ✅ Sidebar toggle via menu
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const custom = e as CustomEvent;
-      if (custom.detail === "view:toggleSidebar") {
-        setSidebarVisible((v) => !v);
-      }
-    };
 
-    window.addEventListener("menu-action", handler as EventListener);
-    return () => window.removeEventListener("menu-action", handler as EventListener);
-  }, []);
 
   return (
     <TerminalProvider>
@@ -66,6 +55,7 @@ function AppContent() {
         <MainLayout
           tree={tree}
           sidebarVisible={sidebarVisible}
+          setSidebarVisible={setSidebarVisible}
           onRenameFile={handleRenameFile}
           onCreateFile={handleCreateFile}
           onOpenFolder={handleOpenFolder}
