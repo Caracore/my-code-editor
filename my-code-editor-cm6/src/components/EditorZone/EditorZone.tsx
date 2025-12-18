@@ -9,7 +9,7 @@ interface EditorZoneProps {
   onFileDrop?: (zone: DropZone) => void;
 }
 
-export default function EditorZone({ children, onFileDrop }: EditorZoneProps) {
+export default function EditorZone({ children, onFileDrop: _onFileDrop }: EditorZoneProps) {
   const [dropZone, setDropZone] = useState<DropZone | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropZoneRef = useRef<DropZone>("center");

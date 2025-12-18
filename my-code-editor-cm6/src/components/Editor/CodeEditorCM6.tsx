@@ -2,23 +2,29 @@ import { useEffect, useRef } from "react";
 import { EditorView, keymap } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { html } from "@codemirror/lang-html";
-import { css } from "@codemirror/lang-css";
-import { javascript } from "@codemirror/lang-javascript";
+// import { html } from "@codemirror/lang-html";
+// import { css } from "@codemirror/lang-css";
+// import { javascript } from "@codemirror/lang-javascript";
 import { indentWithTab } from "@codemirror/commands";
 import { basicSetup } from "codemirror";
 import type { KeyBinding } from "@codemirror/view";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import { autocompletion } from "@codemirror/autocomplete";
-import { htmlSnippets } from "./htmlSnippet";
+// import { detectLanguageFromFilename } from "../utils/detectLanguage";
+import { html, htmlCompletionSource } from "@codemirror/lang-html";
+import { css } from "@codemirror/lang-css"; //, cssCompletionSource
+import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
+import { cssSmartProvider } from "../../extensions/css/cssProvider";
+import { htmlSnippets } from "../../extensions/html/htmlSnippets";
 
 interface CodeEditorProps {
   value: string;
   onChange: (newValue: string) => void;
+  language?: "html" | "css" | "js";
 }
 
-export default function CodeEditorCM6({ value, onChange }: CodeEditorProps) {
+export default function CodeEditorCM6({ value, onChange, language = "css" }: CodeEditorProps) { // language = "html"
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -31,6 +37,26 @@ export default function CodeEditorCM6({ value, onChange }: CodeEditorProps) {
         onChange(newValue);
       }
     });
+
+    // Détection dynamique du langage et des completion sources
+    let languageExtension: any;
+    let completionSources: any[] = [];
+
+    if (language === "html") {
+      languageExtension = html();
+      completionSources = [htmlSnippets, htmlCompletionSource];
+    } else if (language === "css") {
+      languageExtension = css();
+      completionSources = [cssSmartProvider];
+
+    } else if (language === "js") {
+      languageExtension = javascript();
+      completionSources = [javascriptLanguage]; // Ajoute tes providers JS ici si nécessaire
+    } else {
+      // Par défaut, HTML
+      languageExtension = html();
+      completionSources = [htmlSnippets, htmlCompletionSource];
+    }
 
     // Récupérer les couleurs depuis les variables CSS
     const getComputedColor = (varName: string) => {
@@ -131,17 +157,17 @@ export default function CodeEditorCM6({ value, onChange }: CodeEditorProps) {
       doc: value,
       extensions: [
         basicSetup,
-        html(),
-        css(),
-        javascript(),
+        languageExtension,  // Étape 2 : extension de langage dynamique
         history(),
         keymap.of(customKeymap),
         updateListener,
         EditorView.lineWrapping,
         syntaxHighlighting(customHighlightStyle),
+        // Étape 3 : autocomplétion dynamique avec completionSources
         autocompletion({
-          override: [htmlSnippets],
+          override: completionSources,  // Sources dynamiques selon le langage
           activateOnTyping: true,
+          maxRenderedOptions: 20,
         }),
         EditorView.theme({
           // === Base de l'éditeur ===

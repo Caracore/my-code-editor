@@ -10,7 +10,7 @@ import SettingsPanel from "../components/SettingsPanel/SettingsPanel";
 import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
 import TodoList from "../components/TodoList/TodoList";
 import EditorZone from "../components/EditorZone/EditorZone";
-
+import { detectLanguageFromFilename } from "../utils/detectLanguage";
 import { useTabs } from "../context/TabsContext";
 import { useTheme } from "../context/ThemeContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
@@ -61,6 +61,8 @@ export default function MainLayout({
     updateTabContent,
     markTabAsSaved,
   } = useTabs();
+
+  
 
   // ✅ Utiliser le thème
   const { themeName, setThemeName } = useTheme();
@@ -183,7 +185,12 @@ export default function MainLayout({
       } else if (zone === "left" || zone === "right") {
         // Ouvrir en mode split
         setSplitMode(zone);
-        setSplitFile({ path, content });
+        setSplitFile({ 
+          path, 
+          content,
+          isDirty: false,
+          originalContent: content
+        });
         // Ouvrir aussi dans les onglets principaux
         openTab(path, content);
       }
@@ -361,7 +368,7 @@ export default function MainLayout({
     await invoke("save_file", { path: activeTab, content: file.content });
     markTabAsSaved(activeTab);
   }
-
+  // Pour choisir le langage de l'éditeur & pour faire fonctionner la tabsbar
   const activeFile = tabs.find((t) => t.path === activeTab);
 
   return (
@@ -425,6 +432,7 @@ export default function MainLayout({
                           key={splitFile.path}
                           value={splitFile.content}
                           onChange={(newValue: string) => updateSplitContent(newValue)}
+                          language={detectLanguageFromFilename(activeFile.name)}
                         />
                       </Suspense>
                     </div>
@@ -444,6 +452,7 @@ export default function MainLayout({
                         onChange={(newValue: string) =>
                           updateTabContent(activeFile.path, newValue)
                         }
+                        language={detectLanguageFromFilename(activeFile.name)}
                       />
                     </Suspense>
                   </div>
@@ -465,6 +474,7 @@ export default function MainLayout({
                           key={splitFile.path}
                           value={splitFile.content}
                           onChange={(newValue: string) => updateSplitContent(newValue)}
+                          language={detectLanguageFromFilename(activeFile.name)}
                         />
                       </Suspense>
                     </div>
@@ -483,6 +493,7 @@ export default function MainLayout({
                       onChange={(newValue: string) =>
                         updateTabContent(activeFile.path, newValue)
                       }
+                      language={detectLanguageFromFilename(activeFile.name)}
                     />
                   </Suspense>
                 </EditorZone>

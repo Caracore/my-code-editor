@@ -5,6 +5,7 @@ export interface OpenTab {
   path: string;
   content: string;
   isDirty: boolean;
+  name: string;
 }
 
 interface TabsContextType {
@@ -42,9 +43,9 @@ export function TabsProvider({ children }: { children: ReactNode }) {
       setActiveTab(path);
       return;
     }
-
+// modification ici à voir pour changer name: ################################################################################################!!!!!!!!!!!!!!!!!!!
     // ✅ Nouveau tab
-    setTabs((prev) => [...prev, { path, content, isDirty: false }]);
+    setTabs((prev) => [...prev, { path, content, isDirty: false, name: path.split(/[/\\]/).pop() || "untitled" }]);
     setActiveTab(path);
   }
 

@@ -10,7 +10,7 @@ type DropZone = "center" | "left" | "right" | "top" | "bottom" | null;
 export default function WelcomeScreen() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropZone, setDropZone] = useState<DropZone>(null);
-  const { openTab } = useTabs();
+  const { openTab: _openTab } = useTabs();
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Zone de drop pour les fichiers depuis la sidebar
