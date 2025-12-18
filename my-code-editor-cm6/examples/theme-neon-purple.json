@@ -19,6 +19,9 @@
     "--sidebar-input-bg": "#2a1850",
     "--sidebar-input-fg": "#ffffff",
     "--sidebar-input-border": "#8844ee",
+    "--sidebar-item-selected-bg": "rgba(255, 85, 255, 0.2)",
+    "--sidebar-item-selected-border": "#ff55ff",
+    "--sidebar-item-drag-over-bg": "rgba(5, 255, 161, 0.25)",
     
     "__comment3": "Toolbar",
     "--toolbar-bg": "#1f0f3d",

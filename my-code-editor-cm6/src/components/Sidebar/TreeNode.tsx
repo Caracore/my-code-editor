@@ -88,12 +88,14 @@ export default function TreeNode({
     <div
       style={{
         marginLeft: 12,
-        border: isSelected ? "1px solid #4A90E2" : "1px solid transparent",
+        border: isSelected 
+          ? `1px solid var(--sidebar-item-selected-border, #4A90E2)` 
+          : "1px solid transparent",
         borderRadius: 4,
         background: isDragOver
-          ? "rgba(74, 226, 144, 0.25)"
+          ? "var(--sidebar-item-drag-over-bg, rgba(74, 226, 144, 0.25))"
           : isSelected
-          ? "rgba(74, 144, 226, 0.15)"
+          ? "var(--sidebar-item-selected-bg, rgba(74, 144, 226, 0.15))"
           : "transparent",
         opacity: isDragging ? 0.5 : 1,
       }}

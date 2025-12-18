@@ -20,6 +20,9 @@
   --sidebar-input-bg: #333333;
   --sidebar-input-fg: #ffffff;
   --sidebar-input-border: #555555;
+  --sidebar-item-selected-bg: rgba(74, 144, 226, 0.15);
+  --sidebar-item-selected-border: #4A90E2;
+  --sidebar-item-drag-over-bg: rgba(74, 226, 144, 0.25);
   
   /* === Toolbar === */
   --toolbar-bg: #1A1A1A;
@@ -251,6 +254,9 @@
   --sidebar-input-bg: #FFFFFF;
   --sidebar-input-fg: #000000;
   --sidebar-input-border: #CCCCCC;
+  --sidebar-item-selected-bg: rgba(0, 120, 212, 0.15);
+  --sidebar-item-selected-border: #0078D4;
+  --sidebar-item-drag-over-bg: rgba(74, 226, 144, 0.25);
   
   /* === Toolbar === */
   --toolbar-bg: #FFFFFF;
