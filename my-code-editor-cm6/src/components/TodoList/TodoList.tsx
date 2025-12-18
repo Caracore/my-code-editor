@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { confirm } from "@tauri-apps/plugin-dialog";
-import { appDataDir } from "@tauri-apps/api/path";
 import "./TodoList.css";
 
 interface Todo {
@@ -19,10 +18,10 @@ export default function TodoList() {
   const [newContent, setNewContent] = useState("");
   const [todosPath, setTodosPath] = useState<string>("");
 
-  // Initialiser le chemin du fichier todos.json
+  // Initialiser le chemin du fichier todos.json dans %appdata%/my-code-editor
   useEffect(() => {
-    appDataDir().then((dir) => {
-      const path = `${dir}todos.json`;
+    invoke<string>("get_config_path").then((configDir) => {
+      const path = `${configDir}\\todolist.json`;
       setTodosPath(path);
       loadTodos(path);
     });

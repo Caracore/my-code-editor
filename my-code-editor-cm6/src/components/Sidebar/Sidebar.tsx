@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { FileNode } from "../../types/FileNode";
 import TreeNode from "./TreeNode";
 import "./Sidebar.css";
 import ContextMenu from "./ContextMenu";
 import { useTabs } from "../../context/TabsContext.tsx";
+import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 
 import { invoke } from "@tauri-apps/api/core";
 
@@ -19,6 +20,7 @@ interface SidebarProps {
   onDeleteFile: (path: string) => Promise<boolean>;
   onCreateFileFromContext: (folder: string, name: string) => void;
   onCreateFolderFromContext: (folder: string, name: string) => void;
+  onReloadTree: () => void;
 }
 
 export default function Sidebar({
@@ -33,6 +35,7 @@ export default function Sidebar({
   onDeleteFile,
   onCreateFileFromContext,
   onCreateFolderFromContext,
+  onReloadTree,
 }: SidebarProps) {
   const { openTab } = useTabs();
   console.log("Sidebar openTab ===", openTab);
@@ -95,31 +98,89 @@ export default function Sidebar({
     targetPath: string,
     targetIsDir: boolean
   ) {
+    // Éviter de déplacer un fichier sur lui-même
+    if (sourcePath === targetPath) {
+      console.log("⚠️ Source et destination identiques");
+      return;
+    }
+
+    // Éviter de déplacer un dossier dans lui-même
+    if (targetIsDir && targetPath.startsWith(sourcePath)) {
+      console.log("⚠️ Impossible de déplacer un dossier dans lui-même");
+      return;
+    }
+
     const fileName = sourcePath.split(/[/\\]/).pop() || "";
     let newPath: string;
 
+    // Détecter le séparateur utilisé dans le système
+    const separator = sourcePath.includes("/") ? "/" : "\\";
+
     if (targetIsDir) {
-      const separator = targetPath.includes("/") ? "/" : "\\";
+      // Déposer dans un dossier
       newPath = `${targetPath}${
         targetPath.endsWith(separator) ? "" : separator
       }${fileName}`;
     } else {
+      // Déposer à côté d'un fichier (même dossier parent)
       const targetParts = targetPath.split(/[/\\]/);
       targetParts.pop();
-      const parentPath = targetParts.join("\\");
-      newPath = `${parentPath}\\${fileName}`;
+      const parentPath = targetParts.join(separator);
+      newPath = `${parentPath}${separator}${fileName}`;
     }
+
+    // Vérifier si la destination est différente
+    if (sourcePath === newPath) {
+      console.log("⚠️ Le fichier est déjà à cet emplacement");
+      return;
+    }
+
+    console.log(`🔄 Déplacement: ${sourcePath} → ${newPath}`);
 
     invoke("rename_file", { oldPath: sourcePath, newPath })
       .then(() => {
-        console.log(`✅ Déplacé: ${sourcePath} → ${newPath}`);
-        window.location.reload();
+        console.log(`✅ Déplacé avec succès: ${newPath}`);
+        // Recharger l'arbre en préservant l'état expanded
+        onReloadTree();
       })
-      .catch((err) => console.error("Erreur déplacement:", err));
+      .catch((err) => {
+        console.error("❌ Erreur lors du déplacement:", err);
+        alert(`Erreur lors du déplacement: ${err}`);
+      });
+  }
+
+  // Configurer les capteurs avec contrainte de distance
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Le drag ne démarre qu'après 8px de mouvement
+      },
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) {
+      console.log("❌ Pas de drop valide");
+      return;
+    }
+
+    const sourcePath = active.id as string;
+    const targetPath = over.id as string;
+    const targetNode = over.data.current?.node as FileNode;
+
+    console.log("✅ Drop:", sourcePath, "→", targetPath);
+    handleMoveFile(sourcePath, targetPath, targetNode?.isDir || false);
   }
 
   return (
-    <div className={`sidebar ${sidebarVisible ? "" : "hidden"}`}>
+    <DndContext 
+      sensors={sensors}
+      onDragEnd={handleDragEnd}
+      autoScroll={{ enabled: false }}
+    >
+      <div className={`sidebar ${sidebarVisible ? "" : "hidden"}`}>
       <button onClick={onOpenFolder}>Ouvrir un dossier</button>
       <button onClick={() => setCreating(true)}>Nouveau fichier</button>
       <button onClick={() => setCreatingFolder(true)}>Nouveau dossier</button>
@@ -246,6 +307,7 @@ export default function Sidebar({
           onCreateFolderFromContext={onCreateFolderFromContext}
         />
       ))}
-    </div>
+      </div>
+    </DndContext>
   );
 }

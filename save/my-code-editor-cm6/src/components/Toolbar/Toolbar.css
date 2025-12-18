@@ -1,0 +1,47 @@
+.toolbar {
+    padding: 4px 8px;
+    background: var(--toolbar-bg);
+    color: var(--toolbar-fg);
+    display: flex;
+    gap: 8px;
+}
+
+/*.theme-select {
+    background: var(--toolbar-bg);
+    color: var(--toolbar-fg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+}*/
+.theme-select {
+    background: var(--toolbar-button-bg, #2a2a2a);
+    color: var(--toolbar-button-fg, #ddd);
+    border: 1px solid var(--toolbar-button-border, #444);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.toolbar button {
+    background: var(--toolbar-button-bg, #2a2a2a);
+    color: var(--toolbar-button-fg, #ddd);
+    border: 1px solid var(--toolbar-button-border, #444);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toolbar button:hover {
+    background: var(--toolbar-button-hover, #333);
+}
+.toolbar-select {
+    background: var(--toolbar-button-bg, #2a2a2a);
+    color: var(--toolbar-button-fg, #ddd);
+    border: 1px solid var(--toolbar-button-border, #444);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.toolbar-select:hover {
+    background: var(--toolbar-button-hover, #333);
+}

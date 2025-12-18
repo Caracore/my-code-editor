@@ -29,6 +29,7 @@ interface MainLayoutProps {
   onCreateFolderFromContext: (folder: string, name: string) => void;
   onTrashFile: (path: string) => Promise<boolean>;
   onDeleteFile: (path: string) => Promise<boolean>;
+  onReloadTree: () => void;
 }
 
 export default function MainLayout({
@@ -45,6 +46,7 @@ export default function MainLayout({
   onCreateFolderFromContext,
   onTrashFile,
   onDeleteFile,
+  onReloadTree,
 }: MainLayoutProps) {
 
   const {
@@ -192,6 +194,7 @@ export default function MainLayout({
               onCreateFolderFromContext={onCreateFolderFromContext}
               onTrashFile={onTrashFile}
               onDeleteFile={onDeleteFile}
+              onReloadTree={onReloadTree}
             />
           )
         )}

@@ -16,6 +16,7 @@ interface TabsContextType {
   updateTabContent: (path: string, newContent: string) => void;
   markTabAsSaved: (path: string) => void;
   reloadTab: (path: string, content: string) => void;
+  reorderTabs: (oldIndex: number, newIndex: number) => void;
 }
 
 const TabsContext = createContext<TabsContextType | undefined>(undefined);
@@ -89,6 +90,16 @@ export function TabsProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  // ✅ Réorganiser les onglets
+  function reorderTabs(oldIndex: number, newIndex: number) {
+    setTabs((prev) => {
+      const newTabs = [...prev];
+      const [movedTab] = newTabs.splice(oldIndex, 1);
+      newTabs.splice(newIndex, 0, movedTab);
+      return newTabs;
+    });
+  }
+
   return (
     <TabsContext.Provider
       value={{
@@ -100,6 +111,7 @@ export function TabsProvider({ children }: { children: ReactNode }) {
         updateTabContent,
         markTabAsSaved,
         reloadTab,
+        reorderTabs,
       }}
     >
       {children}

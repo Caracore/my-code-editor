@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { appDataDir } from "@tauri-apps/api/path";
 
 interface Settings {
   shortcuts: Record<string, string>;
@@ -51,8 +50,8 @@ export function useSettings() {
 
   async function loadSettings() {
     try {
-      const dataDir = await appDataDir();
-      const settingsPath = `${dataDir}settings.json`;
+      const configDir = await invoke<string>("get_config_path");
+      const settingsPath = `${configDir}\\settings.json`;
       
       const content = await invoke<string>("read_settings", { path: settingsPath });
       const parsed = JSON.parse(content);
@@ -67,8 +66,8 @@ export function useSettings() {
 
   async function saveSettings(newSettings: Settings) {
     try {
-      const dataDir = await appDataDir();
-      const settingsPath = `${dataDir}settings.json`;
+      const configDir = await invoke<string>("get_config_path");
+      const settingsPath = `${configDir}\\settings.json`;
       
       await invoke("write_settings", {
         path: settingsPath,

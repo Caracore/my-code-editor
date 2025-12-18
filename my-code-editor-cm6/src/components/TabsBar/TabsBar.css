@@ -20,12 +20,19 @@
     align-items: center;
     gap: 8px;
     padding: 0 12px;
-    cursor: pointer;
+    cursor: grab;
     color: var(--tabs-fg);
     height: 100%;
     border-right: 1px solid var(--tabs-border);
     min-width: 0;
     max-width: 200px;
+    user-select: none;
+    transition: opacity 0.2s;
+}
+
+.tab.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
 }
 
 .tab.active {

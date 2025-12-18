@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import MainLayout from "./layout/MainLayout";
 import { ThemeProvider } from "./context/ThemeContext";
 import { TerminalProvider } from "./context/TerminalContext";
@@ -16,6 +16,12 @@ function AppContent() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const [tree, setTree] = useState<FileNode[]>([]);
+  const treeRef = useRef<FileNode[]>(tree);
+
+  // Mettre à jour la ref à chaque changement de tree
+  useEffect(() => {
+    treeRef.current = tree;
+  }, [tree]);
 
   // ✅ Accès au contexte des onglets
   const { closeTab, openTab, tabs } = useTabs();
@@ -24,6 +30,59 @@ function AppContent() {
   const { loadFolder, toggleFolder } = useFileTree();
   const handleToggleFolder = (node: FileNode) => {
     toggleFolder(node, tree, setTree);
+  };
+
+  // ✅ Fonction pour recharger l'arbre en préservant l'état expanded
+  const reloadTreeWithState = async () => {
+    if (!currentPath) return;
+    
+    console.log("🔄 Rechargement de l'arbre après drag and drop");
+    console.log("📂 Tree avant:", treeRef.current);
+    
+    // Collecter tous les chemins expanded
+    const expandedPaths = new Set<string>();
+    const collectExpandedPaths = (nodes: FileNode[]) => {
+      nodes.forEach(node => {
+        if (node.isExpanded) {
+          expandedPaths.add(node.path);
+        }
+        if (node.children) {
+          collectExpandedPaths(node.children);
+        }
+      });
+    };
+    collectExpandedPaths(treeRef.current);
+
+    // Charger le nouveau tree
+    const newTree = await loadFolder(currentPath);
+    console.log("📂 newTree chargé:", newTree);
+    
+    // Appliquer l'état expanded au nouveau tree
+    const applyExpandedState = async (nodes: FileNode[]): Promise<FileNode[]> => {
+      const result: FileNode[] = [];
+      
+      for (const node of nodes) {
+        if (node.isDirectory && expandedPaths.has(node.path)) {
+          // Recharger les enfants de ce dossier
+          const children = await loadFolder(node.path);
+          // Appliquer récursivement l'état expanded aux enfants
+          const expandedChildren = await applyExpandedState(children);
+          result.push({
+            ...node,
+            isExpanded: true,
+            children: expandedChildren
+          });
+        } else {
+          result.push(node);
+        }
+      }
+      
+      return result;
+    };
+
+    const mergedTree = await applyExpandedState(newTree);
+    console.log("📂 mergedTree:", mergedTree);
+    setTree(mergedTree);
   };
 
   // ✅ Gestion du système de fichiers
@@ -66,6 +125,7 @@ function AppContent() {
           onCreateFolderFromContext={onCreateFolderFromContext}
           onTrashFile={handleTrashFile}
           onDeleteFile={handleDeleteFile}
+          onReloadTree={reloadTreeWithState}
         />
       </SettingsProvider>
     </TerminalProvider>

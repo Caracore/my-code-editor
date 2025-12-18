@@ -2,6 +2,7 @@
 import type { FileNode } from "../../types/FileNode";
 import "./TreeNode.css";
 import { useState } from "react";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 interface TreeNodeProps {
   node: FileNode;
@@ -49,10 +50,22 @@ export default function TreeNode({
 }: TreeNodeProps) {
   const isSelected = selectedPath === node.path;
   const isRenaming = renamingPath === node.path;
-  const isDragging = draggedPath === node.path;
-  const [isDragOver, setIsDragOver] = useState(false);
-
   const [tempName, setTempName] = useState(node.name);
+
+  // dnd-kit hooks
+  const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({
+    id: node.path,
+    disabled: isRenaming,
+    data: { node }
+  });
+
+  // Utiliser PointerSensor avec contrainte de distance pour différencier click et drag
+  const dragListeners = isRenaming ? {} : listeners;
+
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: node.path,
+    data: { node }
+  });
 
   const finishRename = () => {
     if (tempName.trim() && tempName !== node.name) {
@@ -84,15 +97,23 @@ export default function TreeNode({
     }
   }
 
+  // Combiner les refs
+  const combinedRef = (element: HTMLDivElement | null) => {
+    setDragRef(element);
+    setDropRef(element);
+  };
+
   return (
     <div
+      ref={combinedRef}
+      className="tree-node-wrapper"
       style={{
         marginLeft: 12,
         border: isSelected 
           ? `1px solid var(--sidebar-item-selected-border, #4A90E2)` 
           : "1px solid transparent",
         borderRadius: 4,
-        background: isDragOver
+        background: isOver
           ? "var(--sidebar-item-drag-over-bg, rgba(74, 226, 144, 0.25))"
           : isSelected
           ? "var(--sidebar-item-selected-bg, rgba(74, 144, 226, 0.15))"
@@ -101,48 +122,20 @@ export default function TreeNode({
       }}
     >
       <div
-        draggable
-        style={{ cursor: isDragging ? "grabbing" : "grab", padding: 2 }}
-        onDragStart={(e) => {
-          e.stopPropagation();
-          setDraggedPath(node.path);
-          e.dataTransfer.effectAllowed = "move";
-        }}
-        onDragEnd={() => {
-          setDraggedPath(null);
-          setIsDragOver(false);
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          if (draggedPath && draggedPath !== node.path) {
-            e.dataTransfer.dropEffect = "move";
-            setIsDragOver(true);
-          } else {
-            e.dataTransfer.dropEffect = "none";
-            setIsDragOver(false);
+        {...attributes}
+        {...dragListeners}
+        className={`tree-node-content ${isDragging ? "dragging" : ""} ${isRenaming ? "renaming" : ""}`}
+        onClick={(e) => {
+          // Ne pas ouvrir pendant le drag
+          if (isDragging) {
+            e.preventDefault();
+            return;
           }
-        }}
-        onDragLeave={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsDragOver(false);
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsDragOver(false);
-
-          if (draggedPath && draggedPath !== node.path) {
-            // Si c'est un dossier, mettre dedans. Sinon, mettre à côté.
-            onMoveFile(draggedPath, node.path, node.isDir);
+          if (!isRenaming) {
+            setSelectedPath(node.path);
+            if (node.isDir) onToggle(node);
+            else onOpenFile(node.path);
           }
-        }}
-        onClick={() => {
-          setSelectedPath(node.path);
-          if (node.isDir) onToggle(node);
-          else onOpenFile(node.path);
         }}
         onContextMenu={(e) => {
           e.preventDefault();

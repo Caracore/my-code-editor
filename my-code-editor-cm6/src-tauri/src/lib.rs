@@ -16,13 +16,38 @@
 // }
 mod terminal;
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
+use std::path::PathBuf;
 
 #[derive(serde::Serialize)]
 struct FileEntry {
     path: String,
     is_dir: bool,
+}
+
+// Obtenir le chemin du dossier de configuration dans %appdata%
+fn get_config_dir(app_handle: &AppHandle) -> Result<PathBuf, String> {
+    let app_data_dir = app_handle
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Impossible d'obtenir le chemin AppData: {}", e))?;
+    
+    let app_config_dir = app_data_dir.join("my-code-editor");
+    
+    // Créer le dossier s'il n'existe pas
+    if !app_config_dir.exists() {
+        std::fs::create_dir_all(&app_config_dir)
+            .map_err(|e| format!("Erreur lors de la création du dossier de configuration: {}", e))?;
+    }
+    
+    Ok(app_config_dir)
+}
+
+#[tauri::command]
+async fn get_config_path(app_handle: AppHandle) -> Result<String, String> {
+    let config_dir = get_config_dir(&app_handle)?;
+    Ok(config_dir.to_string_lossy().to_string())
 }
 
 #[tauri::command]
@@ -201,6 +226,7 @@ pub fn main() {
             delete_file,
             read_settings,
             write_settings,
+            get_config_path,
             start_terminal,
             stop_terminal,
             write_to_terminal,
