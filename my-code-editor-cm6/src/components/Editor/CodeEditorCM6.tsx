@@ -14,9 +14,13 @@ import { autocompletion } from "@codemirror/autocomplete";
 // import { detectLanguageFromFilename } from "../utils/detectLanguage";
 import { html, htmlCompletionSource } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css"; //, cssCompletionSource
-import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
+import { javascript } from "@codemirror/lang-javascript"; // , javascriptLanguage
+import { jsSmartProvider } from "../../extensions/js/jsProvider";
 import { cssSmartProvider } from "../../extensions/css/cssProvider";
 import { htmlSnippets } from "../../extensions/html/htmlSnippets";
+import { pythonSmartProvider } from "../../extensions/python/pythonProvider";
+import { python } from "@codemirror/lang-python";
+
 
 interface CodeEditorProps {
   value: string;
@@ -42,16 +46,23 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
     let languageExtension: any;
     let completionSources: any[] = [];
 
+    
     if (language === "html") {
+      console.log("Detected language:", language);
       languageExtension = html();
       completionSources = [htmlSnippets, htmlCompletionSource];
     } else if (language === "css") {
+      console.log("Detected language:", language);
       languageExtension = css();
       completionSources = [cssSmartProvider];
-
     } else if (language === "js") {
+      console.log("Detected language:", language);
       languageExtension = javascript();
-      completionSources = [javascriptLanguage]; // Ajoute tes providers JS ici si nécessaire
+      completionSources = [jsSmartProvider]; // Ajoute tes providers JS ici si nécessaire
+    } else if (language === "py"|| language === "python") {
+      console.log("Detected language:", language);
+      languageExtension = python(); // python(); // si tu ajoutes un parser plus tard
+      completionSources = [pythonSmartProvider];
     } else {
       // Par défaut, HTML
       languageExtension = html();
