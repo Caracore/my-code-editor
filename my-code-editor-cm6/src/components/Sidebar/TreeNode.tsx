@@ -23,6 +23,10 @@ interface TreeNodeProps {
   draggedPath: string | null;
   setDraggedPath: (path: string | null) => void;
   onMoveFile: (sourcePath: string, targetPath: string, targetIsDir: boolean) => void;
+  creatingFromContext: { folder: string; type: "file" | "folder" } | null;
+  setCreatingFromContext: (value: { folder: string; type: "file" | "folder" } | null) => void;
+  onCreateFileFromContext: (folder: string, name: string) => void;
+  onCreateFolderFromContext: (folder: string, name: string) => void;
 }
 
 export default function TreeNode({
@@ -38,6 +42,10 @@ export default function TreeNode({
   draggedPath,
   setDraggedPath,
   onMoveFile,
+  creatingFromContext,
+  setCreatingFromContext,
+  onCreateFileFromContext,
+  onCreateFolderFromContext,
 }: TreeNodeProps) {
   const isSelected = selectedPath === node.path;
   const isRenaming = renamingPath === node.path;
@@ -180,24 +188,66 @@ export default function TreeNode({
         )}
       </div>
 
-      {node.expanded &&
-        node.children?.map((child: FileNode) => (
-          <TreeNode
-            key={child.path}
-            node={child}
-            onToggle={onToggle}
-            onOpenFile={onOpenFile}
-            onRenameFile={onRenameFile}
-            selectedPath={selectedPath}
-            setSelectedPath={setSelectedPath}
-            renamingPath={renamingPath}
-            setRenamingPath={setRenamingPath}
-            setContextMenu={setContextMenu}
-            draggedPath={draggedPath}
-            setDraggedPath={setDraggedPath}
-            onMoveFile={onMoveFile}
-          />
-        ))}
+      {node.expanded && (
+        <>
+          {/* Afficher l'input de création si c'est pour ce dossier */}
+          {creatingFromContext && creatingFromContext.folder === node.path && (
+            <div style={{ marginLeft: 12, marginTop: 4, marginBottom: 4 }}>
+              <input
+                autoFocus
+                placeholder={
+                  creatingFromContext.type === "file"
+                    ? "Nouveau fichier..."
+                    : "Nouveau dossier..."
+                }
+                className="sidebar-input"
+                style={{ fontSize: 12, width: "90%" }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const name = e.currentTarget.value.trim();
+                    if (!name) return;
+
+                    if (creatingFromContext.type === "file") {
+                      onCreateFileFromContext(creatingFromContext.folder, name);
+                    } else {
+                      onCreateFolderFromContext(creatingFromContext.folder, name);
+                    }
+
+                    setCreatingFromContext(null);
+                  }
+
+                  if (e.key === "Escape") {
+                    setCreatingFromContext(null);
+                  }
+                }}
+                onBlur={() => setCreatingFromContext(null)}
+              />
+            </div>
+          )}
+
+          {node.children?.map((child: FileNode) => (
+            <TreeNode
+              key={child.path}
+              node={child}
+              onToggle={onToggle}
+              onOpenFile={onOpenFile}
+              onRenameFile={onRenameFile}
+              selectedPath={selectedPath}
+              setSelectedPath={setSelectedPath}
+              renamingPath={renamingPath}
+              setRenamingPath={setRenamingPath}
+              setContextMenu={setContextMenu}
+              draggedPath={draggedPath}
+              setDraggedPath={setDraggedPath}
+              onMoveFile={onMoveFile}
+              creatingFromContext={creatingFromContext}
+              setCreatingFromContext={setCreatingFromContext}
+              onCreateFileFromContext={onCreateFileFromContext}
+              onCreateFolderFromContext={onCreateFolderFromContext}
+            />
+          ))}
+        </>
+      )}
     </div>
   );
 }

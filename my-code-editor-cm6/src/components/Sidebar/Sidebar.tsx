@@ -225,39 +225,6 @@ export default function Sidebar({
         </>
       )}
 
-      {creatingFromContext && (
-        <div style={{ marginTop: 8, marginLeft: 8 }}>
-          <input
-            autoFocus
-            placeholder={
-              creatingFromContext.type === "file"
-                ? "Nouveau fichier..."
-                : "Nouveau dossier..."
-            }
-            className="sidebar-input"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const name = e.currentTarget.value.trim();
-                if (!name) return;
-
-                if (creatingFromContext.type === "file") {
-                  onCreateFileFromContext(creatingFromContext.folder, name);
-                } else {
-                  onCreateFolderFromContext(creatingFromContext.folder, name);
-                }
-
-                setCreatingFromContext(null);
-              }
-
-              if (e.key === "Escape") {
-                setCreatingFromContext(null);
-              }
-            }}
-            onBlur={() => setCreatingFromContext(null)}
-          />
-        </div>
-      )}
-
       {tree.map((node: FileNode) => (
         <TreeNode
           key={node.path}
@@ -273,6 +240,10 @@ export default function Sidebar({
           draggedPath={draggedPath}
           setDraggedPath={setDraggedPath}
           onMoveFile={handleMoveFile}
+          creatingFromContext={creatingFromContext}
+          setCreatingFromContext={setCreatingFromContext}
+          onCreateFileFromContext={onCreateFileFromContext}
+          onCreateFolderFromContext={onCreateFolderFromContext}
         />
       ))}
     </div>
