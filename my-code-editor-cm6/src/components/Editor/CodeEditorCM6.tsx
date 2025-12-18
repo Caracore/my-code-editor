@@ -141,6 +141,7 @@ export default function CodeEditorCM6({ value, onChange }: CodeEditorProps) {
         syntaxHighlighting(customHighlightStyle),
         autocompletion({
           override: [htmlSnippets],
+          activateOnTyping: true,
         }),
         EditorView.theme({
           // === Base de l'éditeur ===
