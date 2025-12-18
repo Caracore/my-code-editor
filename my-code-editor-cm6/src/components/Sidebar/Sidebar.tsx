@@ -1,11 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { FileNode } from "../../types/FileNode";
 import TreeNode from "./TreeNode";
 import "./Sidebar.css";
 import ContextMenu from "./ContextMenu";
 import { useTabs } from "../../context/TabsContext.tsx";
-import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-
 import { invoke } from "@tauri-apps/api/core";
 
 interface SidebarProps {
@@ -149,37 +147,20 @@ export default function Sidebar({
       });
   }
 
-  // Configurer les capteurs avec contrainte de distance
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Le drag ne démarre qu'après 8px de mouvement
-      },
-    })
-  );
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
+  // Gérer le déplacement de fichiers (appelé depuis MainLayout via handleGlobalDragEnd)
+  useEffect(() => {
+    const handleDragComplete = (event: any) => {
+      const { sourcePath, targetPath, targetIsDir } = event.detail;
+      if (sourcePath && targetPath) {
+        handleMoveFile(sourcePath, targetPath, targetIsDir);
+      }
+    };
     
-    if (!over || active.id === over.id) {
-      console.log("❌ Pas de drop valide");
-      return;
-    }
-
-    const sourcePath = active.id as string;
-    const targetPath = over.id as string;
-    const targetNode = over.data.current?.node as FileNode;
-
-    console.log("✅ Drop:", sourcePath, "→", targetPath);
-    handleMoveFile(sourcePath, targetPath, targetNode?.isDir || false);
-  }
+    window.addEventListener("sidebar-move-file", handleDragComplete);
+    return () => window.removeEventListener("sidebar-move-file", handleDragComplete);
+  }, []);
 
   return (
-    <DndContext 
-      sensors={sensors}
-      onDragEnd={handleDragEnd}
-      autoScroll={{ enabled: false }}
-    >
       <div className={`sidebar ${sidebarVisible ? "" : "hidden"}`}>
       <button onClick={onOpenFolder}>Ouvrir un dossier</button>
       <button onClick={() => setCreating(true)}>Nouveau fichier</button>
@@ -308,6 +289,5 @@ export default function Sidebar({
         />
       ))}
       </div>
-    </DndContext>
   );
 }

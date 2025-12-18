@@ -1,7 +1,7 @@
 // src/components/TabsBar/TabsBar.tsx
 import { useTabs } from "../../context/TabsContext.tsx";
 import "./TabsBar.css";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -40,7 +40,13 @@ function SortableTab({ tab, isActive, allPaths }: { tab: any, isActive: boolean,
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: tab.path });
+  } = useSortable({ 
+    id: tab.path,
+    data: {
+      type: "tab",
+      tab
+    }
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -82,6 +88,12 @@ export default function TabsBar() {
   const { tabs, activeTab, reorderTabs } = useTabs();
   console.log("TabsBar useTabs ===", useTabs());
 
+  // Zone de drop pour recevoir des fichiers depuis la Sidebar
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: "tabs-bar",
+    data: { type: "tabs-zone" }
+  });
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -117,9 +129,14 @@ export default function TabsBar() {
         items={tabs.map(t => t.path)}
         strategy={horizontalListSortingStrategy}
       >
-        <div className="tabs-bar">
+        <div 
+          ref={setDropRef}
+          className={`tabs-bar ${isOver ? "drop-zone-active" : ""}`}
+        >
           {tabs.length === 0 && (
-            <div className="tabs-empty">Aucun fichier ouvert</div>
+            <div className="tabs-empty">
+              {isOver ? "📂 Déposez pour ouvrir" : "Aucun fichier ouvert"}
+            </div>
           )}
 
           {tabs.map((tab) => (

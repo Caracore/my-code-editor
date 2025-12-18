@@ -14,6 +14,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { invoke } from "@tauri-apps/api/core";
 import type { FileNode } from "../types/FileNode";
+import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 
 interface MainLayoutProps {
   tree: FileNode[];
@@ -68,6 +69,69 @@ export default function MainLayout({
   const [showTerminal, setShowTerminal] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showTodoList, setShowTodoList] = useState(false);
+
+  // ✅ Configuration du drag and drop global
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  // Gérer le drag and drop global
+  const handleGlobalDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over) return;
+
+    const dragData = active.data.current;
+    const dropData = over.data.current;
+
+    console.log("🎯 Drag global:", { active: active.id, over: over.id, dragData, dropData });
+
+    // Type 1: Drag d'un fichier/dossier depuis la sidebar
+    if (dragData?.type === "file" || dragData?.type === "folder") {
+      const sourcePath = active.id as string;
+      
+      // Drop dans la WelcomeScreen = ouvrir le fichier
+      if (over.id === "welcome-screen" && dragData?.type === "file") {
+        console.log("📂 Ouverture du fichier dans WelcomeScreen:", sourcePath);
+        onOpenFileFromTree(sourcePath);
+        return;
+      }
+      
+      // Drop dans la TabsBar = ouvrir le fichier
+      if (over.id === "tabs-bar" && dragData?.type === "file") {
+        console.log("📂 Ouverture du fichier dans TabsBar:", sourcePath);
+        onOpenFileFromTree(sourcePath);
+        return;
+      }
+      
+      // Drop sur un autre fichier/dossier = déplacement
+      if (dropData?.type === "file" || dropData?.type === "folder") {
+        const targetPath = over.id as string;
+        const targetNode = dropData?.node as FileNode;
+        console.log("📦 Déplacement de fichier:", sourcePath, "→", targetPath);
+        
+        // Dispatch event pour que Sidebar gère le déplacement
+        window.dispatchEvent(new CustomEvent("sidebar-move-file", {
+          detail: {
+            sourcePath,
+            targetPath,
+            targetIsDir: targetNode?.isDir || false
+          }
+        }));
+        return;
+      }
+    }
+
+    // Type 2: Réorganisation des onglets (géré par TabsBar avec son propre DndContext)
+    if (dragData?.type === "tab") {
+      console.log("🗂️ Réorganisation d'onglets (géré par TabsBar)");
+      // Laissé à la gestion interne de TabsBar
+    }
+  };
 
   // ✅ Ctrl+S → sauvegarde
   useEffect(() => {
@@ -177,7 +241,8 @@ export default function MainLayout({
       {showThemeManager && <ThemeManager />}
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
-      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+      <DndContext sensors={sensors} onDragEnd={handleGlobalDragEnd}>
+        <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {sidebarVisible && (
           showTodoList ? (
             <TodoList />
@@ -208,7 +273,7 @@ export default function MainLayout({
             // closeTab={closeTab}
           />
 
-          <div style={{ flex: 1, overflow: "hidden" }}>
+          <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
             {!activeFile ? (
               <WelcomeScreen />
             ) : (
@@ -230,7 +295,8 @@ export default function MainLayout({
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </DndContext>
     </div>
   );
 }

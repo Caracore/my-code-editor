@@ -6,6 +6,13 @@
     border-bottom: 1px solid var(--tabs-border);
     overflow-x: auto;
     white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.tabs-bar.drop-zone-active {
+    background: linear-gradient(to bottom, rgba(99, 102, 241, 0.15), var(--tabs-bg));
+    border-bottom: 2px solid rgb(99, 102, 241);
+    box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.2);
 }
 
 .tabs-empty {
@@ -13,6 +20,13 @@
     opacity: 0.6;
     padding-left: 12px;
     font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.tabs-bar.drop-zone-active .tabs-empty {
+    color: rgb(99, 102, 241);
+    opacity: 1;
+    font-weight: 600;
 }
 
 .tab {

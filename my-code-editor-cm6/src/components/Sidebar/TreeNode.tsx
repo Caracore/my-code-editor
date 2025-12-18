@@ -52,11 +52,14 @@ export default function TreeNode({
   const isRenaming = renamingPath === node.path;
   const [tempName, setTempName] = useState(node.name);
 
-  // dnd-kit hooks
+  // dnd-kit hooks avec métadonnées de type
   const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({
     id: node.path,
     disabled: isRenaming,
-    data: { node }
+    data: { 
+      node,
+      type: node.isDir ? "folder" : "file"
+    }
   });
 
   // Utiliser PointerSensor avec contrainte de distance pour différencier click et drag
@@ -64,7 +67,10 @@ export default function TreeNode({
 
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: node.path,
-    data: { node }
+    data: { 
+      node,
+      type: node.isDir ? "folder" : "file"
+    }
   });
 
   const finishRename = () => {

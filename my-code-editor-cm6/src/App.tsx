@@ -43,7 +43,7 @@ function AppContent() {
     const expandedPaths = new Set<string>();
     const collectExpandedPaths = (nodes: FileNode[]) => {
       nodes.forEach(node => {
-        if (node.isExpanded) {
+        if (node.expanded) {
           expandedPaths.add(node.path);
         }
         if (node.children) {
@@ -62,14 +62,14 @@ function AppContent() {
       const result: FileNode[] = [];
       
       for (const node of nodes) {
-        if (node.isDirectory && expandedPaths.has(node.path)) {
+        if (node.isDir && expandedPaths.has(node.path)) {
           // Recharger les enfants de ce dossier
           const children = await loadFolder(node.path);
           // Appliquer récursivement l'état expanded aux enfants
           const expandedChildren = await applyExpandedState(children);
           result.push({
             ...node,
-            isExpanded: true,
+            expanded: true,
             children: expandedChildren
           });
         } else {
