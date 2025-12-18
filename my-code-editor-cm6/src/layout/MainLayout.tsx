@@ -3,11 +3,13 @@ import TopMenu from "../components/TopMenu/TopMenu";
 import Toolbar from "../components/Toolbar/Toolbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 import TabsBar from "../components/TabsBar/TabsBar";
+import SplitTabBar from "../components/TabsBar/SplitTabBar";
 import Terminal from "../components/Terminal/Terminal";
 import ThemeManager from "../components/ThemeManager/ThemeManager";
 import SettingsPanel from "../components/SettingsPanel/SettingsPanel";
 import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
 import TodoList from "../components/TodoList/TodoList";
+import EditorZone from "../components/EditorZone/EditorZone";
 
 import { useTabs } from "../context/TabsContext";
 import { useTheme } from "../context/ThemeContext";
@@ -53,6 +55,7 @@ export default function MainLayout({
   const {
     tabs,
     activeTab,
+    openTab,
     // setActiveTab,
     // closeTab,
     updateTabContent,
@@ -69,6 +72,91 @@ export default function MainLayout({
   const [showTerminal, setShowTerminal] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showTodoList, setShowTodoList] = useState(false);
+  
+  // Gestion du split view
+  const [splitMode, setSplitMode] = useState<"none" | "left" | "right">("none");
+  const [splitFile, setSplitFile] = useState<{ path: string; content: string; isDirty: boolean; originalContent: string } | null>(null);
+  
+  // Stocker temporairement le fichier draggé
+  const [draggedFilePath, setDraggedFilePath] = useState<string | null>(null);
+  
+  // Tracker quel éditeur a le focus
+  const [focusedEditor, setFocusedEditor] = useState<"main" | "split">("main");
+  
+  // Fonction pour fermer le split
+  const closeSplit = () => {
+    console.log("🔄 Fermeture du split");
+    setSplitMode("none");
+    setSplitFile(null);
+  };
+  
+  // Fonction pour mettre à jour le contenu du split
+  const updateSplitContent = (newContent: string) => {
+    if (!splitFile) return;
+    
+    setSplitFile(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        content: newContent,
+        isDirty: newContent !== prev.originalContent
+      };
+    });
+  };
+  
+  // Fonction pour sauvegarder le fichier du split
+  async function saveSplitFile() {
+    if (!splitFile) return;
+    
+    console.log("💾 Sauvegarde du fichier split:", splitFile.path);
+    try {
+      await invoke("save_file", { path: splitFile.path, content: splitFile.content });
+      // Mettre à jour originalContent pour réinitialiser isDirty
+      setSplitFile(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          isDirty: false,
+          originalContent: prev.content
+        };
+      });
+    } catch (error) {
+      console.error("❌ Erreur lors de la sauvegarde du split:", error);
+    }
+  }
+  
+  // Callback pour gérer le drop dans l'EditorZone
+  const handleEditorZoneDrop = async (zone: "left" | "right" | "center") => {
+    console.log("🎯 Drop dans EditorZone, zone:", zone, "fichier:", draggedFilePath);
+    
+    if (!draggedFilePath) return;
+    
+    try {
+      // Lire le contenu du fichier
+      const content = await invoke<string>("read_file", { path: draggedFilePath });
+      
+      if (zone === "center") {
+        // Ouvrir normalement et fermer le split
+        setSplitMode("none");
+        setSplitFile(null);
+        openTab(draggedFilePath, content);
+      } else {
+        // Ouvrir en mode split (sans ajouter aux tabs)
+        setSplitMode(zone);
+        setSplitFile({ 
+          path: draggedFilePath, 
+          content, 
+          isDirty: false,
+          originalContent: content 
+        });
+        // Ne pas ouvrir dans les tabs pour éviter la confusion
+      }
+    } catch (error) {
+      console.error("❌ Erreur lors de la lecture du fichier:", error);
+    } finally {
+      setDraggedFilePath(null);
+    }
+  };
 
   // ✅ Configuration du drag and drop global
   const sensors = useSensors(
@@ -79,22 +167,56 @@ export default function MainLayout({
     })
   );
 
+  // Écouter les événements d'ouverture de fichiers avec zones de split
+  useEffect(() => {
+    const handleOpenFileInZone = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { path, content, zone } = customEvent.detail;
+      
+      console.log("🎯 Ouverture fichier dans zone:", zone, path);
+      
+      if (zone === "center" || !zone) {
+        // Ouvrir normalement dans l'onglet principal
+        setSplitMode("none");
+        setSplitFile(null);
+        openTab(path, content);
+      } else if (zone === "left" || zone === "right") {
+        // Ouvrir en mode split
+        setSplitMode(zone);
+        setSplitFile({ path, content });
+        // Ouvrir aussi dans les onglets principaux
+        openTab(path, content);
+      }
+    };
+    
+    window.addEventListener("open-file-in-zone", handleOpenFileInZone);
+    return () => window.removeEventListener("open-file-in-zone", handleOpenFileInZone);
+  }, [openTab]);
+
   // Gérer le drag and drop global
   const handleGlobalDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (!over) return;
+    if (!over) {
+      setDraggedFilePath(null);
+      return;
+    }
 
     const dragData = active.data.current;
     const dropData = over.data.current;
 
     console.log("🎯 Drag global:", { active: active.id, over: over.id, dragData, dropData });
+    
+    // Stocker le fichier draggé pour l'EditorZone
+    if (dragData?.type === "file") {
+      setDraggedFilePath(active.id as string);
+    }
 
     // Type 1: Drag d'un fichier/dossier depuis la sidebar
     if (dragData?.type === "file" || dragData?.type === "folder") {
       const sourcePath = active.id as string;
       
-      // Drop dans la WelcomeScreen = ouvrir le fichier
+      // Drop dans la WelcomeScreen = ouvrir le fichier (zone gérée par WelcomeScreen lui-même)
       if (over.id === "welcome-screen" && dragData?.type === "file") {
         console.log("📂 Ouverture du fichier dans WelcomeScreen:", sourcePath);
         onOpenFileFromTree(sourcePath);
@@ -105,6 +227,17 @@ export default function MainLayout({
       if (over.id === "tabs-bar" && dragData?.type === "file") {
         console.log("📂 Ouverture du fichier dans TabsBar:", sourcePath);
         onOpenFileFromTree(sourcePath);
+        return;
+      }
+      
+      // Drop dans l'EditorZone = ouvrir avec détection de zone
+      if (over.id === "editor-zone" && dragData?.type === "file") {
+        console.log("📂 Drop dans EditorZone");
+        const zone = dropData?.getZone?.() || "center";
+        console.log("Zone détectée:", zone);
+        
+        // Appeler directement handleEditorZoneDrop avec la zone
+        handleEditorZoneDrop(zone as "left" | "right" | "center");
         return;
       }
       
@@ -133,17 +266,21 @@ export default function MainLayout({
     }
   };
 
-  // ✅ Ctrl+S → sauvegarde
+  // ✅ Ctrl+S → sauvegarde selon le focus
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
-        saveActiveFile();
+        if (focusedEditor === "split" && splitFile) {
+          saveSplitFile();
+        } else {
+          saveActiveFile();
+        }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [tabs, activeTab]);
+  }, [tabs, activeTab, focusedEditor, splitFile]);
 
   // ✅ Gérer les actions du menu et des raccourcis
   useEffect(() => {
@@ -266,26 +403,90 @@ export default function MainLayout({
 
         {/* Zone centrale */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <TabsBar
-            // tabs={tabs}
-            // activeTab={activeTab}
-            // setActiveTab={setActiveTab}
-            // closeTab={closeTab}
-          />
-
-          <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+          <div style={{ flex: 1, overflow: "hidden", position: "relative", display: "flex" }}>
             {!activeFile ? (
               <WelcomeScreen />
+            ) : splitMode !== "none" && splitFile ? (
+              // Mode Split: afficher 2 éditeurs côte à côte avec leurs TabsBar
+              <>
+                {splitMode === "left" && (
+                  <div 
+                    style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderRight: "1px solid var(--border-color)" }}
+                    onFocus={() => setFocusedEditor("split")}
+                  >
+                    <SplitTabBar 
+                      filePath={splitFile.path} 
+                      isDirty={splitFile.isDirty}
+                      onClose={closeSplit} 
+                    />
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
+                        <LazyCodeEditor
+                          key={splitFile.path}
+                          value={splitFile.content}
+                          onChange={(newValue: string) => updateSplitContent(newValue)}
+                        />
+                      </Suspense>
+                    </div>
+                  </div>
+                )}
+                
+                <div 
+                  style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}
+                  onFocus={() => setFocusedEditor("main")}
+                >
+                  <TabsBar />
+                  <div style={{ flex: 1, overflow: "hidden" }}>
+                    <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
+                      <LazyCodeEditor
+                        key={activeFile.path}
+                        value={activeFile.content}
+                        onChange={(newValue: string) =>
+                          updateTabContent(activeFile.path, newValue)
+                        }
+                      />
+                    </Suspense>
+                  </div>
+                </div>
+                
+                {splitMode === "right" && (
+                  <div 
+                    style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: "1px solid var(--border-color)" }}
+                    onFocus={() => setFocusedEditor("split")}
+                  >
+                    <SplitTabBar 
+                      filePath={splitFile.path} 
+                      isDirty={splitFile.isDirty}
+                      onClose={closeSplit} 
+                    />
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
+                        <LazyCodeEditor
+                          key={splitFile.path}
+                          value={splitFile.content}
+                          onChange={(newValue: string) => updateSplitContent(newValue)}
+                        />
+                      </Suspense>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
-                <LazyCodeEditor
-                  key={activeFile.path}
-                  value={activeFile.content}
-                  onChange={(newValue: string) =>
-                    updateTabContent(activeFile.path, newValue)
-                  }
-                />
-              </Suspense>
+              // Mode normal: un seul éditeur avec zone de drop
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                <TabsBar />
+                <EditorZone onFileDrop={handleEditorZoneDrop}>
+                  <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
+                    <LazyCodeEditor
+                      key={activeFile.path}
+                      value={activeFile.content}
+                      onChange={(newValue: string) =>
+                        updateTabContent(activeFile.path, newValue)
+                      }
+                    />
+                  </Suspense>
+                </EditorZone>
+              </div>
             )}
           </div>
 

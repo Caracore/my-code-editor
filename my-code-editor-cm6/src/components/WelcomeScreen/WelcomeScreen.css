@@ -137,3 +137,72 @@
     opacity: 0.6;
   }
 }
+
+/* Zones de drop pour split view */
+.drop-indicator {
+  position: absolute;
+  background: rgba(99, 102, 241, 0.1);
+  border: 2px dashed rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.drop-indicator.active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgb(99, 102, 241);
+  border-style: solid;
+}
+
+.drop-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: rgb(99, 102, 241);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  opacity: 0.8;
+}
+
+.drop-indicator.active .drop-label {
+  opacity: 1;
+  animation: bounce 0.5s ease-in-out infinite;
+}
+
+.drop-left {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+}
+
+.drop-right {
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+}
+
+.drop-top {
+  left: 30%;
+  right: 30%;
+  top: 0;
+  height: 30%;
+}
+
+.drop-bottom {
+  left: 30%;
+  right: 30%;
+  bottom: 0;
+  height: 30%;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
