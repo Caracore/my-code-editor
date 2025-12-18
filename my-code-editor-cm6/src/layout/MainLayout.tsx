@@ -115,13 +115,13 @@ export default function MainLayout({
           document.execCommand('paste');
           break;
         case "view:toggleSidebar":
-          setSidebarVisible((v) => !v);
+          setSidebarVisible(!sidebarVisible);
           if (showTodoList) {
             setShowTodoList(false);
           }
           break;
         case "view:toggleTerminal":
-          setShowTerminal((v) => !v);
+          setShowTerminal((v: boolean) => !v);
           break;
         case "view:toggleTodoList":
           console.log("🔍 Toggle TodoList - Current state:", { showTodoList, sidebarVisible });

@@ -10,6 +10,8 @@ import { basicSetup } from "codemirror";
 import type { KeyBinding } from "@codemirror/view";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
+import { autocompletion } from "@codemirror/autocomplete";
+import { htmlSnippets } from "./htmlSnippet";
 
 interface CodeEditorProps {
   value: string;
@@ -137,6 +139,9 @@ export default function CodeEditorCM6({ value, onChange }: CodeEditorProps) {
         updateListener,
         EditorView.lineWrapping,
         syntaxHighlighting(customHighlightStyle),
+        autocompletion({
+          override: [htmlSnippets],
+        }),
         EditorView.theme({
           // === Base de l'éditeur ===
           "&": {

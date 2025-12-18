@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import MainLayout from "./layout/MainLayout";
 import { ThemeProvider } from "./context/ThemeContext";
 import { TerminalProvider } from "./context/TerminalContext";
