@@ -211,6 +211,7 @@ export default function MainLayout({
             ) : (
               <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
                 <LazyCodeEditor
+                  key={activeFile.path}
                   value={activeFile.content}
                   onChange={(newValue: string) =>
                     updateTabContent(activeFile.path, newValue)
