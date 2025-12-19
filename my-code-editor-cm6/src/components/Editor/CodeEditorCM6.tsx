@@ -20,13 +20,14 @@ import { cssSmartProvider } from "../../extensions/css/cssProvider";
 import { htmlSnippets } from "../../extensions/html/htmlSnippets";
 import { pythonSmartProvider } from "../../extensions/python/pythonProvider";
 import { python } from "@codemirror/lang-python";
-
+import { smoothCaret } from "../../cursor/cursorlayer";
 
 interface CodeEditorProps {
   value: string;
   onChange: (newValue: string) => void;
   language?: "html" | "css" | "js";
 }
+
 
 export default function CodeEditorCM6({ value, onChange, language = "css" }: CodeEditorProps) { // language = "html"
   const editorRef = useRef<HTMLDivElement>(null);
@@ -146,6 +147,20 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       { tag: t.url, color: getComputedColor("--editor-link-url") || "#CE9178" },
     ]);
 
+    // Extension pour l'effet d'expansion du curseur (comme VS Code)
+    // const cursorExpandEffect = EditorView.updateListener.of((update) => {
+    //   if (!update.docChanged && !update.selectionSet) return;
+
+    //   const cursor = update.view.dom.querySelector(".cm-cursor");
+    //   if (!cursor) return;
+
+    //   cursor.classList.add("cm-cursor-expand");
+
+    //   setTimeout(() => {
+    //     cursor.classList.remove("cm-cursor-expand");
+    //   }, 120);
+    // });
+
     // Keymap personnalisé qui laisse passer certains raccourcis vers le système
     const customKeymap: KeyBinding[] = [
       indentWithTab,
@@ -169,6 +184,7 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       extensions: [
         basicSetup,
         languageExtension,  // Étape 2 : extension de langage dynamique
+        smoothCaret,
         history(),
         keymap.of(customKeymap),
         updateListener,
@@ -196,11 +212,14 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
             fontFamily: "Consolas, 'Courier New', monospace",
           },
           
-          // === Curseur ===
-          ".cm-cursor, .cm-dropCursor": {
-            borderLeftColor: getComputedColor("--editor-cursor") || "#ffffff",
-          },
-          
+          // === Curseur natif (visible pour déboguer) ===
+          ".cm-cursor, .cm-dropCursor, .cm-secondaryCursor": {
+            // borderLeftColor: getComputedColor("--editor-cursor") || "#ffffff",   
+            borderLeftWidth: "0px !important",
+            // borderLeftStyle: "solid !important",
+            // borderLeftColor: "currentColor !important", /* important */ 
+            // background: "none !important",
+            },
           // === Sélection ===
           ".cm-selectionBackground, ::selection": {
             backgroundColor: getComputedColor("--editor-selection-bg") || "#264F78",
@@ -386,6 +405,9 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       height: "100%",
       width: "100%",
       backgroundColor: "#0d0d0d",
+      position: "relative",   // 🔥 indispensable
+      overflow: "hidden", // A voir si je garde les 2.
+
     }}
   />
 );

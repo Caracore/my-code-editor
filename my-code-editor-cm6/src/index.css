@@ -489,6 +489,70 @@ code {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
 }
 
+/* ==========================
+   ANIMATION CURSEUR (BLINK)
+   ========================== */
+/* @keyframes vscode-blink {
+  0% { opacity: 1; }
+  60% { opacity: 1; }
+  61% { opacity: 0; }
+  99% { opacity: 0; }
+  100% { opacity: 1; }
+} */
+
+/* Curseur personnalisé smooth */
+.cm-smooth-caret {
+  position: absolute;
+  width: 2px;
+  background: var(--editor-cursor, #00bfff);
+   /* bleu premium #00bfff; */
+  z-index: 100;
+  transform-origin: center center; /* 🔥 contraction depuis le milieu */
+  animation: shrink-expand 1s ease-in-out infinite;
+}
+
+@keyframes shrink-expand {
+  0%   { transform: scaleY(1); }   /* pleine hauteur */
+  50%  { transform: scaleY(0); }   /* réduit à 0 au centre */
+  100% { transform: scaleY(1); }   /* revient à pleine hauteur */
+}
+
+.cm-editor {
+  position: relative;
+}
+
+/* .cm-smooth-caret {
+  position: absolute;
+  width: 2px;
+  background: var(--editor-cursor, #fff);
+  z-index: 9999;
+  pointer-events: none;
+
+  /* Animation VS Code */
+  /* transform-origin: center bottom;
+  transition:
+    transform 120ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 120ms cubic-bezier(0.4, 0, 0.2, 1);
+} */
+
+/* .cm-smooth-caret.animate {
+  transform: scaleY(0.2);
+  opacity: 0.4;
+} */
+
+/* .cm-smooth-caret {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: red;
+  z-index: 9999;
+  pointer-events: none;
+} */
+
+/* ==========================
+   MASQUER SCROLLBARS
+   ========================== */
+
 /* Masquer toutes les scrollbars */
 *::-webkit-scrollbar {
   width: 0px;
