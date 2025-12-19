@@ -19,7 +19,7 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
     "edit:paste": "Coller",
     "view:toggleTerminal": "Toggle Terminal",
     "view:toggleSidebar": "Toggle Sidebar",
-    "terminal:new": "Nouveau Terminal",
+    // "terminal:new": "Nouveau Terminal",
   };
 
   function handleKeyDown(e: React.KeyboardEvent) {

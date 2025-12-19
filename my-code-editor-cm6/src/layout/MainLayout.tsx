@@ -10,9 +10,11 @@ import SettingsPanel from "../components/SettingsPanel/SettingsPanel";
 import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
 import TodoList from "../components/TodoList/TodoList";
 import EditorZone from "../components/EditorZone/EditorZone";
+import { CommandPalette, type Command } from "../components/CommandPalette/CommandPalette";
 import { detectLanguageFromFilename } from "../utils/detectLanguage";
 import { useTabs } from "../context/TabsContext";
 import { useTheme } from "../context/ThemeContext";
+import { useSettingsContext } from "../context/SettingsContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { invoke } from "@tauri-apps/api/core";
 import type { FileNode } from "../types/FileNode";
@@ -67,6 +69,9 @@ export default function MainLayout({
   // ✅ Utiliser le thème
   const { themeName, setThemeName } = useTheme();
 
+  // ✅ Récupérer les raccourcis
+  const { shortcuts } = useSettingsContext();
+
   // ✅ Activer les raccourcis clavier
   useKeyboardShortcuts();
 
@@ -74,6 +79,7 @@ export default function MainLayout({
   const [showTerminal, setShowTerminal] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showTodoList, setShowTodoList] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   
   // Gestion du split view
   const [splitMode, setSplitMode] = useState<"none" | "left" | "right">("none");
@@ -289,6 +295,41 @@ export default function MainLayout({
     return () => window.removeEventListener("keydown", handler);
   }, [tabs, activeTab, focusedEditor, splitFile]);
 
+  // ✅ Gérer le raccourci Ctrl+Shift+P pour la palette de commandes
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // ✅ Créer la liste des commandes pour la palette
+  const commands: Command[] = [
+    { id: 'file:new', label: 'New File', category: 'File', action: 'file:new', shortcut: shortcuts['file:new'], icon: '📄' },
+    { id: 'folder:new', label: 'New Folder', category: 'File', action: 'folder:new', shortcut: shortcuts['folder:new'], icon: '📁' },
+    { id: 'file:open', label: 'Open Folder...', category: 'File', action: 'file:open', shortcut: shortcuts['file:open'], icon: '📂' },
+    { id: 'file:save', label: 'Save', category: 'File', action: 'file:save', shortcut: shortcuts['file:save'], icon: '💾' },
+    { id: 'file:saveAs', label: 'Save As...', category: 'File', action: 'file:saveAs', shortcut: shortcuts['file:saveAs'], icon: '💾' },
+    { id: 'edit:undo', label: 'Undo', category: 'Edit', action: 'edit:undo', shortcut: shortcuts['edit:undo'], icon: '↶' },
+    { id: 'edit:redo', label: 'Redo', category: 'Edit', action: 'edit:redo', shortcut: shortcuts['edit:redo'], icon: '↷' },
+    { id: 'edit:copy', label: 'Copy', category: 'Edit', action: 'edit:copy', shortcut: shortcuts['edit:copy'], icon: '📋' },
+    { id: 'edit:paste', label: 'Paste', category: 'Edit', action: 'edit:paste', shortcut: shortcuts['edit:paste'], icon: '📋' },
+    { id: 'view:toggleSidebar', label: 'Toggle Sidebar', category: 'View', action: 'view:toggleSidebar', shortcut: shortcuts['view:toggleSidebar'], icon: '📑' },
+    { id: 'view:toggleTerminal', label: 'Toggle Terminal', category: 'View', action: 'view:toggleTerminal', shortcut: shortcuts['view:toggleTerminal'], icon: '⌨️' },
+    { id: 'view:toggleTodoList', label: 'Toggle Todo List', category: 'View', action: 'view:toggleTodoList', shortcut: shortcuts['view:toggleTodoList'], icon: '✓' },
+    { id: 'view:themeManager', label: 'Theme Manager', category: 'View', action: 'view:themeManager', shortcut: '', icon: '🎨' },
+    { id: 'settings:open', label: 'Open Settings', category: 'Settings', action: 'settings:open', shortcut: 'Ctrl+,', icon: '⚙️' },
+  ];
+
+  // ✅ Gérer la sélection d'une commande depuis la palette
+  const handleCommandSelect = (action: string) => {
+    window.dispatchEvent(new CustomEvent('menu-action', { detail: action }));
+  };
+
   // ✅ Gérer les actions du menu et des raccourcis
   useEffect(() => {
     const handler = (e: Event) => {
@@ -384,6 +425,13 @@ export default function MainLayout({
 
       {showThemeManager && <ThemeManager />}
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        commands={commands}
+        onSelectCommand={handleCommandSelect}
+      />
 
       <DndContext sensors={sensors} onDragEnd={handleGlobalDragEnd}>
         <div style={{ flex: 1, display: "flex", minHeight: 0 }}>

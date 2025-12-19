@@ -2,16 +2,12 @@ import { useEffect, useRef } from "react";
 import { EditorView, keymap } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-// import { html } from "@codemirror/lang-html";
-// import { css } from "@codemirror/lang-css";
-// import { javascript } from "@codemirror/lang-javascript";
 import { indentWithTab } from "@codemirror/commands";
 import { basicSetup } from "codemirror";
 import type { KeyBinding } from "@codemirror/view";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import { autocompletion } from "@codemirror/autocomplete";
-// import { detectLanguageFromFilename } from "../utils/detectLanguage";
 import { html, htmlCompletionSource } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css"; //, cssCompletionSource
 import { javascript } from "@codemirror/lang-javascript"; // , javascriptLanguage
@@ -21,6 +17,7 @@ import { htmlSnippets } from "../../extensions/html/htmlSnippets";
 import { pythonSmartProvider } from "../../extensions/python/pythonProvider";
 import { python } from "@codemirror/lang-python";
 import { smoothCaret } from "../../cursor/cursorlayer";
+// import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 
 interface CodeEditorProps {
   value: string;
@@ -147,20 +144,6 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       { tag: t.url, color: getComputedColor("--editor-link-url") || "#CE9178" },
     ]);
 
-    // Extension pour l'effet d'expansion du curseur (comme VS Code)
-    // const cursorExpandEffect = EditorView.updateListener.of((update) => {
-    //   if (!update.docChanged && !update.selectionSet) return;
-
-    //   const cursor = update.view.dom.querySelector(".cm-cursor");
-    //   if (!cursor) return;
-
-    //   cursor.classList.add("cm-cursor-expand");
-
-    //   setTimeout(() => {
-    //     cursor.classList.remove("cm-cursor-expand");
-    //   }, 120);
-    // });
-
     // Keymap personnalisé qui laisse passer certains raccourcis vers le système
     const customKeymap: KeyBinding[] = [
       indentWithTab,
@@ -187,6 +170,8 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
         smoothCaret,
         history(),
         keymap.of(customKeymap),
+        // keymap.of(searchKeymap), // Ajout des raccourcis de recherche
+        // highlightSelectionMatches(), // Mise en surbrillance des sélections correspondantes
         updateListener,
         EditorView.lineWrapping,
         syntaxHighlighting(customHighlightStyle),
