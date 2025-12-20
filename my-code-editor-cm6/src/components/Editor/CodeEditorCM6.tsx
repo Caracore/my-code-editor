@@ -1,9 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EditorView, keymap } from "@codemirror/view";
+import SearchBar, { searchHighlightExtension } from "../SearchBar/SearchBar";
 import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { indentWithTab } from "@codemirror/commands";
-import { basicSetup } from "codemirror";
+import { minimalSetup } from "codemirror";
 import type { KeyBinding } from "@codemirror/view";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
@@ -16,8 +17,12 @@ import { cssSmartProvider } from "../../extensions/css/cssProvider";
 import { htmlSnippets } from "../../extensions/html/htmlSnippets";
 import { pythonSmartProvider } from "../../extensions/python/pythonProvider";
 import { python } from "@codemirror/lang-python";
+import { cpp } from "@codemirror/lang-cpp"; 
+import { rust } from "@codemirror/lang-rust";
+import { rustSmartProvider } from "../../extensions/rust/rustProvider";
+import { cppSmartProvider } from "../../extensions/cpp/cppProvider";
+import { json } from "@codemirror/lang-json";
 import { smoothCaret } from "../../cursor/cursorlayer";
-// import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 
 interface CodeEditorProps {
   value: string;
@@ -29,6 +34,19 @@ interface CodeEditorProps {
 export default function CodeEditorCM6({ value, onChange, language = "css" }: CodeEditorProps) { // language = "html"
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+
+  // Écouter l'événement global pour toggle la recherche
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent;
+      if (custom.detail === "search:toggle") {
+        setIsSearchVisible(prev => !prev);
+      }
+    };
+    window.addEventListener("menu-action", handler as EventListener);
+    return () => window.removeEventListener("menu-action", handler as EventListener);
+  }, []);
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -61,7 +79,20 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       console.log("Detected language:", language);
       languageExtension = python(); // python(); // si tu ajoutes un parser plus tard
       completionSources = [pythonSmartProvider];
-    } else {
+    } else if (language === "cpp" || language === "c++") {
+      console.log("Detected language:", language);
+      languageExtension = cpp();
+      completionSources = [cppSmartProvider]; // Ajouter des providers C++ si disponibles
+    } else if (language === "rs" || language === "rust") {
+      console.log("Detected language:", language);
+      languageExtension = rust();
+      completionSources = [rustSmartProvider]; // Ajouter des providers Rust si disponibles
+    } else if (language === "json") {
+      console.log("Detected language:", language);
+      languageExtension = json();
+      completionSources = []; // Ajouter des providers JSON si disponibles
+    } 
+    else {
       // Par défaut, HTML
       languageExtension = html();
       completionSources = [htmlSnippets, htmlCompletionSource];
@@ -151,10 +182,10 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
         // Filtrer les raccourcis que nous voulons gérer au niveau global
         const key = binding.key;
         if (!key) return true;
-        // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, etc.
+        // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+F etc.
         if (key.includes("Mod-s") || key.includes("Mod-o") || 
             key.includes("Mod-w") || key.includes("Mod-n") ||
-            key.includes("Mod-Shift")) {
+            key.includes("Mod-f") || key.includes("Mod-Shift")) {
           return false; // Ne pas intercepter ces raccourcis
         }
         return true;
@@ -165,13 +196,12 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
     const state = EditorState.create({
       doc: value,
       extensions: [
-        basicSetup,
+        minimalSetup,
         languageExtension,  // Étape 2 : extension de langage dynamique
         smoothCaret,
         history(),
         keymap.of(customKeymap),
-        // keymap.of(searchKeymap), // Ajout des raccourcis de recherche
-        // highlightSelectionMatches(), // Mise en surbrillance des sélections correspondantes
+        searchHighlightExtension, // Extension de surlignage personnalisé
         updateListener,
         EditorView.lineWrapping,
         syntaxHighlighting(customHighlightStyle),
@@ -384,17 +414,23 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
   }, [value]);
 
   return (
-  <div
-    ref={editorRef}
-    style={{
-      height: "100%",
-      width: "100%",
-      backgroundColor: "#0d0d0d",
-      position: "relative",   // 🔥 indispensable
-      overflow: "hidden", // A voir si je garde les 2.
-
-    }}
-  />
-);
+    <div style={{ position: "relative", height: "100%", width: "100%" }}>
+      <SearchBar
+        view={viewRef.current}
+        isVisible={isSearchVisible}
+        onClose={() => setIsSearchVisible(false)}
+      />
+      <div
+        ref={editorRef}
+        style={{
+          height: "100%",
+          width: "100%",
+          backgroundColor: "#0d0d0d",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      />
+    </div>
+  );
 
 }

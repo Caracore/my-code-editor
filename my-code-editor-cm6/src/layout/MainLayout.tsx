@@ -16,6 +16,8 @@ import { useTabs } from "../context/TabsContext";
 import { useTheme } from "../context/ThemeContext";
 import { useSettingsContext } from "../context/SettingsContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useDiscordPresence } from "../hooks/useDiscordPresence";
+import { useDiscordUpdate } from "../hooks/useDiscordUpdate";
 import { invoke } from "@tauri-apps/api/core";
 import type { FileNode } from "../types/FileNode";
 import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
@@ -69,11 +71,51 @@ export default function MainLayout({
   // ✅ Utiliser le thème
   const { themeName, setThemeName } = useTheme();
 
-  // ✅ Récupérer les raccourcis
-  const { shortcuts } = useSettingsContext();
+  // ✅ Récupérer les raccourcis et Discord
+  const { shortcuts, discordEnabled, toggleDiscord } = useSettingsContext();
 
   // ✅ Activer les raccourcis clavier
   useKeyboardShortcuts();
+
+  // ✅ Initialiser Discord RPC au démarrage si activé
+  useEffect(() => {
+    const initDiscord = async () => {
+      if (discordEnabled) {
+        try {
+          await invoke("init_discord_rpc");
+          console.log("✅ Discord RPC initialisé");
+        } catch (error) {
+          console.error("❌ Erreur lors de l'initialisation de Discord RPC:", error);
+        }
+      }
+    };
+
+    initDiscord();
+  }, []); // Ne s'exécute qu'une fois au montage
+
+  // ✅ Discord Rich Presence
+  const currentTab = tabs.find(tab => tab.path === activeTab);
+  const currentFileName = currentTab ? currentTab.path.split(/[\\/]/).pop() || "Untitled" : "No file open";
+  const currentLanguage = currentTab ? detectLanguageFromFilename(currentTab.path) : "Text";
+  const projectName = tree.length > 0 && tree[0].path ? tree[0].path.split(/[\\/]/).pop() || "My Code Editor" : "My Code Editor";
+  
+  useDiscordPresence({
+    fileName: currentFileName,
+    language: currentLanguage,
+    projectName: projectName,
+    enabled: discordEnabled,
+  });
+
+  // 🎮 Discord Update avec throttle lors des modifications de contenu
+  // Utilise le contenu du tab actif pour déclencher les mises à jour
+  const currentTabContent = currentTab?.content || "";
+  useDiscordUpdate({
+    fileName: currentFileName,
+    language: currentLanguage,
+    projectName: projectName,
+    enabled: discordEnabled,
+    throttleMs: 3000, // Mise à jour max toutes les 3 secondes
+  });
 
   const [showThemeManager, setShowThemeManager] = useState(false);
   const [showTerminal, setShowTerminal] = useState(true);
@@ -322,6 +364,8 @@ export default function MainLayout({
     { id: 'view:toggleTerminal', label: 'Toggle Terminal', category: 'View', action: 'view:toggleTerminal', shortcut: shortcuts['view:toggleTerminal'], icon: '⌨️' },
     { id: 'view:toggleTodoList', label: 'Toggle Todo List', category: 'View', action: 'view:toggleTodoList', shortcut: shortcuts['view:toggleTodoList'], icon: '✓' },
     { id: 'view:themeManager', label: 'Theme Manager', category: 'View', action: 'view:themeManager', shortcut: '', icon: '🎨' },
+    { id: 'search:toggle', label: 'Toggle Search', category: 'Search', action: 'search:toggle', shortcut: shortcuts['search:toggle'], icon: '🔍' },
+    { id: 'discord:toggle', label: 'Toggle Discord Rich Presence', category: 'Settings', action: 'discord:toggle', shortcut: '', icon: '🎮' },
     { id: 'settings:open', label: 'Open Settings', category: 'Settings', action: 'settings:open', shortcut: 'Ctrl+,', icon: '⚙️' },
   ];
 
@@ -390,6 +434,13 @@ export default function MainLayout({
         case "settings:open":
           setShowSettings((v) => !v);
           break;
+        case "discord:toggle":
+          handleDiscordToggle(!discordEnabled);
+          break;
+        case "search:toggle":
+          // Propager l'événement aux éditeurs
+          window.dispatchEvent(new CustomEvent('menu-action', { detail: 'search:toggle' }));
+          break;
         default:
           console.log("🔍 Action non gérée:", action);
       }
@@ -397,7 +448,22 @@ export default function MainLayout({
 
     window.addEventListener("menu-action", handler as EventListener);
     return () => window.removeEventListener("menu-action", handler as EventListener);
-  }, [tabs, activeTab, onCreateFile, onOpenFolder, showTodoList, showTerminal, setSidebarVisible]);
+  }, [tabs, activeTab, onCreateFile, onOpenFolder, showTodoList, showTerminal, setSidebarVisible, discordEnabled, toggleDiscord]);
+
+  // ✅ Gérer le toggle Discord
+  async function handleDiscordToggle(enabled: boolean) {
+    try {
+      if (enabled) {
+        await invoke("init_discord_rpc");
+      } else {
+        await invoke("disconnect_discord_rpc");
+      }
+      toggleDiscord(enabled);
+      console.log(`${enabled ? "✅" : "❌"} Discord RPC ${enabled ? "activé" : "désactivé"}`);
+    } catch (error) {
+      console.error("Erreur lors de la configuration de Discord RPC:", error);
+    }
+  }
 
   // ✅ Sauvegarde
   async function saveActiveFile() {
@@ -408,6 +474,25 @@ export default function MainLayout({
     console.log("💾 Sauvegarde du fichier:", activeTab);
     await invoke("save_file", { path: activeTab, content: file.content });
     markTabAsSaved(activeTab);
+    
+    // 🎮 Mise à jour Discord Presence après sauvegarde
+    if (discordEnabled) {
+      try {
+        const fileName = activeTab.split(/[\\/]/).pop() || "Untitled";
+        const language = detectLanguageFromFilename(activeTab);
+        const projectName = tree.length > 0 && tree[0].path ? tree[0].path.split(/[\\/]/).pop() || "My Code Editor" : "My Code Editor";
+        
+        await invoke("update_discord_presence", {
+          payload: {
+            file: fileName,
+            language: language,
+            project: projectName
+          }
+        });
+      } catch (error) {
+        console.error("❌ Erreur Discord Presence:", error);
+      }
+    }
   }
   // Pour choisir le langage de l'éditeur & pour faire fonctionner la tabsbar
   const activeFile = tabs.find((t) => t.path === activeTab);

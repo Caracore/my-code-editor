@@ -25,6 +25,36 @@ const TabsContext = createContext<TabsContextType | undefined>(undefined);
 export function TabsProvider({ children }: { children: ReactNode }) {
   const [tabs, setTabs] = useState<OpenTab[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  
+  // 🎮 Fonction pour mettre à jour Discord Presence
+  const updateDiscordForTab = async (path: string) => {
+    try {
+      const { invoke } = await import('@tauri-apps/api/core');
+      const fileName = path.split(/[\\/]/).pop() || "Untitled";
+      const language = detectLanguageFromPath(path);
+      
+      await invoke("update_discord_presence", {
+        payload: {
+          file: fileName,
+          language: language,
+          project: "My Code Editor"
+        }
+      });
+    } catch (error) {
+      // Silencieux si Discord n'est pas activé
+    }
+  };
+  
+  const detectLanguageFromPath = (path: string): string => {
+    const ext = path.split('.').pop()?.toLowerCase();
+    const langMap: Record<string, string> = {
+      'js': 'JavaScript', 'jsx': 'JavaScript', 'ts': 'TypeScript', 'tsx': 'TypeScript',
+      'py': 'Python', 'java': 'Java', 'cpp': 'C++', 'c': 'C', 'cs': 'C#',
+      'go': 'Go', 'rs': 'Rust', 'rb': 'Ruby', 'php': 'PHP',
+      'html': 'HTML', 'css': 'CSS', 'json': 'JSON', 'md': 'Markdown'
+    };
+    return langMap[ext || ''] || 'Text';
+  };
 
   // ✅ Ouvrir un fichier dans un onglet
   function openTab(path: string, content: string) {
@@ -41,12 +71,16 @@ export function TabsProvider({ children }: { children: ReactNode }) {
       }
 
       setActiveTab(path);
+      // 🎮 Discord Presence lors du changement d'onglet
+      updateDiscordForTab(path);
       return;
     }
 // modification ici à voir pour changer name: ################################################################################################!!!!!!!!!!!!!!!!!!!
     // ✅ Nouveau tab
     setTabs((prev) => [...prev, { path, content, isDirty: false, name: path.split(/[/\\]/).pop() || "untitled" }]);
     setActiveTab(path);
+    // 🎮 Discord Presence lors de l'ouverture d'un nouvel onglet
+    updateDiscordForTab(path);
   }
 
   // ✅ Fermer un onglet

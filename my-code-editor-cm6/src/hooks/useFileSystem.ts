@@ -131,6 +131,34 @@ export function useFileSystem({
       openTab(path, content);
     }
     setCurrentPath(path);
+    
+    // 🎮 Mise à jour Discord Presence lors de l'ouverture
+    try {
+      const fileName = path.split(/[\\/]/).pop() || "Untitled";
+      const language = detectLanguageFromPath(path);
+      const projectName = tree.length > 0 ? tree[0].name : "My Code Editor";
+      
+      await invoke("update_discord_presence", {
+        payload: {
+          file: fileName,
+          language: language,
+          project: projectName
+        }
+      });
+    } catch (error) {
+      console.error("❌ Erreur Discord Presence:", error);
+    }
+  }
+
+  function detectLanguageFromPath(path: string): string {
+    const ext = path.split('.').pop()?.toLowerCase();
+    const langMap: Record<string, string> = {
+      'js': 'JavaScript', 'jsx': 'JavaScript', 'ts': 'TypeScript', 'tsx': 'TypeScript',
+      'py': 'Python', 'java': 'Java', 'cpp': 'C++', 'c': 'C', 'cs': 'C#',
+      'go': 'Go', 'rs': 'Rust', 'rb': 'Ruby', 'php': 'PHP',
+      'html': 'HTML', 'css': 'CSS', 'json': 'JSON', 'md': 'Markdown'
+    };
+    return langMap[ext || ''] || 'Text';
   }
 
   async function handleOpenFolder() {

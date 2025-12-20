@@ -2,8 +2,9 @@
 - Chaque fichier a une instance maintenant.
 - drag and drop fonctionnel
 - -cursor animated "vscode expand" created is not perfect but work.
-- 
+- Command palette ajouter.
 # BUGS:
+- Pas réussi à faire le discord rich presence à voir comment corriger ça !!!!
 - Le terminal ne se mets pas à jour du thème il faut le toggle off & on pour le voir en changement. Mais pas grave pour le moment... 
 - Nouveau fichier pas du menuContext mais du bouton ou topbar envoie un nouveau fichier appeler ainsi texte à modifier pour pas avoir à changer le fichier à chaque fois ...
 - Le rechargement du tree de la sidebar ne se fait pas après un drag and drop obliger de reselectionner le dossier en question pour le mettre à jour...
@@ -22,3 +23,24 @@ Recherche incrémentale : un champ de recherche instantané dans l’explorateur
 Pour mon rasberry PI500+ faire du code propre et optimiser...
 Virtualisation intelligente : pour l’explorateur de fichiers récursif, utilise une liste virtuelle (comme react-window) afin de gérer des milliers de fichiers sans lag.
 Cache minimaliste : stocke les états fréquents (dernier fichier ouvert, position du terminal) dans localStorage ou une base légère type IndexedDB.
+
+# AJouter ce code discord rich presence à chaque fois que:
+tu ouvres un fichier
+
+tu changes d’onglet
+
+tu détectes un nouveau langage
+
+tu sauvegardes
+
+ou même à chaque modification (mais toutes les 2–3 secondes max)
+
+code:
+invoke("update_discord_presence", {
+  payload: {
+    file: currentFileName,
+    language: detectedLanguage,
+    project: projectName
+  }
+});
+tout fonctionner mais voir corriger cpp qui ne fonctionne pas encore.

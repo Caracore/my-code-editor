@@ -58,8 +58,54 @@
 
 .settings-content h3 {
   margin-top: 0;
+  margin-bottom: 12px;
   font-size: 16px;
   color: #4a90e2;
+}
+
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.settings-toggle input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+  cursor: pointer;
+  appearance: none;
+  background: #555;
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.3s;
+}
+
+.settings-toggle input[type="checkbox"]:checked {
+  background: #4a90e2;
+}
+
+.settings-toggle input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  left: 2px;
+  transition: left 0.3s;
+}
+
+.settings-toggle input[type="checkbox"]:checked::before {
+  left: 22px;
 }
 
 .shortcuts-list {

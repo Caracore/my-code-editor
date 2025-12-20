@@ -11,6 +11,9 @@ interface Settings {
     tabSize: number;
     wordWrap: string;
   };
+  discord: {
+    enabled: boolean;
+  };
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -27,6 +30,7 @@ const DEFAULT_SETTINGS: Settings = {
     "view:toggleTerminal": "Ctrl+ù",
     "view:toggleSidebar": "Ctrl+B",
     "view:toggleTodoList": "Ctrl+T",
+    "search:toggle": "Ctrl+F",
     "terminal:new": "Ctrl+Shift+`",
     "settings:open": "Ctrl+,"
   },
@@ -37,6 +41,9 @@ const DEFAULT_SETTINGS: Settings = {
     fontSize: 14,
     tabSize: 2,
     wordWrap: "on",
+  },
+  discord: {
+    enabled: false,
   },
 };
 

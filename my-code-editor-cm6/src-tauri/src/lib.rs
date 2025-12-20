@@ -1,5 +1,9 @@
 mod terminal;
+mod discord_rich_presence;
 
+use serde::Deserialize;
+use crate::discord_rich_presence::DiscordState;
+use parking_lot::Mutex;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 use std::path::PathBuf;
@@ -27,6 +31,8 @@ fn get_config_dir(app_handle: &AppHandle) -> Result<PathBuf, String> {
     
     Ok(app_config_dir)
 }
+
+
 
 #[tauri::command]
 async fn get_config_path(app_handle: AppHandle) -> Result<String, String> {
@@ -193,10 +199,44 @@ fn change_terminal_directory(
     state.write(id, cmd)
 }
 
+// Discord Rich Presence Commands
+
+#[tauri::command]
+fn set_discord_enabled(state: tauri::State<Mutex<DiscordState>>, on: bool) {
+    state.lock().set_enabled(on);
+}
+
+#[derive(Deserialize)]
+struct PresencePayload {
+    file: String,
+    language: String,
+    project: String,
+}
+
+#[tauri::command]
+fn update_discord_presence(state: tauri::State<Mutex<DiscordState>>, payload: PresencePayload) {
+    state.lock().update(&payload.file, &payload.language, &payload.project);
+}
+
+#[tauri::command]
+fn init_discord_rpc(state: tauri::State<Mutex<DiscordState>>) -> Result<(), String> {
+    state.lock().set_enabled(true);
+    Ok(())
+}
+
+#[tauri::command]
+fn disconnect_discord_rpc(state: tauri::State<Mutex<DiscordState>>) -> Result<(), String> {
+    state.lock().set_enabled(false);
+    Ok(())
+}
+
+
 pub fn main() {
+        
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(terminal::TerminalState::default())
+        .manage(Mutex::new(DiscordState::new("1451676636259811368")))
         .invoke_handler(tauri::generate_handler![
             open_folder_dialog,
             list_directory,
@@ -219,8 +259,27 @@ pub fn main() {
             stop_all_terminals,
             switch_shell,
             change_terminal_directory,
+            set_discord_enabled,
+            update_discord_presence,
+            init_discord_rpc,
+            disconnect_discord_rpc,
         ])
         .setup(|_app| Ok(()))
+//         .setup(|app| {
+//     // ✅ Récupérer ton DiscordState
+//     let state = app.state::<Mutex<DiscordState>>();
+
+//     // ✅ Envoyer une activité de test au lancement
+//     {
+//         let mut discord = state.lock();
+//         discord.update("main.py", "python", "Test IDE");
+//     }
+
+//     println!("[Tauri] Test Rich Presence sent at startup");
+
+//     Ok(())
+// })
+
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useSettingsContext } from "../../context/SettingsContext";
+import { invoke } from "@tauri-apps/api/core";
 import "./SettingsPanel.css";
 
 export default function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { shortcuts, updateShortcut } = useSettingsContext();
+  const { shortcuts, updateShortcut, discordEnabled, toggleDiscord } = useSettingsContext();
   const [editingAction, setEditingAction] = useState<string | null>(null);
   const [newShortcut, setNewShortcut] = useState("");
 
@@ -19,6 +20,7 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
     "edit:paste": "Coller",
     "view:toggleTerminal": "Toggle Terminal",
     "view:toggleSidebar": "Toggle Sidebar",
+    "search:toggle": "Toggle Recherche",
     // "terminal:new": "Nouveau Terminal",
   };
 
@@ -44,6 +46,19 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
     setNewShortcut("");
   }
 
+  async function handleDiscordToggle(enabled: boolean) {
+    try {
+      if (enabled) {
+        await invoke("init_discord_rpc");
+      } else {
+        await invoke("disconnect_discord_rpc");
+      }
+      toggleDiscord(enabled);
+    } catch (error) {
+      console.error("Erreur lors de la configuration de Discord RPC:", error);
+    }
+  }
+
   return (
     <div className="settings-panel-backdrop" onClick={onClose}>
       <div className="settings-panel" onClick={(e) => e.stopPropagation()}>
@@ -53,6 +68,18 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="settings-content">
+          <h3>Discord Rich Presence</h3>
+          <div className="settings-section">
+            <label className="settings-toggle">
+              <span>Activer Discord Rich Presence</span>
+              <input
+                type="checkbox"
+                checked={discordEnabled}
+                onChange={(e) => handleDiscordToggle(e.target.checked)}
+              />
+            </label>
+          </div>
+
           <h3>Raccourcis clavier</h3>
           <div className="shortcuts-list">
             {Object.entries(shortcuts).map(([action, shortcut]) => (

@@ -6,6 +6,8 @@ interface SettingsContextType {
   shortcuts: Record<string, string>;
   getShortcut: (action: string) => string;
   updateShortcut: (action: string, shortcut: string) => void;
+  discordEnabled: boolean;
+  toggleDiscord: (enabled: boolean) => void;
   loading: boolean;
 }
 
@@ -29,12 +31,24 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     saveSettings(newSettings);
   }
 
+  function toggleDiscord(enabled: boolean) {
+    const newSettings = {
+      ...settings,
+      discord: {
+        enabled,
+      },
+    };
+    saveSettings(newSettings);
+  }
+
   return (
     <SettingsContext.Provider
       value={{
         shortcuts: settings.shortcuts,
         getShortcut,
         updateShortcut,
+        discordEnabled: settings.discord?.enabled || false,
+        toggleDiscord,
         loading,
       }}
     >

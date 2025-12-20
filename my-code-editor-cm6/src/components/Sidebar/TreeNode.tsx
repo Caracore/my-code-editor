@@ -98,6 +98,11 @@ export default function TreeNode({
         return "🐍";
       case "md":
         return "📝";
+      case "cpp": 
+      case "c": 
+      return "⚙️"; // C / C++ → roue dentée (système) 
+      case "rs": 
+      return "🦀";
       default:
         return "📄";
     }
