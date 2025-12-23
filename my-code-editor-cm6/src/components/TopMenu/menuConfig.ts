@@ -18,6 +18,7 @@ export const getMenuConfig = (shortcuts: Record<string, string>) => [
     items: [
       { label: "Undo", shortcut: shortcuts["edit:undo"] || "", action: "edit:undo" },
       { label: "Redo", shortcut: shortcuts["edit:redo"] || "", action: "edit:redo" },
+      { label: "Cut", shortcut: shortcuts["edit:cut"] || "", action: "edit:cut" },
       { label: "Copy", shortcut: shortcuts["edit:copy"] || "", action: "edit:copy" },
       { label: "Paste", shortcut: shortcuts["edit:paste"] || "", action: "edit:paste" },
     ],

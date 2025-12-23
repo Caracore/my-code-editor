@@ -1,12 +1,12 @@
-mod terminal;
 mod discord_rich_presence;
+mod terminal;
 
-use serde::Deserialize;
 use crate::discord_rich_presence::DiscordState;
 use parking_lot::Mutex;
+use serde::Deserialize;
+use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
-use std::path::PathBuf;
 
 #[derive(serde::Serialize)]
 struct FileEntry {
@@ -20,19 +20,21 @@ fn get_config_dir(app_handle: &AppHandle) -> Result<PathBuf, String> {
         .path()
         .app_data_dir()
         .map_err(|e| format!("Impossible d'obtenir le chemin AppData: {}", e))?;
-    
+
     let app_config_dir = app_data_dir.join("my-code-editor");
-    
+
     // Créer le dossier s'il n'existe pas
     if !app_config_dir.exists() {
-        std::fs::create_dir_all(&app_config_dir)
-            .map_err(|e| format!("Erreur lors de la création du dossier de configuration: {}", e))?;
+        std::fs::create_dir_all(&app_config_dir).map_err(|e| {
+            format!(
+                "Erreur lors de la création du dossier de configuration: {}",
+                e
+            )
+        })?;
     }
-    
+
     Ok(app_config_dir)
 }
-
-
 
 #[tauri::command]
 async fn get_config_path(app_handle: AppHandle) -> Result<String, String> {
@@ -132,7 +134,7 @@ fn trash_file(path: String) -> Result<(), String> {
 #[tauri::command]
 fn delete_file(path: String) -> Result<(), String> {
     let metadata = std::fs::metadata(&path).map_err(|e| e.to_string())?;
-    
+
     if metadata.is_dir() {
         std::fs::remove_dir_all(&path).map_err(|e| e.to_string())
     } else {
@@ -215,7 +217,9 @@ struct PresencePayload {
 
 #[tauri::command]
 fn update_discord_presence(state: tauri::State<Mutex<DiscordState>>, payload: PresencePayload) {
-    state.lock().update(&payload.file, &payload.language, &payload.project);
+    state
+        .lock()
+        .update(&payload.file, &payload.language, &payload.project);
 }
 
 #[tauri::command]
@@ -230,11 +234,10 @@ fn disconnect_discord_rpc(state: tauri::State<Mutex<DiscordState>>) -> Result<()
     Ok(())
 }
 
-
 pub fn main() {
-        
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        // .plugin(tauri_plugin_clipboard_manager::init())
         .manage(terminal::TerminalState::default())
         .manage(Mutex::new(DiscordState::new("1451676636259811368")))
         .invoke_handler(tauri::generate_handler![
@@ -265,21 +268,17 @@ pub fn main() {
             disconnect_discord_rpc,
         ])
         .setup(|_app| Ok(()))
-//         .setup(|app| {
-//     // ✅ Récupérer ton DiscordState
-//     let state = app.state::<Mutex<DiscordState>>();
-
-//     // ✅ Envoyer une activité de test au lancement
-//     {
-//         let mut discord = state.lock();
-//         discord.update("main.py", "python", "Test IDE");
-//     }
-
-//     println!("[Tauri] Test Rich Presence sent at startup");
-
-//     Ok(())
-// })
-
+        //         .setup(|app| {
+        //     // ✅ Récupérer ton DiscordState
+        //     let state = app.state::<Mutex<DiscordState>>();
+        //     // ✅ Envoyer une activité de test au lancement
+        //     {
+        //         let mut discord = state.lock();
+        //         discord.update("main.py", "python", "Test IDE");
+        //     }
+        //     println!("[Tauri] Test Rich Presence sent at startup");
+        //     Ok(())
+        // })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: Settings = {
     "edit:undo": "Ctrl+Z",
     "edit:redo": "Ctrl+Y",
     "edit:copy": "Ctrl+C",
+    "edit:cut": "Ctrl+X",
     "edit:paste": "Ctrl+V",
     "view:toggleTerminal": "Ctrl+ù",
     "view:toggleSidebar": "Ctrl+B",

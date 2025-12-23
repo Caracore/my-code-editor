@@ -1,8 +1,9 @@
-   0.431886000s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint: stale: changed "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\tauri.conf.json"
-   0.431923300s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint:           (vs) "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\target\\debug\\build\\app-19095d662916f498\\output"
-   0.431933300s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 13410660418, nanos: 88872800 } < FileTime { seconds: 13410741089, nanos: 987933300 }
-   0.452616800s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: false }/TargetInner { ..: lib_target("app_lib", ["staticlib", "cdylib", "rlib"], "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\lib.rs", Edition2021) }
-   0.452665400s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-92edf1f530e5ead9\lib-app_lib`
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   0.609369700s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint: stale: missing "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\target\\debug\\.fingerprint\\tauri-runtime-aa289a6c986ffafc\\dep-lib-tauri_runtime"
+   0.612433200s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: false }/TargetInner { ..: lib_target("app_lib", ["staticlib", "cdylib", "rlib"], "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\lib.rs", Edition2021) }
+   0.612486200s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-92edf1f530e5ead9\lib-app_lib`
 
 Caused by:
     Le fichier spécifié est introuvable. (os error 2)
@@ -29,10 +30,216 @@ Stack backtrace:
   18: git_midx_writer_dump
   19: BaseThreadInitThunk
   20: RtlUserThreadStart
-   0.461831500s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint dirty for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\build.rs", Edition2021) }
-   0.461858200s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="build-script-build"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\target\\debug\\build\\app-19095d662916f498\\output", reference_mtime: FileTime { seconds: 13410660418, nanos: 88872800 }, stale: "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\tauri.conf.json", stale_mtime: FileTime { seconds: 13410741089, nanos: 987933300 } }))
-   0.554011500s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: true }/TargetInner { ..: lib_target("app_lib", ["staticlib", "cdylib", "rlib"], "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\lib.rs", Edition2021) }
-   0.554050500s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-41a810bb76dce41d\test-lib-app_lib`
+   0.666758200s  INFO prepare_target{force=false package_id=tauri v2.9.5 target="tauri"}: cargo::core::compiler::fingerprint: fingerprint error for tauri v2.9.5/Check { test: false }/TargetInner { ..: lib_target("tauri", ["lib"], "C:\\Users\\jm214\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\tauri-2.9.5\\src\\lib.rs", Edition2021) }
+   0.666789200s  INFO prepare_target{force=false package_id=tauri v2.9.5 target="tauri"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\tauri-2ff4f11e5d51b36b\lib-tauri`
+
+Caused by:
+    Le fichier spécifié est introuvable. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_libgit2_prerelease
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: <unknown>
+  17: git_midx_writer_dump
+  18: git_filter_source_repo
+  19: git_midx_writer_dump
+  20: BaseThreadInitThunk
+  21: RtlUserThreadStart
+   0.678848200s  INFO prepare_target{force=false package_id=tauri-runtime v2.9.2 target="tauri_runtime"}: cargo::core::compiler::fingerprint: fingerprint error for tauri-runtime v2.9.2/Check { test: false }/TargetInner { ..: lib_target("tauri_runtime", ["lib"], "C:\\Users\\jm214\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\tauri-runtime-2.9.2\\src\\lib.rs", Edition2021) }
+   0.678885000s  INFO prepare_target{force=false package_id=tauri-runtime v2.9.2 target="tauri_runtime"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\tauri-runtime-aa289a6c986ffafc\lib-tauri_runtime`
+
+Caused by:
+    Le fichier spécifié est introuvable. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_filter_source_repo
+  13: git_libgit2_prerelease
+  14: <unknown>
+  15: <unknown>
+  16: <unknown>
+  17: <unknown>
+  18: git_midx_writer_dump
+  19: git_filter_source_repo
+  20: git_midx_writer_dump
+  21: BaseThreadInitThunk
+  22: RtlUserThreadStart
+   0.689176400s  INFO prepare_target{force=false package_id=tauri-runtime-wry v2.9.3 target="tauri_runtime_wry"}: cargo::core::compiler::fingerprint: fingerprint error for tauri-runtime-wry v2.9.3/Check { test: false }/TargetInner { ..: lib_target("tauri_runtime_wry", ["lib"], "C:\\Users\\jm214\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\tauri-runtime-wry-2.9.3\\src\\lib.rs", Edition2021) }
+   0.689207800s  INFO prepare_target{force=false package_id=tauri-runtime-wry v2.9.3 target="tauri_runtime_wry"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\tauri-runtime-wry-99d37bb8fcfc52fa\lib-tauri_runtime_wry`
+
+Caused by:
+    Le fichier spécifié est introuvable. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_filter_source_repo
+  13: git_libgit2_prerelease
+  14: <unknown>
+  15: <unknown>
+  16: <unknown>
+  17: <unknown>
+  18: git_midx_writer_dump
+  19: git_filter_source_repo
+  20: git_midx_writer_dump
+  21: BaseThreadInitThunk
+  22: RtlUserThreadStart
+   0.691259100s  INFO prepare_target{force=false package_id=wry v0.53.5 target="wry"}: cargo::core::compiler::fingerprint: fingerprint error for wry v0.53.5/Check { test: false }/TargetInner { ..: lib_target("wry", ["lib"], "C:\\Users\\jm214\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\wry-0.53.5\\src\\lib.rs", Edition2021) }
+   0.691285000s  INFO prepare_target{force=false package_id=wry v0.53.5 target="wry"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\wry-346fd19b052e99f5\lib-wry`
+
+Caused by:
+    Le fichier spécifié est introuvable. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_filter_source_repo
+  13: git_filter_source_repo
+  14: git_libgit2_prerelease
+  15: <unknown>
+  16: <unknown>
+  17: <unknown>
+  18: <unknown>
+  19: git_midx_writer_dump
+  20: git_filter_source_repo
+  21: git_midx_writer_dump
+  22: BaseThreadInitThunk
+  23: RtlUserThreadStart
+   0.693157600s  INFO prepare_target{force=false package_id=tauri-plugin-dialog v2.4.2 target="tauri_plugin_dialog"}: cargo::core::compiler::fingerprint: fingerprint error for tauri-plugin-dialog v2.4.2/Check { test: false }/TargetInner { ..: lib_target("tauri_plugin_dialog", ["lib"], "C:\\Users\\jm214\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\tauri-plugin-dialog-2.4.2\\src\\lib.rs", Edition2021) }
+   0.693176600s  INFO prepare_target{force=false package_id=tauri-plugin-dialog v2.4.2 target="tauri_plugin_dialog"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\tauri-plugin-dialog-4218827cb379368f\lib-tauri_plugin_dialog`
+
+Caused by:
+    Le fichier spécifié est introuvable. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_libgit2_prerelease
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: <unknown>
+  17: git_midx_writer_dump
+  18: git_filter_source_repo
+  19: git_midx_writer_dump
+  20: BaseThreadInitThunk
+  21: RtlUserThreadStart
+   0.694828400s  INFO prepare_target{force=false package_id=tauri-plugin-fs v2.4.4 target="tauri_plugin_fs"}: cargo::core::compiler::fingerprint: fingerprint error for tauri-plugin-fs v2.4.4/Check { test: false }/TargetInner { ..: lib_target("tauri_plugin_fs", ["lib"], "C:\\Users\\jm214\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\tauri-plugin-fs-2.4.4\\src\\lib.rs", Edition2021) }
+   0.694850600s  INFO prepare_target{force=false package_id=tauri-plugin-fs v2.4.4 target="tauri_plugin_fs"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\tauri-plugin-fs-26996346beb3d316\lib-tauri_plugin_fs`
+
+Caused by:
+    Le fichier spécifié est introuvable. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_filter_source_repo
+  13: git_libgit2_prerelease
+  14: <unknown>
+  15: <unknown>
+  16: <unknown>
+  17: <unknown>
+  18: git_midx_writer_dump
+  19: git_filter_source_repo
+  20: git_midx_writer_dump
+  21: BaseThreadInitThunk
+  22: RtlUserThreadStart
+   0.695855000s  INFO prepare_target{force=false package_id=tauri-plugin-log v2.7.1 target="tauri_plugin_log"}: cargo::core::compiler::fingerprint: fingerprint error for tauri-plugin-log v2.7.1/Check { test: false }/TargetInner { ..: lib_target("tauri_plugin_log", ["lib"], "C:\\Users\\jm214\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\tauri-plugin-log-2.7.1\\src\\lib.rs", Edition2021) }
+   0.695869300s  INFO prepare_target{force=false package_id=tauri-plugin-log v2.7.1 target="tauri_plugin_log"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\tauri-plugin-log-e17859f4ab798c09\lib-tauri_plugin_log`
+
+Caused by:
+    Le fichier spécifié est introuvable. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_repo
+   6: git_filter_source_repo
+   7: git_filter_source_repo
+   8: git_filter_source_repo
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_libgit2_prerelease
+  13: <unknown>
+  14: <unknown>
+  15: <unknown>
+  16: <unknown>
+  17: git_midx_writer_dump
+  18: git_filter_source_repo
+  19: git_midx_writer_dump
+  20: BaseThreadInitThunk
+  21: RtlUserThreadStart
+   0.698866700s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: true }/TargetInner { ..: lib_target("app_lib", ["staticlib", "cdylib", "rlib"], "C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\lib.rs", Edition2021) }
+   0.698889800s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app_lib"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-41a810bb76dce41d\test-lib-app_lib`
 
 Caused by:
     Le fichier spécifié est introuvable. (os error 2)
@@ -59,8 +266,8 @@ Stack backtrace:
   18: git_midx_writer_dump
   19: BaseThreadInitThunk
   20: RtlUserThreadStart
-   0.555756700s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: false }/TargetInner { name: "app", doc: true, ..: with_path("C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\main.rs", Edition2021) }
-   0.555792300s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-10dd2c0e3c49d710\bin-app`
+   0.700103800s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: false }/TargetInner { name: "app", doc: true, ..: with_path("C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\main.rs", Edition2021) }
+   0.700121400s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-10dd2c0e3c49d710\bin-app`
 
 Caused by:
     Le fichier spécifié est introuvable. (os error 2)
@@ -87,8 +294,8 @@ Stack backtrace:
   18: git_midx_writer_dump
   19: BaseThreadInitThunk
   20: RtlUserThreadStart
-   0.557430500s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: true }/TargetInner { name: "app", doc: true, ..: with_path("C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\main.rs", Edition2021) }
-   0.557462600s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-95468f0f08d1a7e9\test-bin-app`
+   0.701156500s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint: fingerprint error for app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)/Check { test: true }/TargetInner { name: "app", doc: true, ..: with_path("C:\\Users\\jm214\\Desktop\\Mon Editor\\Code Mirror 6\\my-code-editor-cm6\\src-tauri\\src\\main.rs", Edition2021) }
+   0.701171900s  INFO prepare_target{force=false package_id=app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri) target="app"}: cargo::core::compiler::fingerprint:     err: failed to read `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\.fingerprint\app-95468f0f08d1a7e9\test-bin-app`
 
 Caused by:
     Le fichier spécifié est introuvable. (os error 2)
@@ -115,24 +322,12 @@ Stack backtrace:
   18: git_midx_writer_dump
   19: BaseThreadInitThunk
   20: RtlUserThreadStart
-   Compiling app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)
-error: failed to run custom build command for `app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  process didn't exit successfully: `C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\build\app-774b9ff1a976b18f\build-script-build` (exit code: 1)
-  --- stdout
-  cargo:rerun-if-env-changed=TAURI_CONFIG
-  cargo:rustc-check-cfg=cfg(desktop)
-  cargo:rustc-cfg=desktop
-  cargo:rustc-check-cfg=cfg(mobile)
-  cargo:rerun-if-changed=C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\tauri.conf.json
-  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_APP_NAME=my_code_editor
-  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_PREFIX=com_jm214
-  cargo:rustc-check-cfg=cfg(dev)
-  cargo:rustc-cfg=dev
-  cargo:PERMISSION_FILES_PATH=C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri\target\debug\build\app-19095d662916f498\out\app-manifest\__app__-permission-files
-  cargo:rerun-if-changed=capabilities
-  cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS
-  cargo:rustc-env=TAURI_ENV_TARGET_TRIPLE=x86_64-pc-windows-msvc
-  resource path `lsp-x86_64-pc-windows-msvc.exe` doesn't exist
+    Checking wry v0.53.5
+    Checking tauri-runtime v2.9.2
+    Checking tauri-runtime-wry v2.9.3
+    Checking tauri v2.9.5
+    Checking tauri-plugin-fs v2.4.4
+    Checking tauri-plugin-log v2.7.1
+    Checking tauri-plugin-dialog v2.4.2
+    Checking app v0.1.0 (C:\Users\jm214\Desktop\Mon Editor\Code Mirror 6\my-code-editor-cm6\src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.27s

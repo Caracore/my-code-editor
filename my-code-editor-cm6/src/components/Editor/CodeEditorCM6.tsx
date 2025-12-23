@@ -204,12 +204,12 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
         // Filtrer les raccourcis que nous voulons gérer au niveau global
         const key = binding.key;
         if (!key) return true;
-        // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+N, Ctrl+F etc.
-        // Mais garder Ctrl+C, Ctrl+V, Ctrl+X pour le presse-papiers
+        // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+N, Ctrl+F
+        // Les événements copier/coller/couper sont gérés par les event listeners natifs
         if (key.includes("Mod-s") || key.includes("Mod-o") || 
             key.includes("Mod-w") || key.includes("Mod-n") ||
             key.includes("Mod-f")) {
-          return false; // Ne pas intercepter ces raccourcis
+          return false;
         }
         return true;
       }),
@@ -410,6 +410,10 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
     });
 
     viewRef.current = view;
+
+    // NE PAS ajouter de gestionnaires personnalisés pour copier/coller/couper
+    // CodeMirror les gère déjà nativement via minimalSetup
+    // Ajouter nos propres handlers cause une duplication
 
     return () => {
       view.destroy();
