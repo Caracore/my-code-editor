@@ -246,11 +246,21 @@ export default function MainLayout({
     return () => window.removeEventListener("open-file-in-zone", handleOpenFileInZone);
   }, [openTab]);
 
+  // Gérer le début du drag
+  const handleGlobalDragStart = (event: any) => {
+    const { active } = event;
+    const dragData = active.data.current;
+    console.log("🚀 Drag START:", { active: active.id, dragData });
+  };
+
   // Gérer le drag and drop global
   const handleGlobalDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
+    console.log("🎯 Drag END:", { active: active.id, over: over?.id });
+    
     if (!over) {
+      console.log("⚠️ Pas de cible (over is null)");
       setDraggedFilePath(null);
       return;
     }
@@ -258,7 +268,7 @@ export default function MainLayout({
     const dragData = active.data.current;
     const dropData = over.data.current;
 
-    console.log("🎯 Drag global:", { active: active.id, over: over.id, dragData, dropData });
+    console.log("🎯 Drag global détails:", { active: active.id, over: over.id, dragData, dropData });
     
     // Stocker le fichier draggé pour l'EditorZone
     if (dragData?.type === "file") {
@@ -268,6 +278,8 @@ export default function MainLayout({
     // Type 1: Drag d'un fichier/dossier depuis la sidebar
     if (dragData?.type === "file" || dragData?.type === "folder") {
       const sourcePath = active.id as string;
+      
+      console.log("📁 Type détecté:", dragData.type, "source:", sourcePath);
       
       // Drop dans la WelcomeScreen = ouvrir le fichier (zone gérée par WelcomeScreen lui-même)
       if (over.id === "welcome-screen" && dragData?.type === "file") {
@@ -299,17 +311,48 @@ export default function MainLayout({
         const targetPath = over.id as string;
         const targetNode = dropData?.node as FileNode;
         console.log("📦 Déplacement de fichier:", sourcePath, "→", targetPath);
+        console.log("📦 targetNode:", targetNode);
+        console.log("📦 targetIsDir:", targetNode?.isDir);
         
-        // Dispatch event pour que Sidebar gère le déplacement
-        window.dispatchEvent(new CustomEvent("sidebar-move-file", {
-          detail: {
-            sourcePath,
-            targetPath,
-            targetIsDir: targetNode?.isDir || false
-          }
-        }));
+        // Appeler directement le déplacement au lieu de passer par un événement custom
+        const fileName = sourcePath.split(/[/\\]/).pop() || "";
+        const separator = sourcePath.includes("/") ? "/" : "\\";
+        
+        let newPath: string;
+        if (targetNode?.isDir) {
+          // Déposer dans un dossier
+          newPath = `${targetPath}${targetPath.endsWith(separator) ? "" : separator}${fileName}`;
+        } else {
+          // Déposer à côté d'un fichier (même dossier parent)
+          const targetParts = targetPath.split(/[/\\]/);
+          targetParts.pop();
+          const parentPath = targetParts.join(separator);
+          newPath = `${parentPath}${separator}${fileName}`;
+        }
+        
+        // Vérifier si la destination est différente
+        if (sourcePath === newPath) {
+          console.log("⚠️ Le fichier est déjà à cet emplacement");
+          return;
+        }
+        
+        console.log(`🔄 Déplacement: ${sourcePath} → ${newPath}`);
+        
+        invoke("rename_file", { oldPath: sourcePath, newPath })
+          .then(() => {
+            console.log(`✅ Déplacé avec succès: ${newPath}`);
+            console.log(`🔄 Appel de onReloadTree pour rafraîchir l'arbre`);
+            onReloadTree();
+          })
+          .catch((err) => {
+            console.error("❌ Erreur lors du déplacement:", err);
+            alert(`Erreur lors du déplacement: ${err}`);
+          });
+        
         return;
       }
+      
+      console.log("⚠️ Aucune condition de drop satisfaite pour:", { overId: over.id, dropData });
     }
 
     // Type 2: Réorganisation des onglets (géré par TabsBar avec son propre DndContext)
@@ -516,7 +559,11 @@ export default function MainLayout({
         onSelectCommand={handleCommandSelect}
       />
 
-      <DndContext sensors={sensors} onDragEnd={handleGlobalDragEnd}>
+      <DndContext 
+        sensors={sensors} 
+        onDragStart={handleGlobalDragStart} 
+        onDragEnd={handleGlobalDragEnd}
+      >
         <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {sidebarVisible && (
           showTodoList ? (

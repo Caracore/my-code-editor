@@ -34,9 +34,19 @@ function AppContent() {
 
   // ✅ Fonction pour recharger l'arbre en préservant l'état expanded
   const reloadTreeWithState = async () => {
-    if (!currentPath) return;
+    console.log("🔄 reloadTreeWithState appelé");
+    console.log("📂 currentPath:", currentPath);
+    console.log("📂 tree:", treeRef.current);
     
-    console.log("🔄 Rechargement de l'arbre après drag and drop");
+    // Utiliser le chemin racine de l'arbre si currentPath est null
+    const rootPath = currentPath || (treeRef.current.length > 0 ? treeRef.current[0].path : null);
+    
+    if (!rootPath) {
+      console.warn("⚠️ Aucun chemin racine trouvé, abandon du rechargement");
+      return;
+    }
+    
+    console.log("🔄 Rechargement de l'arbre depuis:", rootPath);
     console.log("📂 Tree avant:", treeRef.current);
     
     // Collecter tous les chemins expanded
@@ -52,9 +62,19 @@ function AppContent() {
       });
     };
     collectExpandedPaths(treeRef.current);
+    console.log("📂 Chemins expanded collectés:", Array.from(expandedPaths));
 
-    // Charger le nouveau tree
-    const newTree = await loadFolder(currentPath);
+    // Charger le nouveau tree depuis le dossier racine
+    const children = await loadFolder(rootPath);
+    const newTree = [
+      {
+        path: rootPath,
+        name: rootPath.split(/[/\\]/).pop()!,
+        isDir: true,
+        expanded: true,
+        children,
+      },
+    ];
     console.log("📂 newTree chargé:", newTree);
     
     // Appliquer l'état expanded au nouveau tree
@@ -63,6 +83,7 @@ function AppContent() {
       
       for (const node of nodes) {
         if (node.isDir && expandedPaths.has(node.path)) {
+          console.log("📂 Ré-expansion du dossier:", node.path);
           // Recharger les enfants de ce dossier
           const children = await loadFolder(node.path);
           // Appliquer récursivement l'état expanded aux enfants
@@ -81,7 +102,8 @@ function AppContent() {
     };
 
     const mergedTree = await applyExpandedState(newTree);
-    console.log("📂 mergedTree:", mergedTree);
+    console.log("📂 mergedTree final:", mergedTree);
+    console.log("✅ setTree appelé avec le nouveau tree");
     setTree(mergedTree);
   };
 

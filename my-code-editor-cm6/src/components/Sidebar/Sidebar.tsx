@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { FileNode } from "../../types/FileNode";
 import TreeNode from "./TreeNode";
 import "./Sidebar.css";
@@ -91,73 +91,18 @@ export default function Sidebar({
       window.removeEventListener("sidebar-action", handleCreateAction as EventListener);
   }, [selectedPath]);
 
-  function handleMoveFile(
-    sourcePath: string,
-    targetPath: string,
-    targetIsDir: boolean
-  ) {
-    // Éviter de déplacer un fichier sur lui-même
-    if (sourcePath === targetPath) {
-      console.log("⚠️ Source et destination identiques");
-      return;
-    }
-
-    // Éviter de déplacer un dossier dans lui-même
-    if (targetIsDir && targetPath.startsWith(sourcePath)) {
-      console.log("⚠️ Impossible de déplacer un dossier dans lui-même");
-      return;
-    }
-
-    const fileName = sourcePath.split(/[/\\]/).pop() || "";
-    let newPath: string;
-
-    // Détecter le séparateur utilisé dans le système
-    const separator = sourcePath.includes("/") ? "/" : "\\";
-
-    if (targetIsDir) {
-      // Déposer dans un dossier
-      newPath = `${targetPath}${
-        targetPath.endsWith(separator) ? "" : separator
-      }${fileName}`;
-    } else {
-      // Déposer à côté d'un fichier (même dossier parent)
-      const targetParts = targetPath.split(/[/\\]/);
-      targetParts.pop();
-      const parentPath = targetParts.join(separator);
-      newPath = `${parentPath}${separator}${fileName}`;
-    }
-
-    // Vérifier si la destination est différente
-    if (sourcePath === newPath) {
-      console.log("⚠️ Le fichier est déjà à cet emplacement");
-      return;
-    }
-
-    console.log(`🔄 Déplacement: ${sourcePath} → ${newPath}`);
-
-    invoke("rename_file", { oldPath: sourcePath, newPath })
-      .then(() => {
-        console.log(`✅ Déplacé avec succès: ${newPath}`);
-        // Recharger l'arbre en préservant l'état expanded
-        onReloadTree();
-      })
-      .catch((err) => {
-        console.error("❌ Erreur lors du déplacement:", err);
-        alert(`Erreur lors du déplacement: ${err}`);
-      });
-  }
-
-  // Gérer le déplacement de fichiers (appelé depuis MainLayout via handleGlobalDragEnd)
-  useEffect(() => {
-    const handleDragComplete = (event: any) => {
-      const { sourcePath, targetPath, targetIsDir } = event.detail;
-      if (sourcePath && targetPath) {
-        handleMoveFile(sourcePath, targetPath, targetIsDir);
+  // Fonction utilitaire pour trouver un noeud par son chemin (gardée pour référence future)
+  const findNodeByPath = useCallback((nodes: FileNode[], path: string): FileNode | null => {
+    for (const node of nodes) {
+      if (node.path === path) {
+        return node;
       }
-    };
-    
-    window.addEventListener("sidebar-move-file", handleDragComplete);
-    return () => window.removeEventListener("sidebar-move-file", handleDragComplete);
+      if (node.children) {
+        const found = findNodeByPath(node.children, path);
+        if (found) return found;
+      }
+    }
+    return null;
   }, []);
 
   return (
@@ -281,7 +226,6 @@ export default function Sidebar({
           setContextMenu={setContextMenu}
           draggedPath={draggedPath}
           setDraggedPath={setDraggedPath}
-          onMoveFile={handleMoveFile}
           creatingFromContext={creatingFromContext}
           setCreatingFromContext={setCreatingFromContext}
           onCreateFileFromContext={onCreateFileFromContext}

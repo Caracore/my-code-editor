@@ -23,7 +23,6 @@ interface TreeNodeProps {
   >;
   draggedPath: string | null;
   setDraggedPath: (path: string | null) => void;
-  onMoveFile: (sourcePath: string, targetPath: string, targetIsDir: boolean) => void;
   creatingFromContext: { folder: string; type: "file" | "folder" } | null;
   setCreatingFromContext: (value: { folder: string; type: "file" | "folder" } | null) => void;
   onCreateFileFromContext: (folder: string, name: string) => void;
@@ -42,7 +41,6 @@ export default function TreeNode({
   setContextMenu,
   draggedPath,
   setDraggedPath,
-  onMoveFile,
   creatingFromContext,
   setCreatingFromContext,
   onCreateFileFromContext,
@@ -245,7 +243,6 @@ export default function TreeNode({
               setContextMenu={setContextMenu}
               draggedPath={draggedPath}
               setDraggedPath={setDraggedPath}
-              onMoveFile={onMoveFile}
               creatingFromContext={creatingFromContext}
               setCreatingFromContext={setCreatingFromContext}
               onCreateFileFromContext={onCreateFileFromContext}
