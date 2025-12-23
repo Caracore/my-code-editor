@@ -6,7 +6,11 @@ import { FitAddon } from "@xterm/addon-fit";
 import "xterm/css/xterm.css";
 import "./Terminal.css";
 
-export default function Terminal() {
+interface TerminalProps {
+  terminalId: string;
+}
+
+export default function Terminal({ terminalId }: TerminalProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
@@ -68,7 +72,7 @@ export default function Terminal() {
       unlisten = await listen("terminal-output", (event: any) => {
         console.log("📥 Terminal event received:", event.payload);
         const { id, data } = event.payload;
-        if (id === "terminal-1" && data) {
+        if (id === terminalId && data) {
           console.log("✍️ Writing to xterm:", data);
           xterm.write(data);
         }
@@ -77,19 +81,26 @@ export default function Terminal() {
       console.log("👂 Listener registered, starting terminal...");
 
       try {
-        const result = await invoke("start_terminal", { id: "terminal-1" });
+        // Essayer de démarrer le terminal, le backend doit gérer si déjà existant
+        const result = await invoke("start_terminal", { id: terminalId });
         console.log("✅ Terminal started:", result);
       } catch (err) {
-        console.error("❌ Failed to start terminal:", err);
-        xterm.writeln("\r\n\x1b[31mError: Failed to start terminal\x1b[0m");
-        xterm.writeln(String(err));
+        const errMsg = String(err);
+        // Si le terminal existe déjà, ce n'est pas une vraie erreur
+        if (errMsg.includes("already") || errMsg.includes("existe")) {
+          console.log("ℹ️ Terminal already exists:", terminalId);
+        } else {
+          console.error("❌ Failed to start terminal:", err);
+          xterm.writeln("\r\n\x1b[31mError: Failed to start terminal\x1b[0m");
+          xterm.writeln(errMsg);
+        }
       }
 
       // Envoyer les entrées utilisateur au backend
       xterm.onData(async (data) => {
         console.log("⌨️ User input:", data);
         try {
-          await invoke("write_to_terminal", { id: "terminal-1", data });
+          await invoke("write_to_terminal", { id: terminalId, data });
         } catch (err) {
           console.error("❌ Failed to write:", err);
         }
@@ -102,7 +113,7 @@ export default function Terminal() {
     const handleResize = () => {
       fitAddon.fit();
       invoke("resize_terminal", {
-        id: "terminal-1",
+        id: terminalId,
         cols: xterm.cols,
         rows: xterm.rows,
       });
@@ -114,12 +125,12 @@ export default function Terminal() {
       window.removeEventListener("resize", handleResize);
       if (unlisten) unlisten();
       // Arrêter et nettoyer le terminal
-      invoke("stop_terminal", { id: "terminal-1" })
+      invoke("stop_terminal", { id: terminalId })
         .then(() => console.log("Terminal stopped"))
         .catch((err) => console.error("Error stopping terminal:", err));
       xterm.dispose();
     };
-  }, []);
+  }, [terminalId]);
 
   return (
     <div

@@ -4,7 +4,7 @@ import Toolbar from "../components/Toolbar/Toolbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 import TabsBar from "../components/TabsBar/TabsBar";
 import SplitTabBar from "../components/TabsBar/SplitTabBar";
-import Terminal from "../components/Terminal/Terminal";
+import Terminal from "../components/Terminal/TerminalPanel";
 import ThemeManager from "../components/ThemeManager/ThemeManager";
 import SettingsPanel from "../components/SettingsPanel/SettingsPanel";
 import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
@@ -537,6 +537,9 @@ export default function MainLayout({
   }
   // Pour choisir le langage de l'éditeur & pour faire fonctionner la tabsbar
   const activeFile = tabs.find((t) => t.path === activeTab);
+  
+  // Récupérer le chemin racine du projet
+  const rootPath = tree.length > 0 && tree[0].path ? tree[0].path : null;
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -679,11 +682,14 @@ export default function MainLayout({
             )}
           </div>
 
-          {showTerminal && (
-            <div style={{ height: "200px", borderTop: "1px solid #333" }}>
-              <Terminal />
-            </div>
-          )}
+          <div style={{ 
+            height: showTerminal ? "200px" : "0", 
+            borderTop: showTerminal ? "1px solid #333" : "none",
+            overflow: "hidden",
+            transition: "height 0.2s ease"
+          }}>
+            <Terminal rootPath={rootPath} />
+          </div>
         </div>
         </div>
       </DndContext>
