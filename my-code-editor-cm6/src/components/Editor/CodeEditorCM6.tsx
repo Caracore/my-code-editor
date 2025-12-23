@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, ViewPlugin, ViewUpdate, keymap } from "@codemirror/view";
 import SearchBar, { searchHighlightExtension } from "../SearchBar/SearchBar";
 import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
@@ -29,7 +29,6 @@ interface CodeEditorProps {
   onChange: (newValue: string) => void;
   language?: "html" | "css" | "js";
 }
-
 
 export default function CodeEditorCM6({ value, onChange, language = "css" }: CodeEditorProps) { // language = "html"
   const editorRef = useRef<HTMLDivElement>(null);
@@ -79,7 +78,7 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       console.log("Detected language:", language);
       languageExtension = python(); // python(); // si tu ajoutes un parser plus tard
       completionSources = [pythonSmartProvider];
-    } else if (language === "cpp" || language === "c++") {
+    } else if (language === "cpp") {
       console.log("Detected language:", language);
       languageExtension = cpp();
       completionSources = [cppSmartProvider]; // Ajouter des providers C++ si disponibles
@@ -177,15 +176,39 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
 
     // Keymap personnalisé qui laisse passer certains raccourcis vers le système
     const customKeymap: KeyBinding[] = [
-      indentWithTab,
+      // Binding personnalisé pour Tab : insère une vraie tabulation au curseur
+      {
+        key: "Tab",
+        run: (view) => {
+          const { state } = view;
+          const { from, to } = state.selection.main;
+          
+          // Si pas de sélection, insérer une tabulation à la position du curseur
+          if (from === to) {
+            view.dispatch({
+              changes: { from, to, insert: "\t" },
+              selection: { anchor: from + 1 },
+            });
+            return true;
+          }
+          
+          // Si sélection, utiliser l'indentation normale
+          return false;
+        },
+      },
+      {
+        key: "Shift-Tab",
+        run: indentWithTab.run,
+      },
       ...defaultKeymap.filter((binding) => {
         // Filtrer les raccourcis que nous voulons gérer au niveau global
         const key = binding.key;
         if (!key) return true;
-        // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+F etc.
+        // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+N, Ctrl+F etc.
+        // Mais garder Ctrl+C, Ctrl+V, Ctrl+X pour le presse-papiers
         if (key.includes("Mod-s") || key.includes("Mod-o") || 
             key.includes("Mod-w") || key.includes("Mod-n") ||
-            key.includes("Mod-f") || key.includes("Mod-Shift")) {
+            key.includes("Mod-f")) {
           return false; // Ne pas intercepter ces raccourcis
         }
         return true;
@@ -228,12 +251,9 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
           },
           
           // === Curseur natif (visible pour déboguer) ===
-          ".cm-cursor, .cm-dropCursor, .cm-secondaryCursor": {
-            // borderLeftColor: getComputedColor("--editor-cursor") || "#ffffff",   
-            borderLeftWidth: "0px !important",
-            // borderLeftStyle: "solid !important",
-            // borderLeftColor: "currentColor !important", /* important */ 
-            // background: "none !important",
+          ".cm-cursor, .cm-dropCursor, .cm-secondaryCursor": {   
+            // borderLeftWidth: "0px !important",
+            display: "none !important",
             },
           // === Sélection ===
           ".cm-selectionBackground, ::selection": {

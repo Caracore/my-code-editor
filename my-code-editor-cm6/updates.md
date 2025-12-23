@@ -3,16 +3,17 @@
 - drag and drop fonctionnel
 - -cursor animated "vscode expand" created is not perfect but work.
 - Command palette ajouter.
+- discord rich presence completed just change image for each language...
 # BUGS:
-- Pas réussi à faire le discord rich presence à voir comment corriger ça !!!!
 - Le terminal ne se mets pas à jour du thème il faut le toggle off & on pour le voir en changement. Mais pas grave pour le moment... 
 - Nouveau fichier pas du menuContext mais du bouton ou topbar envoie un nouveau fichier appeler ainsi texte à modifier pour pas avoir à changer le fichier à chaque fois ...
 - Le rechargement du tree de la sidebar ne se fait pas après un drag and drop obliger de reselectionner le dossier en question pour le mettre à jour...
-- Carré noir en haut à droite mais suite au drag and drop mais fonctionnel...
+- Carré noir en haut à droite mais suite au drag and drop mais fonctionnel... (Disparu)
+- Bug urgent copier coller
+- bug urgent tabulation pris en compte au début mais pas derrière le cursor.
 # Correction:
-- rendre modifiable la couleur de sélection de la sidebar pour éviter le bleu avec thème personnalisable sans être obligé de voir le bleu actif.
-- Ajouter un menuContext à la tabsbar pour créer un fichier de 0 puis si sauvegarder avec ctrl+s alors "save as" et choisir sont nom et son emplacement sinon marquer comme undefined tant que pas enregistrer...
-
+- Ajouter un menuContext à la tabsbar pour créer un fichier de 0 puis si sauvegarder avec ctrl+s alors "save as" et choisir sont nom et son emplacement sinon marquer comme undefined tant que pas enregistrer... (Facultatif)
+- ajouter variable css de la searchbar dans le thème pour prendre en compte le colorie.
 # IDEES:
 - Ajouter Drag and Drop tabsbar et sidebar. Communication entre elles.
 - Ajouter dans le code à l'installation un dossier my-code-editor dans le %appdata% pour pas laisser trainer les 2 fichiers json (settings.json & todolist), faire aussi un dossier theme pour aider à ranger ses themes.
@@ -24,15 +25,14 @@ Pour mon rasberry PI500+ faire du code propre et optimiser...
 Virtualisation intelligente : pour l’explorateur de fichiers récursif, utilise une liste virtuelle (comme react-window) afin de gérer des milliers de fichiers sans lag.
 Cache minimaliste : stocke les états fréquents (dernier fichier ouvert, position du terminal) dans localStorage ou une base légère type IndexedDB.
 
-# AJouter ce code discord rich presence à chaque fois que:
+
+
+[Check]
+# Ajouter ce code discord rich presence à chaque fois que:✅
 tu ouvres un fichier
-
 tu changes d’onglet
-
 tu détectes un nouveau langage
-
 tu sauvegardes
-
 ou même à chaque modification (mais toutes les 2–3 secondes max)
 
 code:
@@ -43,4 +43,3 @@ invoke("update_discord_presence", {
     project: projectName
   }
 });
-tout fonctionner mais voir corriger cpp qui ne fonctionne pas encore.

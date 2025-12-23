@@ -107,8 +107,6 @@ export default function MainLayout({
   });
 
   // 🎮 Discord Update avec throttle lors des modifications de contenu
-  // Utilise le contenu du tab actif pour déclencher les mises à jour
-  const currentTabContent = currentTab?.content || "";
   useDiscordUpdate({
     fileName: currentFileName,
     language: currentLanguage,

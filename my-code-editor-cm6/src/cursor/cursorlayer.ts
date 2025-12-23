@@ -1,4 +1,6 @@
-import { EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import {EditorView, Decoration, ViewPlugin, ViewUpdate} from "@codemirror/view";
+
+
 
 export const smoothCaret = ViewPlugin.fromClass(
   class {
@@ -7,56 +9,42 @@ export const smoothCaret = ViewPlugin.fromClass(
     constructor(view: EditorView) {
       this.cursorEl = document.createElement("div");
       this.cursorEl.className = "cm-smooth-caret";
-      view.dom.appendChild(this.cursorEl);
+      
+      // Ajouter au contentDOM plutôt qu'au dom principal
+      const scroller = view.scrollDOM;
+      scroller.appendChild(this.cursorEl);
 
       console.log("✅ Cursor layer créé :", this.cursorEl);
 
-      // 🔥 clic souris
-      view.dom.addEventListener("mousedown", (event) => {
-        const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
-        if (pos == null) return;
-
-        requestAnimationFrame(() => {
-          this.moveCaret(view, pos);
-        });
-      });
-
-      // 🔥 frappe clavier
-      view.dom.addEventListener("keydown", () => {
-        const head = view.state.selection.main.head;
-        requestAnimationFrame(() => {
-          this.moveCaret(view, head);
-        });
+      // Position initiale
+      requestAnimationFrame(() => {
+        this.moveCaret(view);
       });
     }
 
-    moveCaret(view: EditorView, pos: number) {
-      const coords = view.coordsAtPos(pos);
+    moveCaret(view: EditorView) {
+      const head = view.state.selection.main.head;
+      const coords = view.coordsAtPos(head);
       if (!coords) return;
 
-      const parentRect = view.dom.getBoundingClientRect();
+      const scrollRect = view.scrollDOM.getBoundingClientRect();
 
-      this.cursorEl.style.left = coords.left - parentRect.left + "px";
-      this.cursorEl.style.top = coords.top - parentRect.top + "px";
+      this.cursorEl.style.left = coords.left - scrollRect.left + view.scrollDOM.scrollLeft + "px";
+      this.cursorEl.style.top = coords.top - scrollRect.top + view.scrollDOM.scrollTop + "px";
       this.cursorEl.style.height = coords.bottom - coords.top + "px";
 
       console.log("📍 Cursor déplacé :", {
+        pos: head,
         left: this.cursorEl.style.left,
         top: this.cursorEl.style.top,
         height: this.cursorEl.style.height,
       });
-
-      // Animation shrink
-      this.cursorEl.classList.remove("animate");
-      void this.cursorEl.offsetWidth;
-      this.cursorEl.classList.add("animate");
     }
 
     update(update: ViewUpdate) {
       if (update.docChanged || update.selectionSet || update.viewportChanged) {
-        const head = update.state.selection.main.head;
         requestAnimationFrame(() => {
-          this.moveCaret(update.view, head);
+          this.moveCaret(update.view);
         });
       }
     }

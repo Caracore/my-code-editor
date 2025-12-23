@@ -80,7 +80,6 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "discord-rich-presence",
- "log",
  "parking_lot",
  "portable-pty",
  "serde",
