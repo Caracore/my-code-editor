@@ -181,6 +181,15 @@ fn list_terminals(state: tauri::State<terminal::TerminalState>) -> Result<Vec<St
 }
 
 #[tauri::command]
+fn change_terminal_directory(
+    id: String,
+    path: String,
+    state: tauri::State<terminal::TerminalState>,
+) -> Result<(), String> {
+    state.change_directory(id, path)
+}
+
+#[tauri::command]
 fn stop_all_terminals(state: tauri::State<terminal::TerminalState>) -> Result<(), String> {
     state.stop_all()
 }
@@ -188,17 +197,6 @@ fn stop_all_terminals(state: tauri::State<terminal::TerminalState>) -> Result<()
 #[tauri::command]
 fn switch_shell(shell: String, state: tauri::State<terminal::TerminalState>) -> Result<(), String> {
     state.set_shell(shell)
-}
-
-#[tauri::command]
-fn change_terminal_directory(
-    id: String,
-    path: String,
-    state: tauri::State<terminal::TerminalState>,
-) -> Result<(), String> {
-    // Envoyer la commande cd au terminal
-    let cmd = format!("cd /d \"{}\"\r\n", path);
-    state.write(id, cmd)
 }
 
 // Discord Rich Presence Commands
@@ -259,9 +257,9 @@ pub fn main() {
             write_to_terminal,
             resize_terminal,
             list_terminals,
+            change_terminal_directory,
             stop_all_terminals,
             switch_shell,
-            change_terminal_directory,
             set_discord_enabled,
             update_discord_presence,
             init_discord_rpc,

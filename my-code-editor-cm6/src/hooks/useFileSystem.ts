@@ -178,6 +178,31 @@ export function useFileSystem({
     ];
 
     setTree(newTree);
+    setCurrentPath(folder);
+    
+    // Changer le répertoire du terminal vers le dossier ouvert (avec retry)
+    const changeTerminalDir = async (retries = 3, delay = 500) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          await invoke("change_terminal_directory", { 
+            id: "terminal-1", 
+            path: folder 
+          });
+          console.log("✅ Terminal directory changed to:", folder);
+          return;
+        } catch (error) {
+          if (i === retries - 1) {
+            console.warn("⚠️ Failed to change terminal directory after retries:", error);
+          } else {
+            console.log(`⏳ Terminal not ready, retrying in ${delay}ms... (${i + 1}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        }
+      }
+    };
+    
+    // Appeler avec un délai pour laisser le terminal démarrer
+    setTimeout(() => changeTerminalDir(), 1000);
   }
 
   async function handleTrashFile(path: string): Promise<boolean> {

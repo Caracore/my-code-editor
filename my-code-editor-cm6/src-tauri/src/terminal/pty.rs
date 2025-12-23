@@ -168,6 +168,26 @@ impl TerminalState {
         Ok(())
     }
 
+    /// Change le répertoire de travail du terminal
+    pub fn change_directory(&self, id: String, path: String) -> Result<(), String> {
+        let terminals = self.terminals.lock().unwrap();
+        let active = terminals
+            .get(&id)
+            .ok_or(format!("terminal '{}' not found", id))?;
+
+        // Utiliser la commande PowerShell Set-Location (alias: cd)
+        let cmd = format!("cd '{}'\r", path);
+        
+        let mut writer = active.writer.lock().unwrap();
+        writer
+            .write_all(cmd.as_bytes())
+            .map_err(|e| e.to_string())?;
+        writer.flush().map_err(|e| e.to_string())?;
+
+        println!("✅ Changed directory for terminal '{}' to: {}", id, path);
+        Ok(())
+    }
+
     pub fn resize(&self, id: String, cols: u16, rows: u16) -> Result<(), String> {
         let mut terminals = self.terminals.lock().unwrap();
         
