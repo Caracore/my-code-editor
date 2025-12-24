@@ -8,7 +8,8 @@
     "--secondary-fg": "#c9b3ff",
     "--accent-color": "#b455ff",
     "--border-color": "#6622cc",
-    
+    "--bg-secondary": "#2d1b4e",
+    "--scrollbar-thumb": "#6622cc",
     "__comment2": "Sidebar",
     "--sidebar-bg": "#1f0f3d",
     "--sidebar-fg": "#d4c5ff",
@@ -22,7 +23,6 @@
     "--sidebar-item-selected-bg": "rgba(255, 85, 255, 0.2)",
     "--sidebar-item-selected-border": "#ff55ff",
     "--sidebar-item-drag-over-bg": "rgba(5, 255, 161, 0.25)",
-    
     "__comment3": "Toolbar",
     "--toolbar-bg": "#1f0f3d",
     "--toolbar-fg": "#e0d4ff",
@@ -30,7 +30,6 @@
     "--toolbar-button-fg": "#d4c5ff",
     "--toolbar-button-hover": "#3d2b5e",
     "--toolbar-button-border": "#7733dd",
-    
     "__comment4": "Tabs Bar",
     "--tabs-bg": "#1f0f3d",
     "--tabs-fg": "#c9b3ff",
@@ -41,7 +40,6 @@
     "--tab-close-fg": "#9977ff",
     "--tab-close-hover-fg": "#ffffff",
     "--tab-dirty-indicator": "#ff55ff",
-    
     "__comment5": "Editor (CodeMirror 6)",
     "--editor-bg": "#1a0a2e",
     "--editor-fg": "#e0d4ff",
@@ -50,7 +48,6 @@
     "--editor-cursor": "#ff55ff",
     "--editor-active-line-bg": "rgba(255, 85, 255, 0.08)",
     "--editor-gutter-bg": "#1a0a2e",
-    
     "__comment6": "Terminal",
     "--terminal-bg": "#120821",
     "--terminal-fg": "#bb88ff",
@@ -63,7 +60,6 @@
     "--terminal-button-border": "#b455ff",
     "--terminal-border": "#6622cc",
     "--terminal-selection-bg": "#5533aa",
-    
     "__comment7": "Xterm Colors - Palette néon",
     "--xterm-black": "#1a0a2e",
     "--xterm-red": "#ff2a6d",
@@ -81,25 +77,21 @@
     "--xterm-bright-magenta": "#ff88ff",
     "--xterm-bright-cyan": "#55ffff",
     "--xterm-bright-white": "#ffffff",
-    
     "__comment8": "Panel",
     "--panel-bg": "#1a0a2e",
     "--panel-fg": "#e0d4ff",
     "--panel-border": "#6622cc",
-    
     "__comment9": "Context Menu",
     "--context-menu-bg": "#2d1b4e",
     "--context-menu-fg": "#d4c5ff",
     "--context-menu-hover-bg": "#3d2b5e",
     "--context-menu-border": "#7733dd",
-    
     "__comment10": "Settings Panel",
     "--settings-bg": "#1f0f3d",
     "--settings-fg": "#d4c5ff",
     "--settings-input-bg": "#2a1850",
     "--settings-input-fg": "#ffffff",
     "--settings-input-border": "#8844ee",
-    
     "__comment11": "TodoList",
     "--todo-bg": "#1f0f3d",
     "--todo-fg": "#d4c5ff",
@@ -107,12 +99,10 @@
     "--todo-item-hover-bg": "#3d2b5e",
     "--todo-checkbox-border": "#9977ff",
     "--todo-checkbox-checked-bg": "#b455ff",
-    
     "__comment12": "Welcome Screen",
     "--welcome-bg": "#1a0a2e",
     "--welcome-fg": "#e0d4ff",
     "--welcome-accent": "#ff55ff",
-    
     "__comment13": "Top Menu",
     "--menu-bg": "#1f0f3d",
     "--menu-fg": "#e0d4ff",

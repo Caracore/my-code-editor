@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactElement } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import Terminal from "./Terminal";
 import TerminalTabs from "./TerminalTabs";
@@ -13,7 +13,7 @@ export default function TerminalPanel({ rootPath }: TerminalPanelProps) {
   const terminalManager = useTerminalManager();
   const [activeTerminalId, setActiveTerminalId] = useState<string | null>(null);
   const [, forceUpdate] = useState({});
-  const terminalInstancesRef = useRef<Map<string, JSX.Element>>(new Map());
+  const terminalInstancesRef = useRef<Map<string, ReactElement>>(new Map());
 
   // Créer le premier terminal au montage SEULEMENT s'il n'y en a pas
   useEffect(() => {

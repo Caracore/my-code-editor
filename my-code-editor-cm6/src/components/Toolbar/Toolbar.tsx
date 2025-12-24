@@ -9,7 +9,6 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({
-  onCreateFile,
   onOpenThemeManager,
   theme,
   setTheme,
@@ -49,9 +48,6 @@ export default function Toolbar({
       >
         🧹
       </button>
-
-      {/* Bouton Nouveau fichier */}
-      <button onClick={onCreateFile}>📄 Nouveau fichier</button>
     </div>
   );
 }

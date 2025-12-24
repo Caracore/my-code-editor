@@ -1,4 +1,4 @@
-import {EditorView, Decoration, ViewPlugin, ViewUpdate} from "@codemirror/view";
+import {EditorView, ViewPlugin, ViewUpdate} from "@codemirror/view";
 
 
 

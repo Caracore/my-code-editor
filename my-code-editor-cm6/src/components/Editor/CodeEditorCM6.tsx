@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { EditorView, ViewPlugin, ViewUpdate, keymap } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import SearchBar, { searchHighlightExtension } from "../SearchBar/SearchBar";
 import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";

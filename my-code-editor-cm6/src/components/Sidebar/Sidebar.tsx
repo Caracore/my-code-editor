@@ -4,7 +4,7 @@ import TreeNode from "./TreeNode";
 import "./Sidebar.css";
 import ContextMenu from "./ContextMenu";
 import { useTabs } from "../../context/TabsContext.tsx";
-import { invoke } from "@tauri-apps/api/core";
+// import { invoke } from "@tauri-apps/api/core";
 
 interface SidebarProps {
   tree: FileNode[];
@@ -33,7 +33,7 @@ export default function Sidebar({
   onDeleteFile,
   onCreateFileFromContext,
   onCreateFolderFromContext,
-  onReloadTree,
+  // onReloadTree,
 }: SidebarProps) {
   const { openTab } = useTabs();
   console.log("Sidebar openTab ===", openTab);
