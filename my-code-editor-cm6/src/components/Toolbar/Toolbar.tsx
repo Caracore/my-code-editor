@@ -33,12 +33,12 @@ export default function Toolbar({
         onChange={(e) => handleThemeChange(e.target.value)}
         className="theme-select"
       >
-        <option value="dark">🌙 Dark</option>
-        <option value="light">☀️ Light</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
       </select>
 
       {/* Bouton Theme Manager */}
-      <button onClick={onOpenThemeManager}>🎨 Thèmes</button>
+      <button onClick={onOpenThemeManager}>Thèmes</button>
 
       {/* Bouton Debug: Clear Theme Cache */}
       <button 
@@ -46,7 +46,7 @@ export default function Toolbar({
         title="Clear theme cache and reload"
         style={{ fontSize: "11px", padding: "4px 6px" }}
       >
-        🧹
+        ThemeDebugCleanAll
       </button>
     </div>
   );

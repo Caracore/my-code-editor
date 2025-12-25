@@ -1,12 +1,14 @@
 .tabs-bar {
     display: flex;
     align-items: center;
+    min-height: 32px;
     height: 32px;
     background: var(--tabs-bg);
     border-bottom: 1px solid var(--tabs-border);
     overflow-x: auto;
     white-space: nowrap;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .tabs-bar.drop-zone-active {

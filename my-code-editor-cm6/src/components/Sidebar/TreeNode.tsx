@@ -1,4 +1,3 @@
-// import { FileNode } from "../../types/FileNode";
 import type { FileNode } from "../../types/FileNode";
 import "./TreeNode.css";
 import { useState } from "react";
@@ -83,26 +82,27 @@ export default function TreeNode({
 
     switch (ext) {
       case "html":
-        return "🌐";
+        return "/src/assets/html.svg";
       case "css":
-        return "🎨";
+        return "/src/assets/css.svg";
       case "js":
-        return "📜";
+        return "/src/assets/js.svg";
       case "ts":
-        return "🔷";
+      case "tsx":
+        return "/src/assets/ts.svg";
       case "json":
-        return "🧩";
+        return "/src/assets/json.svg";
       case "py":
-        return "🐍";
+        return "/src/assets/python.svg";
       case "md":
-        return "📝";
+        return "/src/assets/md.svg";
       case "cpp": 
       case "c": 
-      return "⚙️"; // C / C++ → roue dentée (système) 
+        return "/src/assets/cpp.svg";
       case "rs": 
-      return "🦀";
+        return "/src/assets/rust.svg";
       default:
-        return "📄";
+        return "/src/assets/txt.svg";
     }
   }
 
@@ -173,11 +173,11 @@ export default function TreeNode({
           />
         ) : (
           <>
-            {node.isDir
-              ? node.expanded
-                ? "📂"
-                : "📁"
-              : getFileIcon(node.name)}{" "}
+            {node.isDir ? (
+              <img src={node.expanded ? "/src/assets/folder-open.svg" : "/src/assets/folder.svg"} alt="" style={{ width: 16, height: 16, verticalAlign: "middle" }} />
+            ) : (
+              <img src={getFileIcon(node.name)} alt="" style={{ width: 16, height: 16, verticalAlign: "middle" }} />
+            )}{" "}
             {node.name}
             <button
               style={{ marginLeft: 8, fontSize: 10 }}
