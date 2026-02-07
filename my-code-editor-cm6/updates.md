@@ -4,6 +4,10 @@
 - -cursor animated "vscode expand" created is not perfect but work.
 - Command palette ajouter.
 - discord rich presence completed just change image for each language...
+- LSP Toggle: Activer/Désactiver le LSP via Command Palette (Ctrl+Shift+P → "Toggle LSP")
+- LSP Status: Vérifier si les serveurs LSP sont installés (Ctrl+Shift+P → "Check LSP Status")
+- TodoList réduit: Le bloc-notes prend maintenant 280px au lieu de toute la largeur
+- Focus automatique: L'éditeur CodeMirror reçoit le focus automatiquement quand un fichier est ouvert
 # BUGS:
 - Le terminal ne se mets pas à jour du thème il faut le toggle off & on pour le voir en changement. Mais pas grave pour le moment... 
 - Nouveau fichier pas du menuContext mais du bouton ou topbar envoie un nouveau fichier appeler ainsi texte à modifier pour pas avoir à changer le fichier à chaque fois ...

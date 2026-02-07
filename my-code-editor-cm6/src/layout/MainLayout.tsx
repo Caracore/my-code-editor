@@ -21,6 +21,7 @@ import { useDiscordUpdate } from "../hooks/useDiscordUpdate";
 import { invoke } from "@tauri-apps/api/core";
 import type { FileNode } from "../types/FileNode";
 import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { lspManager } from "../lsp";
 
 interface MainLayoutProps {
   tree: FileNode[];
@@ -71,8 +72,8 @@ export default function MainLayout({
   // ✅ Utiliser le thème
   const { themeName, setThemeName } = useTheme();
 
-  // ✅ Récupérer les raccourcis et Discord
-  const { shortcuts, discordEnabled, toggleDiscord } = useSettingsContext();
+  // ✅ Récupérer les raccourcis, Discord et LSP
+  const { shortcuts, discordEnabled, toggleDiscord, lspEnabled, toggleLsp } = useSettingsContext();
 
   // ✅ Activer les raccourcis clavier
   useKeyboardShortcuts();
@@ -407,6 +408,8 @@ export default function MainLayout({
     { id: 'view:themeManager', label: 'Theme Manager', category: 'View', action: 'view:themeManager', shortcut: '', icon: '🎨' },
     { id: 'search:toggle', label: 'Toggle Search', category: 'Search', action: 'search:toggle', shortcut: shortcuts['search:toggle'], icon: '🔍' },
     { id: 'discord:toggle', label: 'Toggle Discord Rich Presence', category: 'Settings', action: 'discord:toggle', shortcut: '', icon: '🎮' },
+    { id: 'lsp:toggle', label: `Toggle LSP (${lspEnabled ? 'ON' : 'OFF'})`, category: 'Settings', action: 'lsp:toggle', shortcut: '', icon: '🔧' },
+    { id: 'lsp:status', label: 'Check LSP Status', category: 'Settings', action: 'lsp:status', shortcut: '', icon: '📊' },
     { id: 'settings:open', label: 'Open Settings', category: 'Settings', action: 'settings:open', shortcut: 'Ctrl+,', icon: '⚙️' },
   ];
 
@@ -478,6 +481,12 @@ export default function MainLayout({
         case "discord:toggle":
           handleDiscordToggle(!discordEnabled);
           break;
+        case "lsp:toggle":
+          handleLspToggle(!lspEnabled);
+          break;
+        case "lsp:status":
+          checkLspStatus();
+          break;
         case "search:toggle":
           // Propager l'événement aux éditeurs
           window.dispatchEvent(new CustomEvent('menu-action', { detail: 'search:toggle' }));
@@ -489,7 +498,7 @@ export default function MainLayout({
 
     window.addEventListener("menu-action", handler as EventListener);
     return () => window.removeEventListener("menu-action", handler as EventListener);
-  }, [tabs, activeTab, onCreateFile, onOpenFolder, showTodoList, showTerminal, setSidebarVisible, discordEnabled, toggleDiscord]);
+  }, [tabs, activeTab, onCreateFile, onOpenFolder, showTodoList, showTerminal, setSidebarVisible, discordEnabled, toggleDiscord, lspEnabled, toggleLsp]);
 
   // ✅ Gérer le toggle Discord
   async function handleDiscordToggle(enabled: boolean) {
@@ -503,6 +512,41 @@ export default function MainLayout({
       console.log(`${enabled ? "✅" : "❌"} Discord RPC ${enabled ? "activé" : "désactivé"}`);
     } catch (error) {
       console.error("Erreur lors de la configuration de Discord RPC:", error);
+    }
+  }
+
+  // ✅ Gérer le toggle LSP
+  async function handleLspToggle(enabled: boolean) {
+    if (enabled) {
+      console.log("🔧 LSP activé");
+    } else {
+      // Stop all LSP servers when disabling
+      await lspManager.stopAllServers();
+      console.log("🔧 LSP désactivé - Serveurs arrêtés");
+    }
+    toggleLsp(enabled);
+  }
+
+  // ✅ Vérifier le statut des serveurs LSP
+  async function checkLspStatus() {
+    const languages = ["python", "rust", "typescript", "javascript"];
+    console.log("📊 === Statut LSP ===");
+    console.log(`LSP activé: ${lspEnabled ? "✅ Oui" : "❌ Non"}`);
+    
+    for (const lang of languages) {
+      const isRunning = lspManager.isServerRunning(lang);
+      console.log(`${lang}: ${isRunning ? "🟢 Actif" : "⚪ Inactif"}`);
+    }
+    
+    // Test si les commandes LSP sont disponibles
+    try {
+      const testResults = await invoke<Record<string, boolean>>("check_lsp_commands");
+      console.log("📊 === Serveurs LSP installés ===");
+      for (const [cmd, available] of Object.entries(testResults)) {
+        console.log(`${cmd}: ${available ? "✅ Installé" : "❌ Non trouvé"}`);
+      }
+    } catch (error) {
+      console.log("⚠️ Impossible de vérifier les serveurs LSP installés");
     }
   }
 
@@ -540,6 +584,20 @@ export default function MainLayout({
   
   // Récupérer le chemin racine du projet
   const rootPath = tree.length > 0 && tree[0].path ? tree[0].path : null;
+
+  // Update LSP manager root path when project changes
+  useEffect(() => {
+    if (rootPath) {
+      lspManager.setRootPath(rootPath);
+    }
+  }, [rootPath]);
+
+  // Cleanup LSP servers on unmount
+  useEffect(() => {
+    return () => {
+      lspManager.stopAllServers();
+    };
+  }, []);
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -614,6 +672,7 @@ export default function MainLayout({
                           value={splitFile.content}
                           onChange={(newValue: string) => updateSplitContent(newValue)}
                           language={detectLanguageFromFilename(activeFile.name)}
+                          filePath={splitFile.path}
                         />
                       </Suspense>
                     </div>
@@ -634,6 +693,7 @@ export default function MainLayout({
                           updateTabContent(activeFile.path, newValue)
                         }
                         language={detectLanguageFromFilename(activeFile.name)}
+                        filePath={activeFile.path}
                       />
                     </Suspense>
                   </div>
@@ -656,6 +716,7 @@ export default function MainLayout({
                           value={splitFile.content}
                           onChange={(newValue: string) => updateSplitContent(newValue)}
                           language={detectLanguageFromFilename(activeFile.name)}
+                          filePath={splitFile.path}
                         />
                       </Suspense>
                     </div>
@@ -675,6 +736,7 @@ export default function MainLayout({
                         updateTabContent(activeFile.path, newValue)
                       }
                       language={detectLanguageFromFilename(activeFile.name)}
+                      filePath={activeFile.path}
                     />
                   </Suspense>
                 </EditorZone>
@@ -682,7 +744,7 @@ export default function MainLayout({
             )}
           </div>
 
-          <div style={{ 
+          <div style={{
             height: showTerminal ? "200px" : "0", 
             borderTop: showTerminal ? "1px solid #333" : "none",
             overflow: "hidden",

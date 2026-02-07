@@ -8,6 +8,8 @@ interface SettingsContextType {
   updateShortcut: (action: string, shortcut: string) => void;
   discordEnabled: boolean;
   toggleDiscord: (enabled: boolean) => void;
+  lspEnabled: boolean;
+  toggleLsp: (enabled: boolean) => void;
   loading: boolean;
 }
 
@@ -41,6 +43,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     saveSettings(newSettings);
   }
 
+  function toggleLsp(enabled: boolean) {
+    const newSettings = {
+      ...settings,
+      lsp: {
+        enabled,
+      },
+    };
+    saveSettings(newSettings);
+  }
+
   return (
     <SettingsContext.Provider
       value={{
@@ -49,6 +61,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         updateShortcut,
         discordEnabled: settings.discord?.enabled || false,
         toggleDiscord,
+        lspEnabled: settings.lsp?.enabled ?? true,
+        toggleLsp,
         loading,
       }}
     >

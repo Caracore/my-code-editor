@@ -23,17 +23,104 @@ import { rustSmartProvider } from "../../extensions/rust/rustProvider";
 import { cppSmartProvider } from "../../extensions/cpp/cppProvider";
 import { json } from "@codemirror/lang-json";
 import { smoothCaret } from "../../cursor/cursorlayer";
+import { lspLinter, updateDiagnostics, createLspCompletionProvider } from "../../extensions/lsp";
+import { lspManager } from "../../lsp";
+import type { Diagnostic } from "../../lsp";
+import { useSettingsContext } from "../../context/SettingsContext";
 
 interface CodeEditorProps {
   value: string;
   onChange: (newValue: string) => void;
-  language?: "html" | "css" | "js";
+  language?: string;
+  filePath?: string;
 }
 
-export default function CodeEditorCM6({ value, onChange, language = "css" }: CodeEditorProps) { // language = "html"
+export default function CodeEditorCM6({ value, onChange, language = "css", filePath }: CodeEditorProps) { // language = "html"
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const filePathRef = useRef<string | null>(filePath || null);
+  const languageRef = useRef<string>(language);
+  
+  // Get LSP settings
+  const { lspEnabled } = useSettingsContext();
+
+  // Update refs when props change
+  useEffect(() => {
+    filePathRef.current = filePath || null;
+    languageRef.current = language;
+  }, [filePath, language]);
+
+  // LSP: Determine LSP language from editor language
+  const getLspLanguage = (lang: string): string | null => {
+    switch (lang) {
+      case "py":
+      case "python":
+        return "python";
+      case "rs":
+      case "rust":
+        return "rust";
+      case "ts":
+      case "tsx":
+      case "typescript":
+        return "typescript";
+      case "js":
+      case "jsx":
+      case "javascript":
+        return "javascript";
+      default:
+        return null;
+    }
+  };
+
+  // LSP: Open document and subscribe to diagnostics
+  useEffect(() => {
+    if (!filePath || !lspEnabled) return;
+
+    const lspLang = getLspLanguage(language);
+    if (!lspLang) return;
+
+    // Open document in LSP
+    lspManager.openDocument(filePath, lspLang, value);
+
+    // Subscribe to diagnostics
+    const unsubscribe = lspManager.onDiagnostics((diagFilePath: string, diagnostics: Diagnostic[]) => {
+      if (diagFilePath === filePath && viewRef.current) {
+        updateDiagnostics(viewRef.current, diagnostics);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      if (filePath) {
+        lspManager.closeDocument(filePath);
+      }
+    };
+  }, [filePath, language, lspEnabled]);
+
+  // LSP: Update document on content change (debounced)
+  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!filePath || !lspEnabled) return;
+
+    const lspLang = getLspLanguage(language);
+    if (!lspLang) return;
+
+    // Debounce updates to LSP
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
+    updateTimeoutRef.current = setTimeout(() => {
+      lspManager.updateDocument(filePath, value);
+    }, 300);
+
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, [value, filePath, language, lspEnabled]);
 
   // Écouter l'événement global pour toggle la recherche
   useEffect(() => {
@@ -58,8 +145,10 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
     });
 
     // Détection dynamique du langage et des completion sources
-    let languageExtension: any;
-    let completionSources: any[] = [];
+    let languageExtension: ReturnType<typeof html>;
+    let completionSources: ((context: import("@codemirror/autocomplete").CompletionContext) => import("@codemirror/autocomplete").CompletionResult | Promise<import("@codemirror/autocomplete").CompletionResult | null> | null)[] = [];
+    let useLsp = false;
+    let lspLanguage: string | null = null;
 
     
     if (language === "html") {
@@ -70,32 +159,57 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       console.log("Detected language:", language);
       languageExtension = css();
       completionSources = [cssSmartProvider];
-    } else if (language === "js") {
+    } else if (language === "js" || language === "jsx" || language === "javascript") {
       console.log("Detected language:", language);
       languageExtension = javascript();
-      completionSources = [jsSmartProvider]; // Ajoute tes providers JS ici si nécessaire
+      completionSources = [jsSmartProvider];
+      useLsp = true;
+      lspLanguage = "javascript";
+    } else if (language === "ts" || language === "tsx" || language === "typescript") {
+      console.log("Detected language:", language);
+      languageExtension = javascript({ typescript: true });
+      completionSources = [jsSmartProvider];
+      useLsp = true;
+      lspLanguage = "typescript";
     } else if (language === "py"|| language === "python") {
       console.log("Detected language:", language);
-      languageExtension = python(); // python(); // si tu ajoutes un parser plus tard
+      languageExtension = python();
       completionSources = [pythonSmartProvider];
+      useLsp = true;
+      lspLanguage = "python";
     } else if (language === "cpp") {
       console.log("Detected language:", language);
       languageExtension = cpp();
-      completionSources = [cppSmartProvider]; // Ajouter des providers C++ si disponibles
+      completionSources = [cppSmartProvider];
     } else if (language === "rs" || language === "rust") {
       console.log("Detected language:", language);
       languageExtension = rust();
-      completionSources = [rustSmartProvider]; // Ajouter des providers Rust si disponibles
+      completionSources = [rustSmartProvider];
+      useLsp = true;
+      lspLanguage = "rust";
     } else if (language === "json") {
       console.log("Detected language:", language);
       languageExtension = json();
-      completionSources = []; // Ajouter des providers JSON si disponibles
+      completionSources = [];
     } 
     else {
       // Par défaut, HTML
       languageExtension = html();
       completionSources = [htmlSnippets, htmlCompletionSource];
     }
+
+    // Add LSP completion provider if available and enabled
+    if (useLsp && lspLanguage && lspEnabled) {
+      const lspCompletionProvider = createLspCompletionProvider(
+        lspLanguage,
+        () => filePathRef.current
+      );
+      // Add LSP completions alongside local completions
+      completionSources = [...completionSources, lspCompletionProvider];
+    }
+    
+    // Only use LSP if enabled
+    const effectiveUseLsp = useLsp && lspEnabled;
 
     // Récupérer les couleurs depuis les variables CSS
     const getComputedColor = (varName: string) => {
@@ -228,6 +342,8 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
         updateListener,
         EditorView.lineWrapping,
         syntaxHighlighting(customHighlightStyle),
+        // LSP linter for diagnostics (only if LSP is enabled)
+        ...(effectiveUseLsp ? [lspLinter()] : []),
         // Étape 3 : autocomplétion dynamique avec completionSources
         autocompletion({
           override: completionSources,  // Sources dynamiques selon le langage
@@ -436,6 +552,16 @@ export default function CodeEditorCM6({ value, onChange, language = "css" }: Cod
       });
     }
   }, [value]);
+
+  // Focus automatique sur l'éditeur quand un fichier est ouvert
+  useEffect(() => {
+    if (filePath && viewRef.current) {
+      // Petit délai pour s'assurer que le DOM est prêt
+      requestAnimationFrame(() => {
+        viewRef.current?.focus();
+      });
+    }
+  }, [filePath]);
 
   return (
     <div style={{ position: "relative", height: "100%", width: "100%" }}>

@@ -14,6 +14,9 @@ interface Settings {
   discord: {
     enabled: boolean;
   };
+  lsp: {
+    enabled: boolean;
+  };
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -45,6 +48,9 @@ const DEFAULT_SETTINGS: Settings = {
   },
   discord: {
     enabled: false,
+  },
+  lsp: {
+    enabled: true,
   },
 };
 

@@ -1,10 +1,13 @@
 mod discord_rich_presence;
+mod lsp;
 mod terminal;
 
 use crate::discord_rich_presence::DiscordState;
+use crate::lsp::LspState;
 use parking_lot::Mutex;
 use serde::Deserialize;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 
@@ -232,12 +235,47 @@ fn disconnect_discord_rpc(state: tauri::State<Mutex<DiscordState>>) -> Result<()
     Ok(())
 }
 
+// LSP Check Commands
+
+#[tauri::command]
+fn check_lsp_commands() -> std::collections::HashMap<String, bool> {
+    use std::process::Command;
+    
+    let commands = vec![
+        ("pylsp", "pylsp"),
+        ("rust-analyzer", "rust-analyzer"),
+        ("typescript-language-server", "typescript-language-server"),
+    ];
+    
+    let mut results = std::collections::HashMap::new();
+    
+    for (name, cmd) in commands {
+        let available = if cfg!(target_os = "windows") {
+            Command::new("where")
+                .arg(cmd)
+                .output()
+                .map(|o| o.status.success())
+                .unwrap_or(false)
+        } else {
+            Command::new("which")
+                .arg(cmd)
+                .output()
+                .map(|o| o.status.success())
+                .unwrap_or(false)
+        };
+        results.insert(name.to_string(), available);
+    }
+    
+    results
+}
+
 pub fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         // .plugin(tauri_plugin_clipboard_manager::init())
         .manage(terminal::TerminalState::default())
         .manage(Mutex::new(DiscordState::new("1451676636259811368")))
+        .manage(Arc::new(LspState::default()))
         .invoke_handler(tauri::generate_handler![
             open_folder_dialog,
             list_directory,
@@ -264,6 +302,14 @@ pub fn main() {
             update_discord_presence,
             init_discord_rpc,
             disconnect_discord_rpc,
+            check_lsp_commands,
+            // LSP commands
+            lsp::start_lsp,
+            lsp::stop_lsp,
+            lsp::send_lsp_request,
+            lsp::send_lsp_notification,
+            lsp::list_lsp_servers,
+            lsp::stop_all_lsp,
         ])
         .setup(|_app| Ok(()))
         //         .setup(|app| {
