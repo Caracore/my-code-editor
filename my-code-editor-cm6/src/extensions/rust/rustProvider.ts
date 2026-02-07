@@ -3,7 +3,7 @@ import { CompletionContext } from "@codemirror/autocomplete";
 const rustKeywords = [
   "fn", "let", "mut", "struct", "enum", "impl", "trait",
   "pub", "use", "mod", "match", "if", "else", "loop",
-  "while", "for", "in", "return", "async", "await",
+  "while", "for", "in", "return", "async", "await", "continue", "break", "const", "await", "async", "as", "false", "move", "ref", "Self", "self", "static", "struct", "true", "type", "unsafe", "where", "abstract", "become", "box", "do", "final", "macro", "override", "priv", "try", "typeof", "unsized", "virtual", "yield",
 ];
 
 const rustSnippets = [

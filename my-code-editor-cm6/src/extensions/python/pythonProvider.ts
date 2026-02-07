@@ -8,7 +8,7 @@ const pyKeywords = [
   "for", "while",
   "try", "except", "finally", "raise",
   "with", "lambda",
-  "True", "False", "None",
+  "True", "False", "None", "and", "del", "from", "not", "global", "or", "with", "assert", "print", "exec", "in", "is",
 ];
 
 // ✅ Snippets premium (multi-lignes, indentation, structures complètes)
