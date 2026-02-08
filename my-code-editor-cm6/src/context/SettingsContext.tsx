@@ -2,6 +2,14 @@ import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import { useSettings } from "../hooks/useSettings";
 
+interface OpacitySettings {
+  sidebar: number;
+  editor: number;
+  terminal: number;
+  tabsBar: number;
+  toolbar: number;
+}
+
 interface SettingsContextType {
   shortcuts: Record<string, string>;
   getShortcut: (action: string) => string;
@@ -10,6 +18,8 @@ interface SettingsContextType {
   toggleDiscord: (enabled: boolean) => void;
   lspEnabled: boolean;
   toggleLsp: (enabled: boolean) => void;
+  opacity: OpacitySettings;
+  updateOpacity: (zone: keyof OpacitySettings, value: number) => void;
   loading: boolean;
 }
 
@@ -53,6 +63,25 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     saveSettings(newSettings);
   }
 
+  function updateOpacity(zone: keyof OpacitySettings, value: number) {
+    const newSettings = {
+      ...settings,
+      opacity: {
+        ...settings.opacity,
+        [zone]: Math.max(0.1, Math.min(1.0, value)),
+      },
+    };
+    saveSettings(newSettings);
+  }
+
+  const defaultOpacity: OpacitySettings = {
+    sidebar: 1.0,
+    editor: 1.0,
+    terminal: 1.0,
+    tabsBar: 1.0,
+    toolbar: 1.0,
+  };
+
   return (
     <SettingsContext.Provider
       value={{
@@ -63,6 +92,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         toggleDiscord,
         lspEnabled: settings.lsp?.enabled ?? true,
         toggleLsp,
+        opacity: settings.opacity || defaultOpacity,
+        updateOpacity,
         loading,
       }}
     >

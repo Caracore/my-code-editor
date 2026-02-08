@@ -10,4 +10,15 @@ export default defineConfig({
       },
     }),
   ],
+  // Assurer que les assets SVG/PNG sont correctement inclus en production
+  assetsInclude: ['**/*.svg', '**/*.png'],
+  build: {
+    assetsInlineLimit: 0, // Ne pas inliner les assets pour éviter les problèmes
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
+    },
+  },
+  base: './', // Chemins relatifs pour Tauri
 })

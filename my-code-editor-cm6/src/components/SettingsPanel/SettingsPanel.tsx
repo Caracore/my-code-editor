@@ -3,8 +3,10 @@ import { useSettingsContext } from "../../context/SettingsContext";
 import { invoke } from "@tauri-apps/api/core";
 import "./SettingsPanel.css";
 
+type OpacityZone = "sidebar" | "editor" | "terminal" | "tabsBar" | "toolbar";
+
 export default function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { shortcuts, updateShortcut, discordEnabled, toggleDiscord } = useSettingsContext();
+  const { shortcuts, updateShortcut, discordEnabled, toggleDiscord, opacity, updateOpacity } = useSettingsContext();
   const [editingAction, setEditingAction] = useState<string | null>(null);
   const [newShortcut, setNewShortcut] = useState("");
 
@@ -22,6 +24,14 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
     "view:toggleSidebar": "Toggle Sidebar",
     "search:toggle": "Toggle Recherche",
     // "terminal:new": "Nouveau Terminal",
+  };
+
+  const opacityLabels: Record<OpacityZone, string> = {
+    sidebar: "Barre latérale",
+    editor: "Éditeur",
+    terminal: "Terminal",
+    tabsBar: "Barre d'onglets",
+    toolbar: "Barre d'outils",
   };
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -78,6 +88,26 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 onChange={(e) => handleDiscordToggle(e.target.checked)}
               />
             </label>
+          </div>
+
+          <h3>Opacité des zones</h3>
+          <div className="settings-section opacity-section">
+            {(Object.keys(opacityLabels) as OpacityZone[]).map((zone) => (
+              <div key={zone} className="opacity-item">
+                <label className="opacity-label">
+                  <span>{opacityLabels[zone]}</span>
+                  <span className="opacity-value">{Math.round((opacity[zone] || 1) * 100)}%</span>
+                </label>
+                <input
+                  type="range"
+                  min="10"
+                  max="100"
+                  value={Math.round((opacity[zone] || 1) * 100)}
+                  onChange={(e) => updateOpacity(zone, parseInt(e.target.value) / 100)}
+                  className="opacity-slider"
+                />
+              </div>
+            ))}
           </div>
 
           <h3>Raccourcis clavier</h3>

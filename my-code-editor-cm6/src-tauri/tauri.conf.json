@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "my-code-editor",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "identifier": "com.jm214.my-code-editor",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -26,13 +26,33 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis", "appimage", "deb"],
+    "targets": [
+      "msi",
+      "nsis",
+      "appimage",
+      "deb"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "jm214",
+    "copyright": "Copyright © 2026 jm214",
+    "category": "DeveloperTool",
+    "shortDescription": "My Code Editor - Un IDE moderne",
+    "longDescription": "Un éditeur de code moderne basé sur CodeMirror 6 avec support multi-langages",
+    "windows": {
+      "wix": {
+        "language": "fr-FR"
+      },
+      "nsis": {
+        "languages": ["French", "English"],
+        "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico"
+      }
+    }
   }
 }

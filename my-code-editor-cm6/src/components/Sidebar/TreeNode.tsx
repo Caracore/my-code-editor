@@ -3,6 +3,20 @@ import "./TreeNode.css";
 import { useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
+// Import des SVG comme modules pour fonctionner en production
+import folderIcon from "../../assets/folder.svg";
+import folderOpenIcon from "../../assets/folder-open.svg";
+import htmlIcon from "../../assets/html.svg";
+import cssIcon from "../../assets/css.svg";
+import jsIcon from "../../assets/js.svg";
+import tsIcon from "../../assets/ts.svg";
+import jsonIcon from "../../assets/json.svg";
+import pythonIcon from "../../assets/python.svg";
+import mdIcon from "../../assets/md.svg";
+import cppIcon from "../../assets/cpp.svg";
+import rustIcon from "../../assets/rust.svg";
+import txtIcon from "../../assets/txt.svg";
+
 interface TreeNodeProps {
   node: FileNode;
   onToggle: (node: FileNode) => void;
@@ -82,27 +96,27 @@ export default function TreeNode({
 
     switch (ext) {
       case "html":
-        return "/src/assets/html.svg";
+        return htmlIcon;
       case "css":
-        return "/src/assets/css.svg";
+        return cssIcon;
       case "js":
-        return "/src/assets/js.svg";
+        return jsIcon;
       case "ts":
       case "tsx":
-        return "/src/assets/ts.svg";
+        return tsIcon;
       case "json":
-        return "/src/assets/json.svg";
+        return jsonIcon;
       case "py":
-        return "/src/assets/python.svg";
+        return pythonIcon;
       case "md":
-        return "/src/assets/md.svg";
+        return mdIcon;
       case "cpp": 
       case "c": 
-        return "/src/assets/cpp.svg";
+        return cppIcon;
       case "rs": 
-        return "/src/assets/rust.svg";
+        return rustIcon;
       default:
-        return "/src/assets/txt.svg";
+        return txtIcon;
     }
   }
 
@@ -174,7 +188,7 @@ export default function TreeNode({
         ) : (
           <>
             {node.isDir ? (
-              <img src={node.expanded ? "/src/assets/folder-open.svg" : "/src/assets/folder.svg"} alt="" style={{ width: 16, height: 16, verticalAlign: "middle" }} />
+              <img src={node.expanded ? folderOpenIcon : folderIcon} alt="" style={{ width: 16, height: 16, verticalAlign: "middle" }} />
             ) : (
               <img src={getFileIcon(node.name)} alt="" style={{ width: 16, height: 16, verticalAlign: "middle" }} />
             )}{" "}

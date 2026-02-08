@@ -72,27 +72,31 @@ export default function MainLayout({
   // ✅ Utiliser le thème
   const { themeName, setThemeName } = useTheme();
 
-  // ✅ Récupérer les raccourcis, Discord et LSP
-  const { shortcuts, discordEnabled, toggleDiscord, lspEnabled, toggleLsp } = useSettingsContext();
+  // ✅ Récupérer les raccourcis, Discord, LSP et opacité
+  const { shortcuts, discordEnabled, toggleDiscord, lspEnabled, toggleLsp, opacity } = useSettingsContext();
 
   // ✅ Activer les raccourcis clavier
   useKeyboardShortcuts();
 
-  // ✅ Initialiser Discord RPC au démarrage si activé
+  // ✅ Initialiser Discord RPC au démarrage si activé dans les settings
   useEffect(() => {
     const initDiscord = async () => {
-      if (discordEnabled) {
-        try {
-          await invoke("init_discord_rpc");
-          console.log("✅ Discord RPC initialisé");
-        } catch (error) {
-          console.error("❌ Erreur lors de l'initialisation de Discord RPC:", error);
-        }
+      // Ne pas initialiser si Discord n'est pas activé dans les paramètres
+      if (!discordEnabled) {
+        console.log("⏭️ Discord RPC désactivé dans les paramètres, pas d'initialisation");
+        return;
+      }
+      
+      try {
+        await invoke("init_discord_rpc");
+        console.log("✅ Discord RPC initialisé");
+      } catch (error) {
+        console.error("❌ Erreur lors de l'initialisation de Discord RPC:", error);
       }
     };
 
     initDiscord();
-  }, []); // Ne s'exécute qu'une fois au montage
+  }, [discordEnabled]); // Re-exécuter si discordEnabled change
 
   // ✅ Discord Rich Presence
   const currentTab = tabs.find(tab => tab.path === activeTab);
@@ -603,12 +607,14 @@ export default function MainLayout({
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <TopMenu />
 
-      <Toolbar
-        onCreateFile={() => onCreateFile("nouveau fichier")}
-        onOpenThemeManager={() => setShowThemeManager((v) => !v)}
-        theme={themeName}
-        setTheme={setThemeName}
-      />
+      <div style={{ opacity: opacity.toolbar }}>
+        <Toolbar
+          onCreateFile={() => onCreateFile("nouveau fichier")}
+          onOpenThemeManager={() => setShowThemeManager((v) => !v)}
+          theme={themeName}
+          setTheme={setThemeName}
+        />
+      </div>
 
       {showThemeManager && <ThemeManager />}
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
@@ -627,24 +633,26 @@ export default function MainLayout({
       >
         <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {sidebarVisible && (
-          showTodoList ? (
-            <TodoList />
-          ) : (
-            <Sidebar
-              tree={tree}
-              sidebarVisible={sidebarVisible}
-              onRenameFile={onRenameFile}
-              onOpenFolder={onOpenFolder}
-              onOpenFile={onOpenFileFromTree}
-              onToggleFolder={toggleFolder}
-              onCreateFile={onCreateFile}
-              onCreateFileFromContext={onCreateFileFromContext}
-              onCreateFolderFromContext={onCreateFolderFromContext}
-              onTrashFile={onTrashFile}
-              onDeleteFile={onDeleteFile}
-              onReloadTree={onReloadTree}
-            />
-          )
+          <div style={{ opacity: opacity.sidebar }}>
+            {showTodoList ? (
+              <TodoList />
+            ) : (
+              <Sidebar
+                tree={tree}
+                sidebarVisible={sidebarVisible}
+                onRenameFile={onRenameFile}
+                onOpenFolder={onOpenFolder}
+                onOpenFile={onOpenFileFromTree}
+                onToggleFolder={toggleFolder}
+                onCreateFile={onCreateFile}
+                onCreateFileFromContext={onCreateFileFromContext}
+                onCreateFolderFromContext={onCreateFolderFromContext}
+                onTrashFile={onTrashFile}
+                onDeleteFile={onDeleteFile}
+                onReloadTree={onReloadTree}
+              />
+            )}
+          </div>
         )}
 
         {/* Zone centrale */}
@@ -660,12 +668,14 @@ export default function MainLayout({
                     style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderRight: "1px solid var(--border-color)" }}
                     onFocus={() => setFocusedEditor("split")}
                   >
-                    <SplitTabBar 
-                      filePath={splitFile.path} 
-                      isDirty={splitFile.isDirty}
-                      onClose={closeSplit} 
-                    />
-                    <div style={{ flex: 1, overflow: "hidden" }}>
+                    <div style={{ opacity: opacity.tabsBar }}>
+                      <SplitTabBar 
+                        filePath={splitFile.path} 
+                        isDirty={splitFile.isDirty}
+                        onClose={closeSplit} 
+                      />
+                    </div>
+                    <div style={{ flex: 1, overflow: "hidden", opacity: opacity.editor }}>
                       <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
                         <LazyCodeEditor
                           key={splitFile.path}
@@ -683,8 +693,10 @@ export default function MainLayout({
                   style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}
                   onFocus={() => setFocusedEditor("main")}
                 >
-                  <TabsBar />
-                  <div style={{ flex: 1, overflow: "hidden" }}>
+                  <div style={{ opacity: opacity.tabsBar }}>
+                    <TabsBar />
+                  </div>
+                  <div style={{ flex: 1, overflow: "hidden", opacity: opacity.editor }}>
                     <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
                       <LazyCodeEditor
                         key={activeFile.path}
@@ -704,12 +716,14 @@ export default function MainLayout({
                     style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", borderLeft: "1px solid var(--border-color)" }}
                     onFocus={() => setFocusedEditor("split")}
                   >
-                    <SplitTabBar 
-                      filePath={splitFile.path} 
-                      isDirty={splitFile.isDirty}
-                      onClose={closeSplit} 
-                    />
-                    <div style={{ flex: 1, overflow: "hidden" }}>
+                    <div style={{ opacity: opacity.tabsBar }}>
+                      <SplitTabBar 
+                        filePath={splitFile.path} 
+                        isDirty={splitFile.isDirty}
+                        onClose={closeSplit} 
+                      />
+                    </div>
+                    <div style={{ flex: 1, overflow: "hidden", opacity: opacity.editor }}>
                       <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
                         <LazyCodeEditor
                           key={splitFile.path}
@@ -726,19 +740,23 @@ export default function MainLayout({
             ) : (
               // Mode normal: un seul éditeur avec zone de drop
               <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                <TabsBar />
+                <div style={{ opacity: opacity.tabsBar }}>
+                  <TabsBar />
+                </div>
                 <EditorZone onFileDrop={handleEditorZoneDrop}>
-                  <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
-                    <LazyCodeEditor
-                      key={activeFile.path}
-                      value={activeFile.content}
-                      onChange={(newValue: string) =>
-                        updateTabContent(activeFile.path, newValue)
-                      }
-                      language={detectLanguageFromFilename(activeFile.name)}
-                      filePath={activeFile.path}
-                    />
-                  </Suspense>
+                  <div style={{ opacity: opacity.editor, height: "100%" }}>
+                    <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
+                      <LazyCodeEditor
+                        key={activeFile.path}
+                        value={activeFile.content}
+                        onChange={(newValue: string) =>
+                          updateTabContent(activeFile.path, newValue)
+                        }
+                        language={detectLanguageFromFilename(activeFile.name)}
+                        filePath={activeFile.path}
+                      />
+                    </Suspense>
+                  </div>
                 </EditorZone>
               </div>
             )}
@@ -748,7 +766,8 @@ export default function MainLayout({
             height: showTerminal ? "200px" : "0", 
             borderTop: showTerminal ? "1px solid #333" : "none",
             overflow: "hidden",
-            transition: "height 0.2s ease"
+            transition: "height 0.2s ease",
+            opacity: opacity.terminal
           }}>
             <Terminal rootPath={rootPath} />
           </div>

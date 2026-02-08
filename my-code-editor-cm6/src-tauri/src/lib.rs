@@ -225,14 +225,12 @@ fn update_discord_presence(state: tauri::State<Mutex<DiscordState>>, payload: Pr
 
 #[tauri::command]
 fn init_discord_rpc(state: tauri::State<Mutex<DiscordState>>) -> Result<(), String> {
-    state.lock().set_enabled(true);
-    Ok(())
+    state.lock().connect()
 }
 
 #[tauri::command]
 fn disconnect_discord_rpc(state: tauri::State<Mutex<DiscordState>>) -> Result<(), String> {
-    state.lock().set_enabled(false);
-    Ok(())
+    state.lock().disconnect()
 }
 
 // LSP Check Commands

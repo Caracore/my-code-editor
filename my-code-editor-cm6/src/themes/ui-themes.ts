@@ -1,6 +1,13 @@
 // ui-themes.ts
 export const UI_THEMES = {
   "dark": {
+    // Typographie
+    "--font-family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+    "--font-family-mono": "'Consolas', 'Monaco', 'Courier New', monospace",
+    "--font-size": "14px",
+    "--font-size-small": "12px",
+    "--font-size-large": "16px",
+    
     // Couleurs de base
     "--primary-bg": "#0D0D0D",
     "--primary-fg": "#E0E0E0",
@@ -226,8 +233,45 @@ export const UI_THEMES = {
     "--menu-hover-bg": "#2a2a2a",
     "--menu-active-bg": "#007ACC",
     "--menu-border": "#333333",
+    
+    // Search Bar
+    "--searchbar-bg": "#1e1e1e",
+    "--searchbar-fg": "#e0e0e0",
+    "--searchbar-border": "#3c3c3c",
+    "--searchbar-input-bg": "#0d0d0d",
+    "--searchbar-input-fg": "#e0e0e0",
+    "--searchbar-input-border": "#333333",
+    "--searchbar-placeholder": "#858585",
+    "--searchbar-match-bg": "rgba(255, 215, 0, 0.3)",
+    "--searchbar-match-current-bg": "rgba(255, 140, 0, 0.5)",
+    "--searchbar-match-current-border": "rgba(255, 140, 0, 0.8)",
+    
+    // Command Palette
+    "--palette-overlay-bg": "rgba(0, 0, 0, 0.5)",
+    "--palette-bg": "#1e1e1e",
+    "--palette-fg": "#ffffff",
+    "--palette-border": "#3c3c3c",
+    "--palette-input-bg": "#252526",
+    "--palette-input-border": "#3c3c3c",
+    "--palette-item-hover-bg": "#2a2a2a",
+    "--palette-item-selected-bg": "#007acc",
+    "--palette-item-selected-fg": "#ffffff",
+    "--palette-shortcut-bg": "#252526",
+    "--palette-shortcut-border": "#3c3c3c",
+    "--palette-text-secondary": "#6a6a6a",
+    
+    // Scrollbar
+    "--scrollbar-thumb": "#424242",
+    "--scrollbar-thumb-hover": "#4f4f4f",
   },
   "light": {
+    // Typographie
+    "--font-family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+    "--font-family-mono": "'Consolas', 'Monaco', 'Courier New', monospace",
+    "--font-size": "14px",
+    "--font-size-small": "12px",
+    "--font-size-large": "16px",
+    
     // Couleurs de base
     "--primary-bg": "#FFFFFF",
     "--primary-fg": "#000000",
@@ -453,5 +497,35 @@ export const UI_THEMES = {
     "--menu-hover-bg": "#E8E8E8",
     "--menu-active-bg": "#0078D4",
     "--menu-border": "#CCCCCC",
+    
+    // Search Bar
+    "--searchbar-bg": "#F3F3F3",
+    "--searchbar-fg": "#000000",
+    "--searchbar-border": "#CCCCCC",
+    "--searchbar-input-bg": "#FFFFFF",
+    "--searchbar-input-fg": "#000000",
+    "--searchbar-input-border": "#CCCCCC",
+    "--searchbar-placeholder": "#6C6C6C",
+    "--searchbar-match-bg": "rgba(255, 215, 0, 0.4)",
+    "--searchbar-match-current-bg": "rgba(255, 140, 0, 0.6)",
+    "--searchbar-match-current-border": "rgba(255, 140, 0, 0.9)",
+    
+    // Command Palette
+    "--palette-overlay-bg": "rgba(0, 0, 0, 0.3)",
+    "--palette-bg": "#F3F3F3",
+    "--palette-fg": "#000000",
+    "--palette-border": "#CCCCCC",
+    "--palette-input-bg": "#FFFFFF",
+    "--palette-input-border": "#CCCCCC",
+    "--palette-item-hover-bg": "#E8E8E8",
+    "--palette-item-selected-bg": "#0078D4",
+    "--palette-item-selected-fg": "#FFFFFF",
+    "--palette-shortcut-bg": "#FFFFFF",
+    "--palette-shortcut-border": "#CCCCCC",
+    "--palette-text-secondary": "#6C6C6C",
+    
+    // Scrollbar
+    "--scrollbar-thumb": "#CCCCCC",
+    "--scrollbar-thumb-hover": "#AAAAAA",
   },
 } as const;

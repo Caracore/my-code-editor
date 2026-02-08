@@ -3,30 +3,57 @@ use discord_rich_presence::{activity, DiscordIpc, DiscordIpcClient};
 pub struct DiscordState {
     pub enabled: bool,
     pub client: Option<DiscordIpcClient>,
+    app_id: String,
 }
 
 impl DiscordState {
     pub fn new(app_id: &str) -> Self {
-        println!("[Discord] Creating client with App ID: {}", app_id);
-
-        let mut client = DiscordIpcClient::new(app_id);
-
-        println!("[Discord] Client created, attempting connection…");
-
-        let connected = client.connect().is_ok();
-
-        println!("[Discord] Connection status: {}", connected);
-
+        println!("[Discord] Creating DiscordState (not connecting yet)");
+        
+        // Ne pas se connecter automatiquement - attendre init_discord_rpc
         Self {
-            enabled: true,
-            client: if connected {
-                println!("[Discord] ✅ Connected to Discord IPC");
-                Some(client)
-            } else {
-                println!("[Discord] ❌ Failed to connect to Discord IPC");
-                None
-            },
+            enabled: false,
+            client: None,
+            app_id: app_id.to_string(),
         }
+    }
+
+    /// Initialise la connexion Discord (appelé par init_discord_rpc)
+    pub fn connect(&mut self) -> Result<(), String> {
+        if self.client.is_some() {
+            println!("[Discord] Already connected");
+            return Ok(());
+        }
+
+        println!("[Discord] Attempting to connect with App ID: {}", self.app_id);
+        
+        let mut client = DiscordIpcClient::new(&self.app_id);
+        
+        match client.connect() {
+            Ok(_) => {
+                println!("[Discord] ✅ Connected to Discord IPC");
+                self.client = Some(client);
+                self.enabled = true;
+                Ok(())
+            }
+            Err(e) => {
+                println!("[Discord] ❌ Failed to connect to Discord IPC: {:?}", e);
+                Err(format!("Failed to connect to Discord: {:?}", e))
+            }
+        }
+    }
+
+    /// Déconnecte Discord (appelé par disconnect_discord_rpc)
+    pub fn disconnect(&mut self) -> Result<(), String> {
+        println!("[Discord] Disconnecting...");
+        self.enabled = false;
+        
+        if let Some(mut client) = self.client.take() {
+            let _ = client.close();
+            println!("[Discord] ✅ Disconnected from Discord IPC");
+        }
+        
+        Ok(())
     }
 
     pub fn set_enabled(&mut self, on: bool) {
@@ -65,7 +92,7 @@ impl DiscordState {
             
             println!("[Discord] set_activity result: {:?}", result);
         } else {
-            println!("[Discord] ❌ No Discord client available (IPC not connected)");
+            println!("[Discord] ❌ No Discord client available (not connected)");
         }
     }
 }

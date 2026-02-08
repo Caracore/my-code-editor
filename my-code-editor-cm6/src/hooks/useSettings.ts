@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
+interface OpacitySettings {
+  sidebar: number;
+  editor: number;
+  terminal: number;
+  tabsBar: number;
+  toolbar: number;
+}
+
 interface Settings {
   shortcuts: Record<string, string>;
   theme: {
@@ -17,6 +25,7 @@ interface Settings {
   lsp: {
     enabled: boolean;
   };
+  opacity: OpacitySettings;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -51,6 +60,13 @@ const DEFAULT_SETTINGS: Settings = {
   },
   lsp: {
     enabled: true,
+  },
+  opacity: {
+    sidebar: 1.0,
+    editor: 1.0,
+    terminal: 1.0,
+    tabsBar: 1.0,
+    toolbar: 1.0,
   },
 };
 
