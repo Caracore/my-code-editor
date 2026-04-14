@@ -2,15 +2,32 @@ import React, { useState, useEffect, useRef } from "react";
 import MainLayout from "./layout/MainLayout";
 import { ThemeProvider } from "./context/ThemeContext";
 import { TerminalProvider } from "./context/TerminalContext";
-import { SettingsProvider } from "./context/SettingsContext";
+import { SettingsProvider, useSettingsContext } from "./context/SettingsContext";
 import { TabsProvider, useTabs } from "./context/TabsContext";
+import { ModeProvider } from "./context/ModeContext";
 import { useFileTree } from "./hooks/useFileTree";
 import { useFileSystem } from "./hooks/useFileSystem";
+import { useGlobalJumpLabels } from "./hooks/useGlobalJumpLabels";
+import { ModeIndicator } from "./components/ModeIndicator/ModeIndicator";
 import type { FileNode } from "./types/FileNode";
 
 const LazyCodeEditor = React.lazy(
   () => import("./components/Editor/CodeEditorCM6") // ✅ nouvelle version CodeMirror
 );
+
+// Wrapper component that uses GlobalJumpLabels with settings
+function GlobalJumpLabelsWrapper({ children }: { children: React.ReactNode }) {
+  const { jumpLabelsEnabled } = useSettingsContext();
+  const { JumpOverlay } = useGlobalJumpLabels(jumpLabelsEnabled);
+  
+  return (
+    <>
+      {children}
+      {JumpOverlay}
+      <ModeIndicator />
+    </>
+  );
+}
 
 function AppContent() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -133,22 +150,24 @@ function AppContent() {
   return (
     <TerminalProvider>
       <SettingsProvider>
-        <MainLayout
-          tree={tree}
-          sidebarVisible={sidebarVisible}
-          setSidebarVisible={setSidebarVisible}
-          onRenameFile={handleRenameFile}
-          onCreateFile={handleCreateFile}
-          onOpenFolder={handleOpenFolder}
-          LazyCodeEditor={LazyCodeEditor}
-          onOpenFileFromTree={handleOpenFileFromTree}
-          toggleFolder={handleToggleFolder}
-          onCreateFileFromContext={onCreateFileFromContext}
-          onCreateFolderFromContext={onCreateFolderFromContext}
-          onTrashFile={handleTrashFile}
-          onDeleteFile={handleDeleteFile}
-          onReloadTree={reloadTreeWithState}
-        />
+        <GlobalJumpLabelsWrapper>
+          <MainLayout
+            tree={tree}
+            sidebarVisible={sidebarVisible}
+            setSidebarVisible={setSidebarVisible}
+            onRenameFile={handleRenameFile}
+            onCreateFile={handleCreateFile}
+            onOpenFolder={handleOpenFolder}
+            LazyCodeEditor={LazyCodeEditor}
+            onOpenFileFromTree={handleOpenFileFromTree}
+            toggleFolder={handleToggleFolder}
+            onCreateFileFromContext={onCreateFileFromContext}
+            onCreateFolderFromContext={onCreateFolderFromContext}
+            onTrashFile={handleTrashFile}
+            onDeleteFile={handleDeleteFile}
+            onReloadTree={reloadTreeWithState}
+          />
+        </GlobalJumpLabelsWrapper>
       </SettingsProvider>
     </TerminalProvider>
   );
@@ -158,7 +177,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <TabsProvider>
-        <AppContent />
+        <ModeProvider>
+          <AppContent />
+        </ModeProvider>
       </TabsProvider>
     </ThemeProvider>
   );

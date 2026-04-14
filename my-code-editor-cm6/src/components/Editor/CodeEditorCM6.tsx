@@ -5,10 +5,17 @@ import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { indentWithTab } from "@codemirror/commands";
 import { minimalSetup } from "codemirror";
-import type { KeyBinding } from "@codemirror/view";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import { autocompletion } from "@codemirror/autocomplete";
+
+// KeyBinding type definition (not exported from @codemirror/view in newer versions)
+interface KeyBinding {
+  key?: string;
+  mac?: string;
+  run: (view: EditorView) => boolean;
+  preventDefault?: boolean;
+}
 import { html, htmlCompletionSource } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css"; //, cssCompletionSource
 import { javascript } from "@codemirror/lang-javascript"; // , javascriptLanguage
@@ -23,7 +30,8 @@ import { rustSmartProvider } from "../../extensions/rust/rustProvider";
 import { cppSmartProvider } from "../../extensions/cpp/cppProvider";
 import { json } from "@codemirror/lang-json";
 import { smoothCaret } from "../../cursor/cursorlayer";
-import { lspLinter, updateDiagnostics, createLspCompletionProvider } from "../../extensions/lsp";
+import { lspLinter, updateDiagnostics, createLspCompletionProvider, lspInlayHints, createInlayHintsProvider } from "../../extensions/lsp";
+import { jumpLabels } from "../../extensions/navigation";
 import { lspManager } from "../../lsp";
 import type { Diagnostic } from "../../lsp";
 import { useSettingsContext } from "../../context/SettingsContext";
@@ -344,6 +352,10 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
         syntaxHighlighting(customHighlightStyle),
         // LSP linter for diagnostics (only if LSP is enabled)
         ...(effectiveUseLsp ? [lspLinter()] : []),
+        // LSP inlay hints (only if LSP is enabled)
+        ...(effectiveUseLsp ? [lspInlayHints(), createInlayHintsProvider(() => filePathRef.current)] : []),
+        // Jump labels for keyboard navigation (Ctrl+; or Alt+F)
+        jumpLabels(),
         // Étape 3 : autocomplétion dynamique avec completionSources
         autocompletion({
           override: completionSources,  // Sources dynamiques selon le langage

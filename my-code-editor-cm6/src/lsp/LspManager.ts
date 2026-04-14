@@ -1,6 +1,6 @@
 import { LspClient } from "./LspClient";
 import { LSP_CONFIGS } from "./types";
-import type { Diagnostic } from "./types";
+import type { Diagnostic, Range, InlayHint } from "./types";
 
 type DiagnosticsCallback = (filePath: string, diagnostics: Diagnostic[]) => void;
 
@@ -141,6 +141,18 @@ export class LspManager {
         this.diagnosticsCallbacks.splice(index, 1);
       }
     };
+  }
+
+  // Inlay Hints
+
+  async getInlayHints(filePath: string, range: Range): Promise<InlayHint[]> {
+    const doc = this.openDocuments.get(filePath);
+    if (!doc) return [];
+
+    const client = this.clients.get(doc.language);
+    if (!client?.isInitialized()) return [];
+
+    return client.getInlayHints(filePath, range);
   }
 
   // Get language from file extension

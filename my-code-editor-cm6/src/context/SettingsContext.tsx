@@ -18,6 +18,8 @@ interface SettingsContextType {
   toggleDiscord: (enabled: boolean) => void;
   lspEnabled: boolean;
   toggleLsp: (enabled: boolean) => void;
+  jumpLabelsEnabled: boolean;
+  toggleJumpLabels: (enabled: boolean) => void;
   opacity: OpacitySettings;
   updateOpacity: (zone: keyof OpacitySettings, value: number) => void;
   loading: boolean;
@@ -63,6 +65,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     saveSettings(newSettings);
   }
 
+  function toggleJumpLabels(enabled: boolean) {
+    const newSettings = {
+      ...settings,
+      jumpLabels: {
+        enabled,
+      },
+    };
+    saveSettings(newSettings);
+  }
+
   function updateOpacity(zone: keyof OpacitySettings, value: number) {
     const newSettings = {
       ...settings,
@@ -92,6 +104,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         toggleDiscord,
         lspEnabled: settings.lsp?.enabled ?? true,
         toggleLsp,
+        jumpLabelsEnabled: settings.jumpLabels?.enabled ?? true,
+        toggleJumpLabels,
         opacity: settings.opacity || defaultOpacity,
         updateOpacity,
         loading,

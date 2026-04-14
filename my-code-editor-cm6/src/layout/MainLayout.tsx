@@ -11,6 +11,7 @@ import WelcomeScreen from "../components/WelcomeScreen/WelcomeScreen";
 import TodoList from "../components/TodoList/TodoList";
 import EditorZone from "../components/EditorZone/EditorZone";
 import { CommandPalette, type Command } from "../components/CommandPalette/CommandPalette";
+import { ErrorBoundary } from "../components/ErrorBoundary/ErrorBoundary";
 import { detectLanguageFromFilename } from "../utils/detectLanguage";
 import { useTabs } from "../context/TabsContext";
 import { useTheme } from "../context/ThemeContext";
@@ -745,17 +746,19 @@ export default function MainLayout({
                 </div>
                 <EditorZone onFileDrop={handleEditorZoneDrop}>
                   <div style={{ opacity: opacity.editor, height: "100%" }}>
-                    <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
-                      <LazyCodeEditor
-                        key={activeFile.path}
-                        value={activeFile.content}
-                        onChange={(newValue: string) =>
-                          updateTabContent(activeFile.path, newValue)
-                        }
-                        language={detectLanguageFromFilename(activeFile.name)}
-                        filePath={activeFile.path}
-                      />
-                    </Suspense>
+                    <ErrorBoundary>
+                      <Suspense fallback={<div style={{ color: "white" }}>Chargement...</div>}>
+                        <LazyCodeEditor
+                          key={activeFile.path}
+                          value={activeFile.content}
+                          onChange={(newValue: string) =>
+                            updateTabContent(activeFile.path, newValue)
+                          }
+                          language={detectLanguageFromFilename(activeFile.name)}
+                          filePath={activeFile.path}
+                        />
+                      </Suspense>
+                    </ErrorBoundary>
                   </div>
                 </EditorZone>
               </div>

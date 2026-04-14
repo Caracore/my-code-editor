@@ -135,6 +135,35 @@ export interface Hover {
   range?: Range;
 }
 
+// Inlay Hints
+export const InlayHintKind = {
+  Type: 1,
+  Parameter: 2,
+} as const;
+export type InlayHintKind = typeof InlayHintKind[keyof typeof InlayHintKind];
+
+export interface InlayHintLabelPart {
+  value: string;
+  tooltip?: string | MarkupContent;
+  location?: Location;
+  command?: unknown;
+}
+
+export interface InlayHint {
+  position: Position;
+  label: string | InlayHintLabelPart[];
+  kind?: InlayHintKind;
+  textEdits?: TextEdit[];
+  tooltip?: string | MarkupContent;
+  paddingLeft?: boolean;
+  paddingRight?: boolean;
+}
+
+export interface InlayHintParams {
+  textDocument: TextDocumentIdentifier;
+  range: Range;
+}
+
 // Server Capabilities
 export interface ServerCapabilities {
   textDocumentSync?: number | TextDocumentSyncOptions;
@@ -144,6 +173,11 @@ export interface ServerCapabilities {
   referencesProvider?: boolean;
   documentSymbolProvider?: boolean;
   diagnosticProvider?: DiagnosticOptions;
+  inlayHintProvider?: boolean | InlayHintOptions;
+}
+
+export interface InlayHintOptions {
+  resolveProvider?: boolean;
 }
 
 export interface TextDocumentSyncOptions {
@@ -194,6 +228,9 @@ export interface TextDocumentClientCapabilities {
   };
   publishDiagnostics?: {
     relatedInformation?: boolean;
+  };
+  inlayHint?: {
+    dynamicRegistration?: boolean;
   };
 }
 

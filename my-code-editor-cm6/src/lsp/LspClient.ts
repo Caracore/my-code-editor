@@ -7,6 +7,7 @@ import type {
   InitializeResult,
   TextDocumentItem,
   Position,
+  Range,
   CompletionItem,
   CompletionList,
   Hover,
@@ -15,6 +16,7 @@ import type {
   TextDocumentContentChangeEvent,
   JsonRpcResponse,
   JsonRpcNotification,
+  InlayHint,
 } from "./types";
 
 export class LspClient {
@@ -102,6 +104,9 @@ export class LspClient {
           },
           publishDiagnostics: {
             relatedInformation: true,
+          },
+          inlayHint: {
+            dynamicRegistration: true,
           },
         },
         workspace: {
@@ -282,6 +287,17 @@ export class LspClient {
       textDocument: { uri: this.pathToUri(filePath) },
       position,
     });
+  }
+
+  async getInlayHints(filePath: string, range: Range): Promise<InlayHint[]> {
+    if (!this.initialized) return [];
+
+    const result = await this.sendRequest<InlayHint[] | null>("textDocument/inlayHint", {
+      textDocument: { uri: this.pathToUri(filePath) },
+      range,
+    });
+
+    return result || [];
   }
 
   onDiagnostics(callback: (uri: string, diagnostics: Diagnostic[]) => void): () => void {
