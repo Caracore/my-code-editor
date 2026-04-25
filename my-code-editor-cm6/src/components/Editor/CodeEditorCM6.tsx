@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, gutter, keymap, lineNumbers } from "@codemirror/view";
 import SearchBar, { searchHighlightExtension } from "../SearchBar/SearchBar";
 import { EditorState } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { indentWithTab } from "@codemirror/commands";
+// import { indentWithTab } from "@codemirror/commands";
 import { minimalSetup } from "codemirror";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
@@ -31,7 +31,6 @@ import { cppSmartProvider } from "../../extensions/cpp/cppProvider";
 import { json } from "@codemirror/lang-json";
 import { smoothCaret } from "../../cursor/cursorlayer";
 import { lspLinter, updateDiagnostics, createLspCompletionProvider, lspInlayHints, createInlayHintsProvider } from "../../extensions/lsp";
-import { jumpLabels } from "../../extensions/navigation";
 import { lspManager } from "../../lsp";
 import type { Diagnostic } from "../../lsp";
 import { useSettingsContext } from "../../context/SettingsContext";
@@ -318,29 +317,30 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
           return false;
         },
       },
-      {
-        key: "Shift-Tab",
-        run: indentWithTab.run,
-      },
-      ...defaultKeymap.filter((binding) => {
-        // Filtrer les raccourcis que nous voulons gérer au niveau global
-        const key = binding.key;
-        if (!key) return true;
-        // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+N, Ctrl+F
-        // Les événements copier/coller/couper sont gérés par les event listeners natifs
-        if (key.includes("Mod-s") || key.includes("Mod-o") || 
-            key.includes("Mod-w") || key.includes("Mod-n") ||
-            key.includes("Mod-f")) {
-          return false;
-        }
-        return true;
-      }),
-      ...historyKeymap,
+      // {
+      //   key: "Shift-Tab",
+      //   run: indentWithTab.run,
+      // },
+      // ...defaultKeymap.filter((binding) => {
+      //   // Filtrer les raccourcis que nous voulons gérer au niveau global
+      //   const key = binding.key;
+      //   if (!key) return true;
+      //   // Laisser passer Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+N, Ctrl+F
+      //   // Les événements copier/coller/couper sont gérés par les event listeners natifs
+      //   if (key.includes("Mod-s") || key.includes("Mod-o") || 
+      //       key.includes("Mod-w") || key.includes("Mod-n") ||
+      //       key.includes("Mod-f")) {
+      //     return false;
+      //   }
+      //   return true;
+      // }),
+      // ...historyKeymap,
     ];
 
     const state = EditorState.create({
       doc: value,
       extensions: [
+        lineNumbers(), gutter({class: "cm-gutters"}),
         minimalSetup,
         languageExtension,  // Étape 2 : extension de langage dynamique
         smoothCaret,
@@ -354,8 +354,6 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
         ...(effectiveUseLsp ? [lspLinter()] : []),
         // LSP inlay hints (only if LSP is enabled)
         ...(effectiveUseLsp ? [lspInlayHints(), createInlayHintsProvider(() => filePathRef.current)] : []),
-        // Jump labels for keyboard navigation (Ctrl+; or Alt+F)
-        jumpLabels(),
         // Étape 3 : autocomplétion dynamique avec completionSources
         autocompletion({
           override: completionSources,  // Sources dynamiques selon le langage

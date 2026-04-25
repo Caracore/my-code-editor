@@ -324,7 +324,7 @@ export const UI_THEMES = {
     "--editor-active-line-bg": "rgba(0, 0, 0, 0.03)",
     "--editor-active-line-gutter-bg": "rgba(0, 0, 0, 0.03)",
     
-    // CodeMirror 6 - Gutters
+    // CodeMirror 6 - Gutters Goutière qui affiche les lignes de code (numéros)
     "--editor-gutter-bg": "#F8F8F8",
     "--editor-gutter-fg": "#237893",
     "--editor-gutter-border": "#CCCCCC",
