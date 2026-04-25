@@ -31,6 +31,7 @@ import { cppSmartProvider } from "../../extensions/cpp/cppProvider";
 import { json } from "@codemirror/lang-json";
 import { smoothCaret } from "../../cursor/cursorlayer";
 import { lspLinter, updateDiagnostics, createLspCompletionProvider, lspInlayHints, createInlayHintsProvider } from "../../extensions/lsp";
+import { breakpointGutter, diagnosticsGutter, diffGutter, setDiffBaseline } from "../../extensions/gutters";
 import { lspManager } from "../../lsp";
 import type { Diagnostic } from "../../lsp";
 import { useSettingsContext } from "../../context/SettingsContext";
@@ -340,6 +341,9 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
     const state = EditorState.create({
       doc: value,
       extensions: [
+        breakpointGutter(),
+        diagnosticsGutter(),
+        diffGutter(),
         lineNumbers(), gutter({class: "cm-gutters"}),
         minimalSetup,
         languageExtension,  // Étape 2 : extension de langage dynamique
@@ -537,6 +541,9 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
 
     viewRef.current = view;
 
+    // Initialiser la baseline du diff gutter avec le contenu initial
+    setDiffBaseline(view, value);
+
     // NE PAS ajouter de gestionnaires personnalisés pour copier/coller/couper
     // CodeMirror les gère déjà nativement via minimalSetup
     // Ajouter nos propres handlers cause une duplication
@@ -566,6 +573,8 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
   // Focus automatique sur l'éditeur quand un fichier est ouvert
   useEffect(() => {
     if (filePath && viewRef.current) {
+      // Réinitialiser la baseline du diff gutter au changement de fichier
+      setDiffBaseline(viewRef.current, value);
       // Petit délai pour s'assurer que le DOM est prêt
       requestAnimationFrame(() => {
         viewRef.current?.focus();
