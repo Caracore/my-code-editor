@@ -138,6 +138,44 @@ function AppContent() {
     tabs,
   });
 
+  // 🎯 Goto-definition LSP : ouvrir le fichier puis positionner le curseur
+  const tabsRef = useRef(tabs);
+  useEffect(() => { tabsRef.current = tabs; }, [tabs]);
+
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const custom = e as CustomEvent<{ path: string; line: number; character: number }>;
+      const detail = custom.detail;
+      if (!detail) return;
+
+      const dispatchPosition = () => {
+        window.dispatchEvent(
+          new CustomEvent("editor:goto-position", {
+            detail,
+          })
+        );
+      };
+
+      const alreadyOpen = tabsRef.current.some((t) => t.path === detail.path);
+      if (alreadyOpen) {
+        dispatchPosition();
+        // Petit délai si l'onglet existe mais n'est pas actif (re-render)
+        setTimeout(dispatchPosition, 50);
+        return;
+      }
+
+      try {
+        await handleOpenFileFromTree(detail.path);
+        // Laisser le temps à l'éditeur de monter et listener
+        setTimeout(dispatchPosition, 100);
+      } catch (err) {
+        console.error("[App] goto-definition: failed to open file", detail.path, err);
+      }
+    };
+    window.addEventListener("lsp:goto-definition", handler as EventListener);
+    return () => window.removeEventListener("lsp:goto-definition", handler as EventListener);
+  }, [handleOpenFileFromTree]);
+
 
 
   return (

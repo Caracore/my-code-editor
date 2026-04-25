@@ -1,6 +1,6 @@
 import { LspClient } from "./LspClient";
 import { LSP_CONFIGS } from "./types";
-import type { Diagnostic, Range, InlayHint } from "./types";
+import type { Diagnostic, Range, Position, Location, InlayHint } from "./types";
 
 type DiagnosticsCallback = (filePath: string, diagnostics: Diagnostic[]) => void;
 
@@ -9,9 +9,25 @@ export class LspManager {
   private rootPath: string = "";
   private diagnosticsCallbacks: DiagnosticsCallback[] = [];
   private openDocuments: Map<string, { language: string; content: string }> = new Map();
+  private startingServers: Map<string, Promise<boolean>> = new Map();
 
   setRootPath(path: string): void {
+    const changed = this.rootPath !== path;
     this.rootPath = path;
+    if (changed && path) {
+      console.log(`[LspManager] Root path set to: ${path}`);
+      // Si des documents étaient ouverts avant que le rootPath soit dispo,
+      // on (re)démarre les serveurs nécessaires maintenant.
+      const pendingLanguages = new Set<string>();
+      for (const doc of this.openDocuments.values()) {
+        if (LSP_CONFIGS[doc.language] && !this.clients.has(doc.language)) {
+          pendingLanguages.add(doc.language);
+        }
+      }
+      for (const lang of pendingLanguages) {
+        void this.startServer(lang);
+      }
+    }
   }
 
   getRootPath(): string {
@@ -23,6 +39,10 @@ export class LspManager {
       console.log(`[LspManager] ${language} server already running`);
       return true;
     }
+
+    // Évite les démarrages concurrents du même serveur
+    const existing = this.startingServers.get(language);
+    if (existing) return existing;
 
     const config = LSP_CONFIGS[language];
     if (!config) {
@@ -36,26 +56,34 @@ export class LspManager {
     }
 
     const client = new LspClient(language, this.rootPath);
-    
+
     // Subscribe to diagnostics
     client.onDiagnostics((filePath, diagnostics) => {
       this.diagnosticsCallbacks.forEach((cb) => cb(filePath, diagnostics));
     });
 
-    const success = await client.start(config);
-    if (success) {
-      this.clients.set(language, client);
-      console.log(`[LspManager] Started ${language} server`);
+    const startPromise = (async () => {
+      try {
+        const success = await client.start(config);
+        if (success) {
+          this.clients.set(language, client);
+          console.log(`[LspManager] Started ${language} server`);
 
-      // Re-open any documents for this language
-      for (const [path, doc] of this.openDocuments) {
-        if (doc.language === language) {
-          await client.openDocument(path, doc.content);
+          // Re-open any documents for this language
+          for (const [path, doc] of this.openDocuments) {
+            if (doc.language === language) {
+              await client.openDocument(path, doc.content);
+            }
+          }
         }
+        return success;
+      } finally {
+        this.startingServers.delete(language);
       }
-    }
+    })();
 
-    return success;
+    this.startingServers.set(language, startPromise);
+    return startPromise;
   }
 
   async stopServer(language: string): Promise<void> {
@@ -85,6 +113,7 @@ export class LspManager {
 
   async openDocument(filePath: string, language: string, content: string): Promise<void> {
     this.openDocuments.set(filePath, { language, content });
+    console.log(`[LspManager] openDocument: ${filePath} (${language}), rootPath="${this.rootPath}"`);
 
     // Try to start server if not running
     if (!this.clients.has(language) && LSP_CONFIGS[language]) {
@@ -94,6 +123,8 @@ export class LspManager {
     const client = this.clients.get(language);
     if (client?.isInitialized()) {
       await client.openDocument(filePath, content);
+    } else {
+      console.warn(`[LspManager] Server for ${language} not yet initialized, document buffered`);
     }
   }
 
@@ -153,6 +184,18 @@ export class LspManager {
     if (!client?.isInitialized()) return [];
 
     return client.getInlayHints(filePath, range);
+  }
+
+  // Go to Definition
+
+  async getDefinition(filePath: string, position: Position): Promise<Location[]> {
+    const doc = this.openDocuments.get(filePath);
+    if (!doc) return [];
+
+    const client = this.clients.get(doc.language);
+    if (!client?.isInitialized()) return [];
+
+    return client.getDefinition(filePath, position);
   }
 
   // Get language from file extension

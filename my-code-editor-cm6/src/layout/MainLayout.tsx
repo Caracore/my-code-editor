@@ -564,6 +564,14 @@ export default function MainLayout({
     console.log("💾 Sauvegarde du fichier:", activeTab);
     await invoke("save_file", { path: activeTab, content: file.content });
     markTabAsSaved(activeTab);
+
+    // Notifier le LSP de la sauvegarde (rust-analyzer / pylsp / tsserver
+    // utilisent didSave pour relancer cargo check / linters externes).
+    try {
+      await lspManager.saveDocument(activeTab, file.content);
+    } catch (err) {
+      console.warn("[LSP] saveDocument failed:", err);
+    }
     
     // 🎮 Mise à jour Discord Presence après sauvegarde
     if (discordEnabled) {

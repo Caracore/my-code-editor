@@ -11,6 +11,8 @@ import type {
   CompletionItem,
   CompletionList,
   Hover,
+  Location,
+  LocationLink,
   Diagnostic,
   PublishDiagnosticsParams,
   TextDocumentContentChangeEvent,
@@ -286,6 +288,32 @@ export class LspClient {
     return this.sendRequest<Hover>("textDocument/hover", {
       textDocument: { uri: this.pathToUri(filePath) },
       position,
+    });
+  }
+
+  async getDefinition(
+    filePath: string,
+    position: Position
+  ): Promise<Location[]> {
+    if (!this.initialized) return [];
+
+    const result = await this.sendRequest<
+      Location | Location[] | LocationLink[] | null
+    >("textDocument/definition", {
+      textDocument: { uri: this.pathToUri(filePath) },
+      position,
+    });
+
+    if (!result) return [];
+    const arr = Array.isArray(result) ? result : [result];
+    return arr.map((item) => {
+      if ("targetUri" in item) {
+        return {
+          uri: item.targetUri,
+          range: item.targetSelectionRange ?? item.targetRange,
+        };
+      }
+      return item;
     });
   }
 

@@ -15,6 +15,13 @@ export interface Location {
   range: Range;
 }
 
+export interface LocationLink {
+  originSelectionRange?: Range;
+  targetUri: string;
+  targetRange: Range;
+  targetSelectionRange: Range;
+}
+
 export interface TextDocumentIdentifier {
   uri: string;
 }

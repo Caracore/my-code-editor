@@ -30,7 +30,7 @@ import { rustSmartProvider } from "../../extensions/rust/rustProvider";
 import { cppSmartProvider } from "../../extensions/cpp/cppProvider";
 import { json } from "@codemirror/lang-json";
 import { smoothCaret } from "../../cursor/cursorlayer";
-import { lspLinter, updateDiagnostics, createLspCompletionProvider, lspInlayHints, createInlayHintsProvider } from "../../extensions/lsp";
+import { lspLinter, updateDiagnostics, createLspCompletionProvider, lspInlayHints, createInlayHintsProvider, gotoDefinitionExtension, applyGotoPosition, EDITOR_GOTO_POSITION_EVENT, lspHoverTooltip, ctrlClickGotoHighlight, lspHoverTheme } from "../../extensions/lsp";
 import { breakpointGutter, diagnosticsGutter, diffGutter, setDiffBaseline } from "../../extensions/gutters";
 import { lspManager } from "../../lsp";
 import type { Diagnostic } from "../../lsp";
@@ -92,8 +92,14 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
     lspManager.openDocument(filePath, lspLang, value);
 
     // Subscribe to diagnostics
+    // Normalisation: sur Windows, rust-analyzer renvoie souvent une lettre de
+    // lecteur en minuscule (c:\...) alors que l'éditeur ouvre avec une
+    // majuscule (C:\...). On compare donc en minuscule + slashes uniformes.
+    const normalizePath = (p: string) => p.replace(/\\/g, "/").toLowerCase();
+    const targetPath = normalizePath(filePath);
     const unsubscribe = lspManager.onDiagnostics((diagFilePath: string, diagnostics: Diagnostic[]) => {
-      if (diagFilePath === filePath && viewRef.current) {
+      if (normalizePath(diagFilePath) === targetPath && viewRef.current) {
+        console.log(`[Editor] Received ${diagnostics.length} diagnostics for ${filePath}`);
         updateDiagnostics(viewRef.current, diagnostics);
       }
     });
@@ -140,6 +146,19 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
     };
     window.addEventListener("menu-action", handler as EventListener);
     return () => window.removeEventListener("menu-action", handler as EventListener);
+  }, []);
+
+  // Écouter les demandes de positionnement (goto-definition)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent<{ path: string; line: number; character: number }>;
+      const detail = custom.detail;
+      if (!detail || !viewRef.current) return;
+      if (filePathRef.current !== detail.path) return;
+      applyGotoPosition(viewRef.current, detail.line, detail.character);
+    };
+    window.addEventListener(EDITOR_GOTO_POSITION_EVENT, handler as EventListener);
+    return () => window.removeEventListener(EDITOR_GOTO_POSITION_EVENT, handler as EventListener);
   }, []);
 
   useEffect(() => {
@@ -358,6 +377,10 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
         ...(effectiveUseLsp ? [lspLinter()] : []),
         // LSP inlay hints (only if LSP is enabled)
         ...(effectiveUseLsp ? [lspInlayHints(), createInlayHintsProvider(() => filePathRef.current)] : []),
+        // LSP go-to-definition (F12 / Ctrl+Click)
+        ...(effectiveUseLsp ? [gotoDefinitionExtension(() => filePathRef.current)] : []),
+        // LSP hover tooltip (signature, doc, diagnostics au survol) + soulignement Ctrl+hover
+        ...(effectiveUseLsp ? [lspHoverTooltip(() => filePathRef.current), ctrlClickGotoHighlight(), lspHoverTheme()] : []),
         // Étape 3 : autocomplétion dynamique avec completionSources
         autocompletion({
           override: completionSources,  // Sources dynamiques selon le langage

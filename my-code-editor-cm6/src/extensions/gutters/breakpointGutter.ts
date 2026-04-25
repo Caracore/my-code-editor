@@ -52,12 +52,16 @@ const breakpointState = StateField.define<RangeSet<GutterMarker>>({
 
 function toggleBreakpoint(view: EditorView, pos: number) {
   const breakpoints = view.state.field(breakpointState);
+  // Snap pos to start of line so two clicks anywhere on the same line
+  // toggle the same breakpoint, and clicks on different lines never collide.
+  const line = view.state.doc.lineAt(pos);
+  const linePos = line.from;
   let hasBreakpoint = false;
-  breakpoints.between(pos, pos, () => {
+  breakpoints.between(linePos, linePos, () => {
     hasBreakpoint = true;
   });
   view.dispatch({
-    effects: toggleBreakpointEffect.of({ pos, on: !hasBreakpoint }),
+    effects: toggleBreakpointEffect.of({ pos: linePos, on: !hasBreakpoint }),
   });
 }
 
@@ -77,30 +81,37 @@ export function breakpointGutter(): Extension {
     }),
     EditorView.baseTheme({
       ".cm-breakpoint-gutter": {
-        width: "16px",
+        width: "18px",
         cursor: "pointer",
       },
       ".cm-breakpoint-gutter .cm-gutterElement": {
         position: "relative",
+        width: "18px",
+        height: "100%",
       },
       ".cm-breakpoint-gutter .cm-gutterElement:hover::before": {
         content: '""',
         position: "absolute",
-        left: "4px",
+        left: "50%",
         top: "50%",
-        transform: "translateY(-50%)",
+        transform: "translate(-50%, -50%)",
         width: "10px",
         height: "10px",
         borderRadius: "50%",
-        backgroundColor: "rgba(229, 80, 80, 0.4)",
+        backgroundColor: "rgba(229, 80, 80, 0.45)",
+        pointerEvents: "none",
       },
       ".cm-breakpoint-marker": {
-        width: "10px",
-        height: "10px",
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        width: "11px",
+        height: "11px",
         borderRadius: "50%",
         backgroundColor: "#e51400",
-        boxShadow: "0 0 4px rgba(229, 20, 0, 0.6)",
-        margin: "3px auto 0 3px",
+        boxShadow: "0 0 4px rgba(229, 20, 0, 0.7)",
+        pointerEvents: "none",
       },
     }),
   ];
