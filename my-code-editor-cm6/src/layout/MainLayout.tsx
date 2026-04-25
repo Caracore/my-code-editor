@@ -767,7 +767,7 @@ export default function MainLayout({
 
           <div style={{
             height: showTerminal ? "200px" : "0", 
-            borderTop: showTerminal ? "1px solid #333" : "none",
+            borderTop: showTerminal ? "1px solid #333" : "none", // Changer #333 pour une variable css modulaire !!!!
             overflow: "hidden",
             transition: "height 0.2s ease",
             opacity: opacity.terminal

@@ -4,11 +4,8 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { TerminalProvider } from "./context/TerminalContext";
 import { SettingsProvider, useSettingsContext } from "./context/SettingsContext";
 import { TabsProvider, useTabs } from "./context/TabsContext";
-import { ModeProvider } from "./context/ModeContext";
 import { useFileTree } from "./hooks/useFileTree";
 import { useFileSystem } from "./hooks/useFileSystem";
-import { useGlobalJumpLabels } from "./hooks/useGlobalJumpLabels";
-import { ModeIndicator } from "./components/ModeIndicator/ModeIndicator";
 import type { FileNode } from "./types/FileNode";
 
 const LazyCodeEditor = React.lazy(
@@ -17,14 +14,10 @@ const LazyCodeEditor = React.lazy(
 
 // Wrapper component that uses GlobalJumpLabels with settings
 function GlobalJumpLabelsWrapper({ children }: { children: React.ReactNode }) {
-  const { jumpLabelsEnabled } = useSettingsContext();
-  const { JumpOverlay } = useGlobalJumpLabels(jumpLabelsEnabled);
   
   return (
     <>
       {children}
-      {JumpOverlay}
-      <ModeIndicator />
     </>
   );
 }
@@ -177,9 +170,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <TabsProvider>
-        <ModeProvider>
           <AppContent />
-        </ModeProvider>
       </TabsProvider>
     </ThemeProvider>
   );
