@@ -1,3 +1,9 @@
 # IDE FAST not complet now.
 
-## Just download : my-code-editor-cm6 not save because not the last version.
+## Need add :
+
+Copilot IA, Errors checker...
+
+Refaire le open file qui ouvre le dossier au lieu de fichier.
+
+Voir pour enlever le mode insert et normal plus le hint mode. alt + J

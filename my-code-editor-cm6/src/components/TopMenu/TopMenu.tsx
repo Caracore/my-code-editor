@@ -23,10 +23,10 @@ export default function TopMenu() {
   };
 
   const handleMouseLeave = () => {
-    // On lance un timer de 3 secondes avant de fermer
+    // On lance un timer de 1,5 seconde avant de fermer 3000 == 3 secondes
     closeTimeout.current = setTimeout(() => {
       setOpenMenu(null);
-    }, 3000);
+    }, 1500);
   };
 
   return (
