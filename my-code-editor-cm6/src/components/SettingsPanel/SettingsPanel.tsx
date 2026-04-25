@@ -22,8 +22,10 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
     "edit:paste": "Coller",
     "view:toggleTerminal": "Toggle Terminal",
     "view:toggleSidebar": "Toggle Sidebar",
+    "view:toggleTodoList": "Toggle To-Do List",
     "search:toggle": "Toggle Recherche",
-    // "terminal:new": "Nouveau Terminal",
+    "terminal:new": "Nouveau Terminal",
+    "settings:open": "Ouvrir les paramètres",
   };
 
   const opacityLabels: Record<OpacityZone, string> = {
