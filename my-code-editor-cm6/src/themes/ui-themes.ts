@@ -166,6 +166,7 @@ export const UI_THEMES = {
     "--editor-scrollbar-active-bg": "rgba(191, 191, 191, 0.4)",
     
     // Terminal
+    "--terminal-banner": "#333",
     "--terminal-bg": "#0D0D0D",
     "--terminal-fg": "#00FF00",
     "--terminal-input-bg": "#111111",
@@ -430,6 +431,7 @@ export const UI_THEMES = {
     "--editor-scrollbar-active-bg": "rgba(50, 50, 50, 0.4)",
     
     // Terminal
+    "--terminal-banner": "#FFFFFF",
     "--terminal-bg": "#FFFFFF",
     "--terminal-fg": "#222222",
     "--terminal-input-bg": "#F0F0F0",

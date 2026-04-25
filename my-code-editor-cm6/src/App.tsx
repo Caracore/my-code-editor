@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import MainLayout from "./layout/MainLayout";
 import { ThemeProvider } from "./context/ThemeContext";
 import { TerminalProvider } from "./context/TerminalContext";
-import { SettingsProvider, useSettingsContext } from "./context/SettingsContext";
+import { SettingsProvider } from "./context/SettingsContext"; // useSettingsContext
 import { TabsProvider, useTabs } from "./context/TabsContext";
 import { useFileTree } from "./hooks/useFileTree";
 import { useFileSystem } from "./hooks/useFileSystem";

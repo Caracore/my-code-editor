@@ -767,7 +767,7 @@ export default function MainLayout({
 
           <div style={{
             height: showTerminal ? "200px" : "0", 
-            borderTop: showTerminal ? "1px solid #333" : "none", // Changer #333 pour une variable css modulaire !!!!
+            borderTop: showTerminal ? "1px solid var(--terminal-banner)" : "none", // Changer #333 pour une variable css modulaire !!Corriger ici car banner pas modulaire!!
             overflow: "hidden",
             transition: "height 0.2s ease",
             opacity: opacity.terminal
