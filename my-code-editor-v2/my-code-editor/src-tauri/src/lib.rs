@@ -2,6 +2,11 @@ use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 
+mod terminal;
+use terminal::{
+    terminal_close, terminal_open, terminal_resize, terminal_write, TerminalState,
+};
+
 #[derive(Serialize)]
 struct DirEntry {
     name: String,
@@ -58,7 +63,16 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![read_dir, read_file, write_file])
+        .manage(TerminalState::default())
+        .invoke_handler(tauri::generate_handler![
+            read_dir,
+            read_file,
+            write_file,
+            terminal_open,
+            terminal_write,
+            terminal_resize,
+            terminal_close,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

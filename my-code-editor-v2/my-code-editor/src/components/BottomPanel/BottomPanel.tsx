@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { I } from "../Icons";
+import TerminalView from "./TerminalView";
+import { useWorkspace } from "../../context/WorkspaceContext";
 import "./BottomPanel.css";
 
 const TABS = [
@@ -10,8 +12,42 @@ const TABS = [
   { id: "git",      label: "Git",      icon: <I.Git size={13} /> },
 ];
 
+let nextTermSeq = 1;
+const newTermId = () => `term-${Date.now().toString(36)}-${nextTermSeq++}`;
+
 export default function BottomPanel() {
   const [tab, setTab] = useState("terminal");
+  const { rootPath } = useWorkspace();
+
+  // One or more PTY-backed terminal sessions. Always keep at least one.
+  const initialId = useRef(newTermId()).current;
+  const [terminals, setTerminals] = useState<string[]>([initialId]);
+  const [activeTerm, setActiveTerm] = useState<string>(initialId);
+
+  const addTerminal = () => {
+    const id = newTermId();
+    setTerminals((prev) => [...prev, id]);
+    setActiveTerm(id);
+    setTab("terminal");
+  };
+  const closeTerminal = (id: string) => {
+    setTerminals((prev) => {
+      const next = prev.filter((t) => t !== id);
+      const fallback = next.length === 0 ? newTermId() : next[next.length - 1];
+      if (next.length === 0) {
+        setActiveTerm(fallback);
+        return [fallback];
+      }
+      if (id === activeTerm) setActiveTerm(fallback);
+      return next;
+    });
+  };
+
+  const termLabels = useMemo(
+    () => terminals.map((id, i) => ({ id, label: `shell ${i + 1}` })),
+    [terminals],
+  );
+
   return (
     <section className="bottompanel">
       <div className="bottompanel__tabs">
@@ -27,23 +63,47 @@ export default function BottomPanel() {
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        <button className="bp-iconbtn" title="New terminal"><I.Plus size={13} /></button>
+        <button className="bp-iconbtn" title="New terminal" onClick={addTerminal}>
+          <I.Plus size={13} />
+        </button>
         <button className="bp-iconbtn" title="Split"><I.Split size={13} /></button>
-        <button className="bp-iconbtn" title="Trash"><I.Trash size={13} /></button>
+        <button
+          className="bp-iconbtn"
+          title="Kill terminal"
+          onClick={() => closeTerminal(activeTerm)}
+        >
+          <I.Trash size={13} />
+        </button>
         <button className="bp-iconbtn" title="Close"><I.Close size={13} /></button>
       </div>
 
       {tab === "terminal" && (
-        <div className="terminal">
-          <div className="terminal__line"><span className="t-prompt">jm</span><span className="t-at">@</span><span className="t-host">workstation</span><span className="t-path"> ~/projects/my-code-editor </span><span className="t-branch">  main </span><span className="t-cmd">$ pnpm tauri dev</span></div>
-          <div className="terminal__line t-out">  <span className="t-info">vite</span> v6.0.5 ready in <span className="t-num">412</span> ms</div>
-          <div className="terminal__line t-out">  ➜  Local:   <span className="t-link">http://localhost:1420/</span></div>
-          <div className="terminal__line t-out">  ➜  Network: use --host to expose</div>
-          <div className="terminal__line t-out">    <span className="t-success">✔</span> Compiled <span className="t-mono">my_code_editor_lib</span> in <span className="t-num">3.84s</span></div>
-          <div className="terminal__line t-out">    <span className="t-success">✔</span> Compiled <span className="t-mono">my-code-editor</span> in <span className="t-num">1.21s</span></div>
-          <div className="terminal__line t-out">    <span className="t-warn">!</span> 1 warning: unused import <span className="t-mono">useEffect</span></div>
-          <div className="terminal__line t-out">    Running app on <span className="t-link">tauri://localhost</span> …</div>
-          <div className="terminal__line"><span className="t-prompt">jm</span><span className="t-at">@</span><span className="t-host">workstation</span><span className="t-path"> ~/projects/my-code-editor </span><span className="t-branch">  main </span><span className="t-cmd">$ </span><span className="t-caret" /></div>
+        <div className="bp-terminal-wrap">
+          {terminals.length > 1 && (
+            <div className="bp-term-list">
+              {termLabels.map(({ id, label }) => (
+                <button
+                  key={id}
+                  className={`bp-term-list__item ${id === activeTerm ? "is-active" : ""}`}
+                  onClick={() => setActiveTerm(id)}
+                  title={label}
+                >
+                  <I.Terminal size={11} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="bp-term-host">
+            {terminals.map((id) => (
+              <div
+                key={id}
+                className={`bp-term-pane ${id === activeTerm ? "is-active" : ""}`}
+              >
+                <TerminalView sessionId={id} cwd={rootPath} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -72,4 +132,5 @@ export default function BottomPanel() {
     </section>
   );
 }
+
 
