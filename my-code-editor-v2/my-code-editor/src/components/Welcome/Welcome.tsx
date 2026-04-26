@@ -1,124 +1,162 @@
+import type { ReactNode } from "react";
 import { Logo, I } from "../Icons";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import "./Welcome.css";
 
+type Action = {
+  icon: ReactNode;
+  title: string;
+  desc: string;
+  shortcut?: string;
+  onClick: () => void;
+};
+
 export default function Welcome() {
   const { openFolder, rootPath } = useWorkspace();
 
+  const fire = (detail: string) =>
+    window.dispatchEvent(new CustomEvent("menu-action", { detail }));
+
+  const startActions: Action[] = [
+    {
+      icon: <I.Folder size={18} />,
+      title: "Open Folder…",
+      desc: "Pick a project directory to load it into the sidebar",
+      shortcut: "Ctrl+K Ctrl+O",
+      onClick: () => openFolder(),
+    },
+    {
+      icon: <I.Plus size={18} />,
+      title: "New File",
+      desc: "Start typing in a fresh untitled buffer",
+      shortcut: "Ctrl+N",
+      onClick: () => fire("file:new"),
+    },
+    {
+      icon: <I.Search size={18} />,
+      title: "Command Palette",
+      desc: "Run any IDE command from a single prompt",
+      shortcut: "Ctrl+Shift+P",
+      onClick: () => fire("view:command-palette"),
+    },
+  ];
+
+  const tips = [
+    { keys: "Ctrl+P", label: "Quick file navigation" },
+    { keys: "Ctrl+B", label: "Toggle the sidebar" },
+    { keys: "Ctrl+J", label: "Toggle the bottom panel" },
+    { keys: "Ctrl+S", label: "Save the active file" },
+  ];
+
   return (
     <div className="welcome">
-      <div className="welcome__inner">
-        <header className="welcome__header">
-          <div className="welcome__logo">
-            <Logo size={56} />
-          </div>
-          <h1 className="welcome__title">my-code-editor</h1>
-          <p className="welcome__subtitle">
-            A blazing-fast, minimal IDE built with Tauri, React &amp; CodeMirror 6.
-          </p>
-        </header>
+      <div className="welcome__scroll">
+        <div className="welcome__inner">
+          {/* HEADER */}
+          <header className="welcome__header">
+            <div className="welcome__logo">
+              <Logo size={48} />
+            </div>
+            <div className="welcome__heading">
+              <h1 className="welcome__title">my-code-editor</h1>
+              <p className="welcome__subtitle">
+                A blazing-fast, minimal IDE built with Tauri, React &amp;
+                CodeMirror&nbsp;6.
+              </p>
+            </div>
+          </header>
 
-        <section className="welcome__grid">
-          <div className="welcome__col">
-            <h2 className="welcome__col-title">Start</h2>
-            <ul className="welcome__list">
-              <li>
-                <button className="welcome__action" onClick={() => openFolder()}>
-                  <I.Folder size={16} />
-                  <span>
-                    <strong>Open Folder…</strong>
-                    <em>Pick a project directory to load it into the sidebar</em>
-                  </span>
-                  <kbd>Ctrl+K Ctrl+O</kbd>
-                </button>
-              </li>
-              <li>
-                <button
-                  className="welcome__action"
-                  onClick={() =>
-                    window.dispatchEvent(
-                      new CustomEvent("menu-action", { detail: "file:new" }),
-                    )
-                  }
-                >
-                  <I.Plus size={16} />
-                  <span>
-                    <strong>New File</strong>
-                    <em>Start typing in a fresh untitled buffer</em>
-                  </span>
-                  <kbd>Ctrl+N</kbd>
-                </button>
-              </li>
-              <li>
-                <button
-                  className="welcome__action"
-                  onClick={() =>
-                    window.dispatchEvent(
-                      new CustomEvent("menu-action", {
-                        detail: "view:command-palette",
-                      }),
-                    )
-                  }
-                >
-                  <I.Search size={16} />
-                  <span>
-                    <strong>Command Palette</strong>
-                    <em>Run any IDE command from a single prompt</em>
-                  </span>
-                  <kbd>Ctrl+Shift+P</kbd>
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <div className="welcome__col">
-            <h2 className="welcome__col-title">Recent</h2>
-            {rootPath ? (
+          {/* GRID */}
+          <section className="welcome__grid">
+            {/* START */}
+            <div className="welcome__col">
+              <h2 className="welcome__col-title">Start</h2>
               <ul className="welcome__list">
+                {startActions.map((a) => (
+                  <li key={a.title}>
+                    <button className="welcome__action" onClick={a.onClick}>
+                      <span className="welcome__action-icon">{a.icon}</span>
+                      <span className="welcome__action-text">
+                        <strong>{a.title}</strong>
+                        <em>{a.desc}</em>
+                      </span>
+                      {a.shortcut && (
+                        <kbd className="welcome__kbd">{a.shortcut}</kbd>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <h2 className="welcome__col-title welcome__col-title--mt">
+                Recent
+              </h2>
+              {rootPath ? (
+                <ul className="welcome__list">
+                  <li>
+                    <button
+                      className="welcome__action"
+                      onClick={() => openFolder(rootPath)}
+                    >
+                      <span className="welcome__action-icon">
+                        <I.FolderOpen size={18} />
+                      </span>
+                      <span className="welcome__action-text">
+                        <strong>{rootPath.split(/[\\/]/).pop()}</strong>
+                        <em title={rootPath}>{rootPath}</em>
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              ) : (
+                <p className="welcome__empty">
+                  No recent folder yet. Open a folder to get started.
+                </p>
+              )}
+            </div>
+
+            {/* TIPS */}
+            <div className="welcome__col">
+              <h2 className="welcome__col-title">Tips &amp; Shortcuts</h2>
+              <ul className="welcome__tips">
+                {tips.map((t) => (
+                  <li key={t.keys}>
+                    <kbd className="welcome__kbd welcome__kbd--fixed">
+                      {t.keys}
+                    </kbd>
+                    <span>{t.label}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <h2 className="welcome__col-title welcome__col-title--mt">
+                Learn
+              </h2>
+              <ul className="welcome__tips">
                 <li>
-                  <button
-                    className="welcome__action"
-                    onClick={() => openFolder(rootPath)}
-                  >
-                    <I.FolderOpen size={16} />
-                    <span>
-                      <strong>{rootPath.split(/[\\/]/).pop()}</strong>
-                      <em>{rootPath}</em>
-                    </span>
-                  </button>
+                  <span className="welcome__bullet" />
+                  <span>Open the Command Palette to discover features</span>
+                </li>
+                <li>
+                  <span className="welcome__bullet" />
+                  <span>Customize the layout via the activity bar</span>
+                </li>
+                <li>
+                  <span className="welcome__bullet" />
+                  <span>Drop a folder into the sidebar to start coding</span>
                 </li>
               </ul>
-            ) : (
-              <p className="welcome__empty">
-                No recent folder yet. Open a folder to get started.
-              </p>
-            )}
+            </div>
+          </section>
 
-            <h2 className="welcome__col-title welcome__col-title--mt">Tips</h2>
-            <ul className="welcome__tips">
-              <li>
-                <kbd>Ctrl+P</kbd> Quick file navigation
-              </li>
-              <li>
-                <kbd>Ctrl+B</kbd> Toggle the sidebar
-              </li>
-              <li>
-                <kbd>Ctrl+J</kbd> Toggle the bottom panel
-              </li>
-              <li>
-                <kbd>Ctrl+S</kbd> Save the active file
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <footer className="welcome__footer">
-          <span>v0.2.0</span>
-          <span className="welcome__footer-dot">•</span>
-          <span>Tauri 2 · React 19 · CodeMirror 6</span>
-        </footer>
+          {/* FOOTER */}
+          <footer className="welcome__footer">
+            <span>v0.2.0</span>
+            <span className="welcome__footer-dot">•</span>
+            <span>Tauri 2 · React 19 · CodeMirror 6</span>
+          </footer>
+        </div>
       </div>
     </div>
   );
 }
-

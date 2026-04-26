@@ -122,7 +122,7 @@ export default function CommandPalette() {
           <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
           <span><kbd>↵</kbd> select</span>
           <span><kbd>tab</kbd> next scope</span>
-          <span style={{ marginLeft: "auto" }}>Powered by ✨ AI</span>
+          <span style={{ marginLeft: "auto" }}>my-code-editor</span>
         </div>
       </div>
     </div>
