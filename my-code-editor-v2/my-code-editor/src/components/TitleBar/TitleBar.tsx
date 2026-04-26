@@ -1,16 +1,96 @@
+import { useEffect, useRef, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { I, Logo } from "../Icons";
+import MenuDropdown from "../MenuDropDown/MenuDropDown";
+import { TOP_MENUS } from "../../config/menuConfig";
 import "./TitleBar.css";
 
-const MENUS = ["File", "Edit", "View", "Navigate", "Code", "Refactor", "Run", "Tools", "Git", "Window", "Help"];
-
 export default function TitleBar() {
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+
+  // Track window maximized state for the icon
+  useEffect(() => {
+    const win = getCurrentWindow();
+    let unlisten: (() => void) | undefined;
+    win.isMaximized().then(setIsMaximized).catch(() => {});
+    win.onResized(() => {
+      win.isMaximized().then(setIsMaximized).catch(() => {});
+    }).then((u) => { unlisten = u; }).catch(() => {});
+    return () => { unlisten?.(); };
+  }, []);
+
+  // Close menu on outside click / Escape
+  useEffect(() => {
+    if (!openMenu) return;
+    const onDown = (e: MouseEvent) => {
+      if (!navRef.current?.contains(e.target as Node)) setOpenMenu(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenMenu(null);
+    };
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [openMenu]);
+
+  // Window controls
+  const handleMinimize = async () => {
+    try { await getCurrentWindow().minimize(); } catch (e) { console.error(e); }
+  };
+  const handleToggleMaximize = async () => {
+    try { await getCurrentWindow().toggleMaximize(); } catch (e) { console.error(e); }
+  };
+  const handleClose = async () => {
+    try { await getCurrentWindow().close(); } catch (e) { console.error(e); }
+  };
+
+  // Handle menu actions that target the window/app directly
+  const handleMenuAction = (action: string) => {
+    switch (action) {
+      case "window:minimize":        handleMinimize(); break;
+      case "window:toggle-maximize": handleToggleMaximize(); break;
+      case "window:close":
+      case "app:exit":               handleClose(); break;
+      case "window:reload":          window.location.reload(); break;
+      case "view:fullscreen":        getCurrentWindow().setFullscreen(true).catch(() => {}); break;
+    }
+  };
+
+  const onMenuClick = (label: string) => {
+    setOpenMenu((prev) => (prev === label ? null : label));
+  };
+  const onMenuEnter = (label: string) => {
+    // Switch active dropdown when a menu is already open (hover-nav)
+    if (openMenu && openMenu !== label) setOpenMenu(label);
+  };
+
   return (
     <header className="titlebar" data-tauri-drag-region>
       <div className="titlebar__left">
         <div className="titlebar__logo"><Logo size={18} /></div>
-        <nav className="titlebar__menu">
-          {MENUS.map((m) => (
-            <button key={m} className="titlebar__menu-item">{m}</button>
+        <nav className="titlebar__menu" ref={navRef}>
+          {TOP_MENUS.map((m) => (
+            <div key={m.label} className="titlebar__menu-wrap">
+              <button
+                className={`titlebar__menu-item${openMenu === m.label ? " is-active" : ""}`}
+                onClick={() => onMenuClick(m.label)}
+                onMouseEnter={() => onMenuEnter(m.label)}
+              >
+                {m.label}
+              </button>
+              {openMenu === m.label && (
+                <MenuDropdown
+                  items={m.items}
+                  onAction={handleMenuAction}
+                  onClose={() => setOpenMenu(null)}
+                />
+              )}
+            </div>
           ))}
         </nav>
       </div>
@@ -47,12 +127,21 @@ export default function TitleBar() {
         <div className="titlebar__divider" />
 
         <div className="titlebar__window">
-          <button className="win-btn" title="Minimize"><I.Min size={12} /></button>
-          <button className="win-btn" title="Maximize"><I.Max size={11} /></button>
-          <button className="win-btn win-btn--close" title="Close"><I.Close size={12} /></button>
+          <button className="win-btn" title="Minimize" onClick={handleMinimize}>
+            <I.Min size={12} />
+          </button>
+          <button
+            className="win-btn"
+            title={isMaximized ? "Restore" : "Maximize"}
+            onClick={handleToggleMaximize}
+          >
+            <I.Max size={11} />
+          </button>
+          <button className="win-btn win-btn--close" title="Close" onClick={handleClose}>
+            <I.Close size={12} />
+          </button>
         </div>
       </div>
     </header>
   );
 }
-

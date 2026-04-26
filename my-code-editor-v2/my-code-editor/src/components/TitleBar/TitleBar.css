@@ -19,14 +19,20 @@
 .titlebar__logo { display: flex; padding: 0 4px; }
 
 .titlebar__menu { display: flex; }
+.titlebar__menu-wrap { position: relative; }
 .titlebar__menu-item {
   height: 24px;
   padding: 0 8px;
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: 12.5px;
+  -webkit-app-region: no-drag;
 }
 .titlebar__menu-item:hover { background: var(--bg-4); color: var(--text-1); }
+.titlebar__menu-item.is-active {
+  background: var(--bg-5);
+  color: var(--text-1);
+}
 
 .titlebar__project {
   display: flex; align-items: center; gap: 8px;
