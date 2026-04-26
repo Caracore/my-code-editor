@@ -45,34 +45,9 @@ import { cpp } from "@codemirror/lang-cpp";
 
 import { smoothCaret } from "../../cursor/cursorlayer";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import Welcome from "../Welcome/Welcome";
 import "./EditorArea.css";
 
-/* ============================================================
-   Sample document shown by default in the editor.
-   ============================================================ */
-const SAMPLE_DOC = `// EditorArea — heart of the IDE
-import { useMemo, useState } from "react";
-import type { Document } from "./types";
-
-export default function EditorArea() {
-  const [doc, setDoc] = useState<Document>(initial);
-  const stats = useMemo(() => ({
-    lines: doc.lines.length,
-    words: doc.text.split(/\\s+/).length,
-    chars: doc.text.length,
-  }), [doc]);
-
-  return (
-    <section className="editor">
-      <Toolbar doc={doc} />
-      <Canvas value={doc.text} onChange={setDoc} />
-      <MiniMap lines={stats.lines} />
-    </section>
-  );
-}
-
-// TODO: hook up LSP completions + AI inline suggestions ✨
-`;
 
 function getLanguageExtension(lang: string) {
   switch (lang) {
@@ -266,16 +241,44 @@ export default function EditorArea(props: EditorAreaProps = {}) {
   const ws = useWorkspace();
   const active = ws.activeTab;
 
+  // No file open → render the Welcome page
+  if (!active && props.value === undefined) {
+    return <Welcome />;
+  }
+
   // Bind to the active workspace tab unless explicit props are passed.
   const language = props.language ?? active?.language ?? "tsx";
   const filePath = props.filePath ?? active?.path ?? "untitled";
-  const value = props.value ?? active?.content ?? SAMPLE_DOC;
+  const value = props.value ?? active?.content ?? "";
   const onChange =
     props.onChange ??
     ((v: string) => {
       if (active) ws.updateContent(active.id, v);
     });
 
+  return (
+    <EditorPane
+      key={active?.id ?? "external"}
+      value={value}
+      language={language}
+      filePath={filePath}
+      isDirty={!!active?.dirty}
+      tabId={active?.id ?? null}
+      onChange={onChange}
+    />
+  );
+}
+
+interface EditorPaneProps {
+  value: string;
+  language: string;
+  filePath: string;
+  isDirty: boolean;
+  tabId: string | null;
+  onChange: (v: string) => void;
+}
+
+function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: EditorPaneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
@@ -343,7 +346,7 @@ export default function EditorArea(props: EditorAreaProps = {}) {
       viewRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language, active?.id]);
+  }, [language]);
 
   // Sync external value (typing in the tab, switching tabs, etc.)
   useEffect(() => {
@@ -359,12 +362,9 @@ export default function EditorArea(props: EditorAreaProps = {}) {
 
   /* ------------------------------------------------------------
      Interactive breadcrumbs derived from the active tab's path.
-     - Each path segment is clickable
-     - Clicking the filename focuses the editor
-     - Dispatches `breadcrumb:click` events for future hooks
-     - Shows a dirty dot when the active tab has unsaved changes
      ------------------------------------------------------------ */
-  const segments = filePath.split("/").filter(Boolean);
+  // Normalise both Windows and POSIX separators
+  const segments = filePath.replace(/\\/g, "/").split("/").filter(Boolean);
   const fileName = segments[segments.length - 1] ?? "untitled";
   const dirs = segments.slice(0, -1);
 
@@ -372,30 +372,13 @@ export default function EditorArea(props: EditorAreaProps = {}) {
     const subPath = segments.slice(0, idx + 1).join("/");
     window.dispatchEvent(
       new CustomEvent("breadcrumb:click", {
-        detail: { segment, path: subPath, isFile, tabId: active?.id ?? null },
+        detail: { segment, path: subPath, isFile, tabId },
       })
     );
     if (isFile) {
-      // Focus the editor when clicking the filename
       requestAnimationFrame(() => viewRef.current?.focus());
     }
   };
-
-  if (!active && !props.value) {
-    // Empty workspace placeholder
-    return (
-      <div className="editor">
-        <div className="editor__breadcrumbs">
-          <span className="editor__bc-empty">No file open</span>
-        </div>
-        <div className="editor__viewport editor__viewport--cm">
-          <div className="editor__empty-state">
-            <p>Open a file from the sidebar or press <kbd>Ctrl</kbd>+<kbd>P</kbd></p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="editor">
@@ -415,10 +398,10 @@ export default function EditorArea(props: EditorAreaProps = {}) {
         <button
           className="editor__bc-segment editor__bc-current"
           onClick={() => onCrumbClick(fileName, segments.length - 1, true)}
-          title={`${filePath}${active?.dirty ? " (unsaved)" : ""}`}
+          title={`${filePath}${isDirty ? " (unsaved)" : ""}`}
         >
           {fileName}
-          {active?.dirty && <span className="editor__bc-dirty" aria-label="Unsaved" />}
+          {isDirty && <span className="editor__bc-dirty" aria-label="Unsaved" />}
         </button>
       </div>
 

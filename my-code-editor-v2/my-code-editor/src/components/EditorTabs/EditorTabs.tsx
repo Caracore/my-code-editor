@@ -12,6 +12,9 @@ const COLOR: Record<string, string> = {
 export default function EditorTabs() {
   const { tabs, activeId, setActive, closeTab, togglePinned } = useWorkspace();
 
+  // No tabs → don't render the bar at all (Welcome page takes the whole area)
+  if (tabs.length === 0) return null;
+
   const onClose = (id: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
     closeTab(id);

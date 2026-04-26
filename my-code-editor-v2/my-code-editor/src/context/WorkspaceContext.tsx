@@ -1,102 +1,62 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import {
+  basename,
+  extOf,
+  extToLanguage,
+  pickFolder,
+  readDir,
+  readFile,
+  writeFile,
+} from "../services/fs";
 
 export interface WorkspaceTab {
   id: string;
-  /** File name shown in tab + breadcrumb leaf. */
+  /** File name (basename). */
   name: string;
-  /** Full path from project root, e.g. "src/components/EditorArea.tsx". */
+  /** Absolute filesystem path on disk. */
   path: string;
-  /** File extension (used for icon color & language). */
+  /** Lower-case extension without the dot. */
   ext: string;
-  /** Editor language hint passed to CodeMirror (`tsx`, `css`, `python`, …). */
+  /** CodeMirror language id. */
   language: string;
-  /** Current document content. */
+  /** Editor content. */
   content: string;
+  /** Reference content from disk — used to compute the dirty flag. */
+  diskContent: string;
   dirty?: boolean;
   pinned?: boolean;
 }
 
 interface WorkspaceContextValue {
+  // Tabs
   tabs: WorkspaceTab[];
   activeId: string | null;
   activeTab: WorkspaceTab | null;
   setActive: (id: string) => void;
   closeTab: (id: string) => void;
-  openTab: (tab: Omit<WorkspaceTab, "id"> & { id?: string }) => void;
+  openFile: (absolutePath: string) => Promise<void>;
   updateContent: (id: string, content: string) => void;
-  saveTab: (id: string) => void;
+  saveActive: () => Promise<void>;
   togglePinned: (id: string) => void;
+
+  // Workspace folder
+  rootPath: string | null;
+  rootName: string | null;
+  openFolder: (absolutePath?: string) => Promise<void>;
+  closeFolder: () => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
-const SAMPLE_TSX = `// EditorArea — heart of the IDE
-import { useMemo, useState } from "react";
-import type { Document } from "./types";
-
-export default function EditorArea() {
-  const [doc, setDoc] = useState<Document>(initial);
-  const stats = useMemo(() => ({
-    lines: doc.lines.length,
-    words: doc.text.split(/\\s+/).length,
-    chars: doc.text.length,
-  }), [doc]);
-
-  return (
-    <section className="editor">
-      <Toolbar doc={doc} />
-      <Canvas value={doc.text} onChange={setDoc} />
-      <MiniMap lines={stats.lines} />
-    </section>
-  );
+function makeId(): string {
+  return `t-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
-`;
-
-const SAMPLE_APP = `import TitleBar from "./components/TitleBar/TitleBar";
-import EditorArea from "./components/CodeMirror6/EditorArea";
-
-export default function App() {
-  return (
-    <div className="app">
-      <TitleBar />
-      <EditorArea />
-    </div>
-  );
-}
-`;
-
-const SAMPLE_SIDEBAR = `// Sidebar.tsx — file explorer
-export default function Sidebar() {
-  return <aside className="sidebar">…</aside>;
-}
-`;
-
-const SAMPLE_THEME_CSS = `:root {
-  --bg-1: #14171d;
-  --accent: #7c5cff;
-  --accent-2: #5ad1ff;
-}
-`;
-
-const SAMPLE_PKG = `{
-  "name": "my-code-editor",
-  "version": "0.2.0",
-  "private": true
-}
-`;
-
-const INITIAL_TABS: WorkspaceTab[] = [
-  { id: "1", name: "App.tsx",         path: "src/App.tsx",                              ext: "tsx",  language: "tsx",  content: SAMPLE_APP,     pinned: true },
-  { id: "2", name: "Sidebar.tsx",     path: "src/components/Sidebar/Sidebar.tsx",       ext: "tsx",  language: "tsx",  content: SAMPLE_SIDEBAR },
-  { id: "3", name: "EditorArea.tsx",  path: "src/components/CodeMirror6/EditorArea.tsx", ext: "tsx", language: "tsx",  content: SAMPLE_TSX,     dirty: true },
-  { id: "4", name: "theme.css",       path: "src/styles/theme.css",                     ext: "css",  language: "css",  content: SAMPLE_THEME_CSS },
-  { id: "5", name: "package.json",    path: "package.json",                             ext: "json", language: "json", content: SAMPLE_PKG },
-];
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const [tabs, setTabs] = useState<WorkspaceTab[]>(INITIAL_TABS);
-  const [activeId, setActiveId] = useState<string | null>("3");
+  const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [rootPath, setRootPath] = useState<string | null>(null);
 
   const setActive = useCallback((id: string) => setActiveId(id), []);
 
@@ -105,51 +65,140 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const idx = prev.findIndex((t) => t.id === id);
       if (idx === -1) return prev;
       const next = prev.filter((t) => t.id !== id);
-      // If we closed the active tab, select the neighbour
       setActiveId((curr) => {
         if (curr !== id) return curr;
         if (next.length === 0) return null;
-        const fallback = next[Math.min(idx, next.length - 1)];
-        return fallback.id;
+        return next[Math.min(idx, next.length - 1)].id;
       });
       return next;
     });
   }, []);
 
-  const openTab = useCallback((tab: Omit<WorkspaceTab, "id"> & { id?: string }) => {
+  const openFile = useCallback(async (absolutePath: string) => {
+    // Already open? activate.
+    let existingId: string | null = null;
     setTabs((prev) => {
-      // If a tab with this path already exists, just activate it
-      const existing = prev.find((t) => t.path === tab.path);
-      if (existing) {
-        setActiveId(existing.id);
-        return prev;
-      }
-      const id = tab.id ?? `t-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-      const next: WorkspaceTab = { ...tab, id };
-      setActiveId(id);
-      return [...prev, next];
+      const found = prev.find((t) => t.path === absolutePath);
+      if (found) existingId = found.id;
+      return prev;
     });
+    if (existingId) {
+      setActiveId(existingId);
+      return;
+    }
+
+    let content = "";
+    try {
+      content = await readFile(absolutePath);
+    } catch (e) {
+      console.error("Failed to read file:", e);
+      content = `// Failed to open ${absolutePath}\n// ${String(e)}\n`;
+    }
+
+    const name = basename(absolutePath);
+    const ext = extOf(name);
+    const tab: WorkspaceTab = {
+      id: makeId(),
+      name,
+      path: absolutePath,
+      ext,
+      language: extToLanguage(ext),
+      content,
+      diskContent: content,
+      dirty: false,
+    };
+    setTabs((prev) => [...prev, tab]);
+    setActiveId(tab.id);
   }, []);
 
   const updateContent = useCallback((id: string, content: string) => {
     setTabs((prev) =>
       prev.map((t) =>
-        t.id === id ? { ...t, content, dirty: t.content !== content ? true : t.dirty } : t
+        t.id === id ? { ...t, content, dirty: content !== t.diskContent } : t
       )
     );
   }, []);
 
-  const saveTab = useCallback((id: string) => {
-    setTabs((prev) => prev.map((t) => (t.id === id ? { ...t, dirty: false } : t)));
-  }, []);
+  const saveActive = useCallback(async () => {
+    const tab = tabs.find((t) => t.id === activeId);
+    if (!tab) return;
+    try {
+      await writeFile(tab.path, tab.content);
+      setTabs((prev) =>
+        prev.map((t) =>
+          t.id === tab.id ? { ...t, diskContent: t.content, dirty: false } : t
+        )
+      );
+    } catch (e) {
+      console.error("Failed to save file:", e);
+    }
+  }, [tabs, activeId]);
 
   const togglePinned = useCallback((id: string) => {
     setTabs((prev) => prev.map((t) => (t.id === id ? { ...t, pinned: !t.pinned } : t)));
   }, []);
 
+  const openFolder = useCallback(async (absolutePath?: string) => {
+    let folder = absolutePath;
+    if (!folder) {
+      const picked = await pickFolder();
+      if (!picked) return;
+      folder = picked;
+    }
+    try {
+      await readDir(folder);
+      setRootPath(folder);
+    } catch (e) {
+      console.error("Cannot open folder:", e);
+    }
+  }, []);
+
+  const closeFolder = useCallback(() => {
+    setRootPath(null);
+    setTabs([]);
+    setActiveId(null);
+  }, []);
+
+  // Listen to global menu actions for File → Open Folder / Save
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const action = (e as CustomEvent<string>).detail;
+      switch (action) {
+        case "file:open-folder":
+          openFolder();
+          break;
+        case "file:save":
+          saveActive();
+          break;
+        case "file:close-editor":
+          if (activeId) closeTab(activeId);
+          break;
+      }
+    };
+    window.addEventListener("menu-action", handler as EventListener);
+    return () => window.removeEventListener("menu-action", handler as EventListener);
+  }, [openFolder, saveActive, closeTab, activeId]);
+
+  // Ctrl+S to save the active tab
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && !e.shiftKey) {
+        e.preventDefault();
+        saveActive();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [saveActive]);
+
   const activeTab = useMemo(
     () => tabs.find((t) => t.id === activeId) ?? null,
     [tabs, activeId]
+  );
+
+  const rootName = useMemo(
+    () => (rootPath ? basename(rootPath) : null),
+    [rootPath]
   );
 
   const value = useMemo<WorkspaceContextValue>(
@@ -159,12 +208,20 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       activeTab,
       setActive,
       closeTab,
-      openTab,
+      openFile,
       updateContent,
-      saveTab,
+      saveActive,
       togglePinned,
+      rootPath,
+      rootName,
+      openFolder,
+      closeFolder,
     }),
-    [tabs, activeId, activeTab, setActive, closeTab, openTab, updateContent, saveTab, togglePinned]
+    [
+      tabs, activeId, activeTab, setActive, closeTab, openFile,
+      updateContent, saveActive, togglePinned,
+      rootPath, rootName, openFolder, closeFolder,
+    ]
   );
 
   return (

@@ -88,6 +88,62 @@
 .sidebar__footer-dot { color: var(--text-4); }
 .sidebar__footer-mut { color: var(--warn); }
 
+.sidebar__empty {
+  padding: 16px 12px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+  text-align: center;
+}
+
+.tree__loading {
+  font-size: 12px;
+  color: var(--text-4);
+  font-style: italic;
+  padding: 4px 8px;
+}
+
+.tree__row--root {
+  font-weight: 600;
+  color: var(--text-1) !important;
+  pointer-events: none;
+}
+
+.sidebar__no-folder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 16px;
+  text-align: center;
+}
+.sidebar__no-folder p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.sidebar__open-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0f1115;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+}
+.sidebar__open-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(124, 92, 255, 0.35);
+}
+.sidebar__hint {
+  font-size: 11px;
+  color: var(--text-4);
+}
+
 /* legacy unused below kept harmless */
 
 .sidebar__header {

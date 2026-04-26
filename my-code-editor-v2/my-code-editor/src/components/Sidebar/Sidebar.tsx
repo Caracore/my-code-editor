@@ -1,139 +1,357 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { I } from "../Icons";
+import { useWorkspace } from "../../context/WorkspaceContext";
+import { extOf, readDir } from "../../services/fs";
+import type { DirEntry } from "../../services/fs";
 import "./Sidebar.css";
 
-type Node =
-  | { kind: "folder"; name: string; open?: boolean; children: Node[] }
-  | { kind: "file"; name: string; ext: string; status?: "M" | "A" | "U" };
+/* ---------------------------------------------------------------- */
+/*  Live tree backed by the real filesystem (lazy-loaded)           */
+/* ---------------------------------------------------------------- */
 
-const TREE: Node = {
-  kind: "folder",
-  name: "my-code-editor",
-  open: true,
-  children: [
-    {
-      kind: "folder", name: ".idea", open: false, children: [
-        { kind: "file", name: "workspace.xml", ext: "xml" },
-      ],
-    },
-    {
-      kind: "folder", name: "src", open: true, children: [
-        {
-          kind: "folder", name: "components", open: true, children: [
-            { kind: "file", name: "ActivityBar.tsx", ext: "tsx", status: "M" },
-            { kind: "file", name: "EditorArea.tsx",  ext: "tsx", status: "M" },
-            { kind: "file", name: "Sidebar.tsx",     ext: "tsx" },
-            { kind: "file", name: "TitleBar.tsx",    ext: "tsx", status: "A" },
-            { kind: "file", name: "Icons.tsx",       ext: "tsx" },
-          ],
-        },
-        {
-          kind: "folder", name: "styles", open: false, children: [
-            { kind: "file", name: "theme.css",  ext: "css" },
-            { kind: "file", name: "layout.css", ext: "css" },
-          ],
-        },
-        { kind: "file", name: "App.tsx",  ext: "tsx" },
-        { kind: "file", name: "main.tsx", ext: "tsx" },
-      ],
-    },
-    {
-      kind: "folder", name: "src-tauri", open: false, children: [
-        { kind: "file", name: "Cargo.toml",   ext: "toml" },
-        { kind: "file", name: "tauri.conf.json", ext: "json" },
-      ],
-    },
-    { kind: "file", name: "package.json",  ext: "json" },
-    { kind: "file", name: "tsconfig.json", ext: "json" },
-    { kind: "file", name: "vite.config.ts",ext: "ts", status: "U" },
-    { kind: "file", name: "README.md",     ext: "md" },
-  ],
-};
+interface TreeState {
+  /** Cached directory listings, keyed by absolute folder path. */
+  cache: Map<string, DirEntry[]>;
+  /** Open folders, keyed by absolute path. */
+  open: Set<string>;
+  /** Folders currently being loaded. */
+  loading: Set<string>;
+}
 
 function FileGlyph({ ext }: { ext: string }) {
   const map: Record<string, [string, string]> = {
     tsx:  ["#1a73c4", "TSX"],
     ts:   ["#3178c6", "TS"],
+    jsx:  ["#1a73c4", "JSX"],
+    js:   ["#f7df1e", "JS"],
     css:  ["#264de4", "CSS"],
     json: ["#8a8a8a", "{ }"],
     toml: ["#d34516", "TOM"],
     md:   ["#444",    "MD"],
     xml:  ["#558b2f", "XML"],
     rs:   ["#d34516", "RS"],
+    py:   ["#3776ab", "PY"],
+    cpp:  ["#00599c", "C++"],
+    html: ["#e34f26", "HTML"],
   };
   const [color, label] = map[ext] ?? ["#666", "···"];
   return <span className="file-glyph" style={{ background: color }}>{label}</span>;
 }
 
-function TreeNode({ node, depth, selected, onSelect }: {
-  node: Node; depth: number; selected: string; onSelect: (p: string) => void;
-}) {
-  const [open, setOpen] = useState(node.kind === "folder" ? !!node.open : false);
-  if (node.kind === "folder") {
+interface FolderViewProps {
+  path: string;
+  depth: number;
+  state: TreeState;
+  /** Force re-render when state mutates (refs are mutated in place). */
+  bump: () => void;
+  selectedPath: string | null;
+  onFileClick: (entry: DirEntry) => void;
+}
+
+function FolderView({ path, depth, state, bump, selectedPath, onFileClick }: FolderViewProps) {
+  const entries = state.cache.get(path);
+  if (!entries) {
     return (
-      <div className="tree__node">
-        <div
-          className="tree__row tree__row--folder"
-          style={{ paddingLeft: 8 + depth * 14 }}
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className={`tree__chev ${open ? "is-open" : ""}`}><I.ChevronRight size={12} /></span>
-          {open ? <I.FolderOpen size={14} /> : <I.Folder size={14} />}
-          <span className="tree__label">{node.name}</span>
-        </div>
-        {open && (
-          <div>
-            {node.children.map((c) => (
-              <TreeNode key={c.name} node={c} depth={depth + 1} selected={selected} onSelect={onSelect} />
-            ))}
-          </div>
-        )}
+      <div className="tree__loading" style={{ paddingLeft: 8 + depth * 14 + 14 }}>
+        Loading…
       </div>
     );
   }
-  const isSel = selected === node.name;
+  if (entries.length === 0) {
+    return (
+      <div className="tree__loading" style={{ paddingLeft: 8 + depth * 14 + 14 }}>
+        (empty)
+      </div>
+    );
+  }
   return (
-    <div
-      className={`tree__row ${isSel ? "is-selected" : ""}`}
-      style={{ paddingLeft: 8 + depth * 14 + 14 }}
-      onClick={() => onSelect(node.name)}
-    >
-      <FileGlyph ext={node.ext} />
-      <span className="tree__label">{node.name}</span>
-      {node.status && <span className={`tree__status tree__status--${node.status}`}>{node.status}</span>}
+    <>
+      {entries.map((e) =>
+        e.is_dir ? (
+          <DirNode
+            key={e.path}
+            entry={e}
+            depth={depth}
+            state={state}
+            bump={bump}
+            selectedPath={selectedPath}
+            onFileClick={onFileClick}
+          />
+        ) : (
+          <FileNode
+            key={e.path}
+            entry={e}
+            depth={depth}
+            selected={selectedPath === e.path}
+            onClick={() => onFileClick(e)}
+          />
+        )
+      )}
+    </>
+  );
+}
+
+function DirNode({
+  entry, depth, state, bump, selectedPath, onFileClick,
+}: {
+  entry: DirEntry; depth: number; state: TreeState; bump: () => void;
+  selectedPath: string | null; onFileClick: (entry: DirEntry) => void;
+}) {
+  const isOpen = state.open.has(entry.path);
+
+  const toggle = async () => {
+    if (state.open.has(entry.path)) {
+      state.open.delete(entry.path);
+      bump();
+      return;
+    }
+    state.open.add(entry.path);
+    bump();
+    if (!state.cache.has(entry.path)) {
+      state.loading.add(entry.path);
+      bump();
+      try {
+        const contents = await readDir(entry.path);
+        state.cache.set(entry.path, contents);
+      } catch (e) {
+        console.error("readDir failed:", e);
+        state.cache.set(entry.path, []);
+      } finally {
+        state.loading.delete(entry.path);
+        bump();
+      }
+    }
+  };
+
+  return (
+    <div className="tree__node">
+      <div
+        className="tree__row tree__row--folder"
+        style={{ paddingLeft: 8 + depth * 14 }}
+        onClick={toggle}
+        title={entry.path}
+      >
+        <span className={`tree__chev ${isOpen ? "is-open" : ""}`}>
+          <I.ChevronRight size={12} />
+        </span>
+        {isOpen ? <I.FolderOpen size={14} /> : <I.Folder size={14} />}
+        <span className="tree__label">{entry.name}</span>
+      </div>
+      {isOpen && (
+        <FolderView
+          path={entry.path}
+          depth={depth + 1}
+          state={state}
+          bump={bump}
+          selectedPath={selectedPath}
+          onFileClick={onFileClick}
+        />
+      )}
     </div>
   );
 }
 
+function FileNode({
+  entry, depth, selected, onClick,
+}: {
+  entry: DirEntry; depth: number; selected: boolean; onClick: () => void;
+}) {
+  const ext = extOf(entry.name);
+  return (
+    <div
+      className={`tree__row ${selected ? "is-selected" : ""}`}
+      style={{ paddingLeft: 8 + depth * 14 + 14 }}
+      onClick={onClick}
+      title={entry.path}
+    >
+      <FileGlyph ext={ext} />
+      <span className="tree__label">{entry.name}</span>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+/*  Sidebar                                                         */
+/* ---------------------------------------------------------------- */
+
 export default function Sidebar() {
-  const [selected, setSelected] = useState("EditorArea.tsx");
+  const { activeTab, openFile, openFolder, closeFolder, rootPath, rootName, tabs } = useWorkspace();
+
+  // Tree state — refs for in-place mutation, with a `tick` to re-render.
+  const stateRef = useRef<TreeState>({
+    cache: new Map(),
+    open: new Set(),
+    loading: new Set(),
+  });
+  const [, setTick] = useState(0);
+  const bump = useCallback(() => setTick((n) => n + 1), []);
+
+  const [search, setSearch] = useState("");
+
+  // Load root contents whenever the workspace folder changes
+  useEffect(() => {
+    if (!rootPath) {
+      stateRef.current = { cache: new Map(), open: new Set(), loading: new Set() };
+      bump();
+      return;
+    }
+    const s = stateRef.current;
+    s.cache.clear();
+    s.open.clear();
+    s.loading.clear();
+    s.open.add(rootPath); // root is always expanded
+    s.loading.add(rootPath);
+    bump();
+    readDir(rootPath)
+      .then((entries) => {
+        s.cache.set(rootPath, entries);
+      })
+      .catch((e) => {
+        console.error("readDir(root) failed:", e);
+        s.cache.set(rootPath, []);
+      })
+      .finally(() => {
+        s.loading.delete(rootPath);
+        bump();
+      });
+  }, [rootPath, bump]);
+
+  const onFileClick = useCallback(
+    (entry: DirEntry) => {
+      openFile(entry.path);
+    },
+    [openFile]
+  );
+
+  const collapseAll = () => {
+    const s = stateRef.current;
+    s.open.clear();
+    if (rootPath) s.open.add(rootPath);
+    bump();
+  };
+
+  // Filter visible entries by search query (client-side, only over loaded contents)
+  const filterEntries = (entries: DirEntry[]): DirEntry[] => {
+    if (!search.trim()) return entries;
+    const q = search.toLowerCase();
+    return entries.filter(
+      (e) => e.is_dir || e.name.toLowerCase().includes(q)
+    );
+  };
+
+  const selectedPath = activeTab?.path ?? null;
+  const dirtyCount = tabs.filter((t) => t.dirty).length;
+
+  // Patch FolderView to apply search filter on the fly
+  const renderRoot = () => {
+    if (!rootPath) return null;
+    const entries = stateRef.current.cache.get(rootPath);
+    if (!entries) {
+      return <div className="tree__loading">Loading {rootName}…</div>;
+    }
+    const filtered = filterEntries(entries);
+    if (filtered.length === 0 && search) {
+      return <div className="sidebar__empty">No file matches “{search}”</div>;
+    }
+    // Render children directly under the root header
+    return filtered.map((e) =>
+      e.is_dir ? (
+        <DirNode
+          key={e.path}
+          entry={e}
+          depth={1}
+          state={stateRef.current}
+          bump={bump}
+          selectedPath={selectedPath}
+          onFileClick={onFileClick}
+        />
+      ) : (
+        <FileNode
+          key={e.path}
+          entry={e}
+          depth={1}
+          selected={selectedPath === e.path}
+          onClick={() => onFileClick(e)}
+        />
+      )
+    );
+  };
 
   return (
     <aside className="sidebar">
       <div className="panel-header">
-        <span>Project</span>
+        <span>{rootName ? rootName.toUpperCase() : "PROJECT"}</span>
         <div className="panel-header__actions">
-          <button className="panel-header__btn" title="New File"><I.Plus size={13} /></button>
-          <button className="panel-header__btn" title="Collapse all"><I.ChevronDown size={13} /></button>
-          <button className="panel-header__btn" title="More"><I.More size={13} /></button>
+          <button
+            className="panel-header__btn"
+            title="Open Folder…"
+            onClick={() => openFolder()}
+          >
+            <I.FolderOpen size={13} />
+          </button>
+          <button
+            className="panel-header__btn"
+            title="Collapse all"
+            onClick={collapseAll}
+            disabled={!rootPath}
+          >
+            <I.ChevronDown size={13} />
+          </button>
+          {rootPath && (
+            <button
+              className="panel-header__btn"
+              title="Close Folder"
+              onClick={closeFolder}
+            >
+              <I.Close size={13} />
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="sidebar__search">
-        <I.Search size={13} />
-        <input placeholder="Search files…" />
-        <kbd>Ctrl P</kbd>
-      </div>
+      {!rootPath ? (
+        <div className="sidebar__no-folder">
+          <p>No folder is open</p>
+          <button className="sidebar__open-btn" onClick={() => openFolder()}>
+            Open Folder
+          </button>
+          <span className="sidebar__hint">Or use File › Open Folder…</span>
+        </div>
+      ) : (
+        <>
+          <div className="sidebar__search">
+            <I.Search size={13} />
+            <input
+              placeholder="Filter…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Escape" && setSearch("")}
+            />
+          </div>
 
-      <div className="sidebar__tree">
-        <TreeNode node={TREE} depth={0} selected={selected} onSelect={setSelected} />
-      </div>
+          <div className="sidebar__tree">
+            <div
+              className="tree__row tree__row--folder tree__row--root"
+              title={rootPath}
+            >
+              <span className="tree__chev is-open">
+                <I.ChevronRight size={12} />
+              </span>
+              <I.FolderOpen size={14} />
+              <span className="tree__label">{rootName}</span>
+            </div>
+            {renderRoot()}
+          </div>
+        </>
+      )}
 
       <div className="sidebar__footer">
         <I.Branch size={12} />
-        <span>main</span>
+        <span>{rootPath ? "main" : "—"}</span>
         <span className="sidebar__footer-dot">•</span>
-        <span className="sidebar__footer-mut">3 changes</span>
+        <span className="sidebar__footer-mut">
+          {dirtyCount > 0 ? `${dirtyCount} unsaved` : "clean"}
+        </span>
       </div>
     </aside>
   );

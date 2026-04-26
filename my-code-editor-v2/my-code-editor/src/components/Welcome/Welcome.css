@@ -1,0 +1,191 @@
+.welcome {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+    radial-gradient(700px 400px at -5% 110%, rgba(90, 209, 255, 0.12), transparent 65%),
+    var(--bg-3);
+  overflow: auto;
+  padding: 48px 36px;
+  user-select: none;
+}
+
+.welcome__inner {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* Header */
+.welcome__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.welcome__logo {
+  width: 56px; height: 56px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(124, 92, 255, 0.35);
+  color: #0f1115;
+}
+.welcome__title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--text-1), var(--text-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.welcome__subtitle {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 14px;
+  max-width: 580px;
+  line-height: 1.5;
+}
+
+/* Grid */
+.welcome__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+@media (max-width: 720px) {
+  .welcome__grid { grid-template-columns: 1fr; }
+}
+
+.welcome__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.welcome__col-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.welcome__col-title--mt { margin-top: 18px; }
+
+.welcome__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Actions */
+.welcome__action {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.015);
+  color: var(--text-1);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+.welcome__action:hover {
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.10);
+  transform: translateY(-1px);
+}
+.welcome__action:active { transform: translateY(0); }
+.welcome__action svg { color: var(--accent-2); }
+.welcome__action span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.welcome__action strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.welcome__action em {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.welcome__action kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.welcome__empty {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-style: italic;
+  border: 1px dashed var(--border-2);
+  border-radius: var(--radius);
+}
+
+/* Tips */
+.welcome__tips {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex; flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.welcome__tips li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.welcome__tips kbd {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: var(--text-2);
+  min-width: 78px;
+  text-align: center;
+}
+
+/* Footer */
+.welcome__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-4);
+}
+.welcome__footer-dot { color: var(--text-4); }
+
