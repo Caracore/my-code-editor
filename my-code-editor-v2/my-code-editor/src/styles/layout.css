@@ -1,0 +1,56 @@
+/* App layout grid — TitleBar / Body / StatusBar */
+.app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: var(--titlebar-h) 1fr var(--statusbar-h);
+  background: var(--bg-1);
+  color: var(--text-1);
+  overflow: hidden;
+}
+
+.app__body {
+  display: grid;
+  grid-template-columns: var(--activitybar-w) 260px 1fr 320px;
+  min-height: 0;
+}
+
+.app__main {
+  display: grid;
+  grid-template-rows: 1fr 240px;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg-3);
+  border-left: 1px solid var(--border-1);
+  border-right: 1px solid var(--border-1);
+}
+
+.app__editor-area {
+  display: grid;
+  grid-template-rows: var(--tabs-h) 1fr;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Generic panel header used by sidebars / tool windows */
+.panel-header {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border-1);
+  background: var(--bg-2);
+}
+.panel-header__actions { display: flex; gap: 2px; }
+.panel-header__btn {
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+}
+.panel-header__btn:hover { background: var(--bg-4); color: var(--text-1); }
+

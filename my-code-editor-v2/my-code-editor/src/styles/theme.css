@@ -1,0 +1,85 @@
+/* =========================================================
+   THEME — "Darcula+" inspired by JetBrains, refined for 2026
+   Tu peux changer ces variables pour re-skinner toute l'IDE
+   ========================================================= */
+:root {
+  /* Backgrounds */
+  --bg-0: #0f1115;            /* deepest (titlebar / status) */
+  --bg-1: #14171d;            /* app body */
+  --bg-2: #181c23;            /* sidebar / panels */
+  --bg-3: #1e232c;            /* editor */
+  --bg-4: #242a35;            /* hover */
+  --bg-5: #2c333f;            /* active */
+
+  /* Borders */
+  --border-1: #232934;
+  --border-2: #2d3340;
+
+  /* Text */
+  --text-1: #e6e8ee;
+  --text-2: #b6bcc8;
+  --text-3: #7d8593;
+  --text-4: #545b69;
+
+  /* Accents */
+  --accent: #7c5cff;          /* indigo / violet */
+  --accent-2: #5ad1ff;        /* cyan */
+  --accent-soft: rgba(124, 92, 255, 0.18);
+  --success: #4ade80;
+  --warn:    #f5b14c;
+  --danger:  #f25f5c;
+  --info:    #5ad1ff;
+
+  /* Syntax */
+  --syn-kw:    #c792ea;       /* keywords */
+  --syn-fn:    #82aaff;       /* functions */
+  --syn-str:   #c3e88d;       /* strings */
+  --syn-num:   #f78c6c;       /* numbers */
+  --syn-com:   #5c6370;       /* comments */
+  --syn-type:  #ffcb6b;       /* types */
+  --syn-prop:  #89ddff;       /* properties */
+  --syn-tag:   #f07178;       /* tags */
+  --syn-punct: #b6bcc8;
+
+  /* Misc */
+  --radius-sm: 4px;
+  --radius:    6px;
+  --radius-lg: 10px;
+  --shadow-1:  0 4px 16px rgba(0,0,0,.35);
+  --shadow-2:  0 12px 40px rgba(0,0,0,.55);
+
+  --font-ui:   "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+
+  --titlebar-h: 36px;
+  --activitybar-w: 48px;
+  --statusbar-h: 24px;
+  --tabs-h: 34px;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg-1);
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+button { font-family: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #2a313d;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: #39414f; background-clip: padding-box; border: 2px solid transparent; }
+

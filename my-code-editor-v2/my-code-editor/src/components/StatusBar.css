@@ -1,0 +1,42 @@
+.statusbar {
+  height: var(--statusbar-h);
+  background: linear-gradient(180deg, #0f1115, #0c0e12);
+  border-top: 1px solid var(--border-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.statusbar__group { display: flex; align-items: center; gap: 1px; }
+.statusbar__center { color: var(--text-2); }
+
+.sb-item {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 3px;
+  color: var(--text-3);
+}
+.sb-item:hover { background: var(--accent); color: #0f1115; }
+.sb-item:hover svg { color: #0f1115; }
+.sb-item:hover .sb-mut { color: rgba(15,17,21,0.65); }
+
+.sb-mut { color: var(--text-4); margin-left: 2px; }
+.sb-item--warn { color: var(--warn); }
+.sb-item--err  { color: var(--danger); }
+
+.sb-task {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11.5px;
+}
+.sb-task__spinner {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-2);
+  border-top-color: transparent;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+

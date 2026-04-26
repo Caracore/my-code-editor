@@ -1,0 +1,173 @@
+.rightpanel {
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.rightpanel__tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 4px 0;
+  border-bottom: 1px solid var(--border-1);
+  background: var(--bg-2);
+}
+.rp-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--text-3);
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+}
+.rp-tab:hover { color: var(--text-1); }
+.rp-tab.is-active {
+  background: var(--bg-3);
+  color: var(--text-1);
+  border-color: var(--border-1);
+  position: relative; top: 1px;
+}
+.rp-tabs__spacer { flex: 1; }
+.rp-iconbtn {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--text-3); border-radius: 4px;
+}
+.rp-iconbtn:hover { background: var(--bg-4); color: var(--text-1); }
+
+.rightpanel__model {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 10px 12px;
+  border-bottom: 1px solid var(--border-1);
+}
+.model-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(124,92,255,0.16), rgba(90,209,255,0.16));
+  border: 1px solid rgba(124,92,255,0.35);
+  border-radius: 999px;
+  color: var(--text-1);
+  font-size: 12px;
+}
+.model-pill__dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+.model-meta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text-3);
+}
+.model-meta b { color: var(--text-1); font-weight: 600; }
+.model-meta__sep { color: var(--text-4); }
+.model-meta svg { color: var(--success); }
+
+.rightpanel__messages {
+  flex: 1; min-height: 0;
+  overflow: auto;
+  padding: 14px 12px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.msg { display: flex; gap: 10px; }
+.msg__avatar {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  flex-shrink: 0;
+}
+.msg--ai .msg__avatar {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0f1115;
+}
+.msg--me .msg__avatar {
+  background: var(--bg-4); color: var(--text-1);
+}
+.msg__body { flex: 1; min-width: 0; }
+.msg__body p {
+  margin: 0; font-size: 12.5px; line-height: 1.55;
+  color: var(--text-1); white-space: pre-wrap;
+}
+.msg--me .msg__body p { color: var(--text-2); }
+
+.msg__code {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--syn-str);
+  overflow-x: auto;
+}
+
+.rightpanel__suggestions {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 8px 12px 0;
+}
+.suggestion-chip {
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  color: var(--text-2);
+  background: var(--bg-3);
+}
+.suggestion-chip:hover {
+  border-color: var(--accent);
+  color: var(--text-1);
+  background: var(--accent-soft);
+}
+
+.rightpanel__composer { padding: 10px 12px 12px; }
+.composer__inner {
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  transition: border-color .12s, box-shadow .12s;
+}
+.composer__inner:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.composer__inner textarea {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  padding: 10px 12px 4px;
+}
+.composer__inner textarea::placeholder { color: var(--text-4); }
+.composer__actions {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 6px 6px;
+}
+.composer__btn {
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+.composer__btn:hover { background: var(--bg-4); color: var(--text-1); }
+.composer__send {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #0f1115;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+.composer__send:hover { filter: brightness(1.08); }
+
