@@ -272,7 +272,7 @@ fn check_lsp_commands() -> std::collections::HashMap<String, bool> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        
+        .plugin(tauri_plugin_dialog::init())
         .manage(terminal::TerminalState::default())
         .manage(Mutex::new(DiscordState::new("1451676636259811368")))
         .manage(Arc::new(LspState::default()))

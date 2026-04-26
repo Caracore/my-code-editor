@@ -1,33 +1,61 @@
 import "./ActivityBar.css";
 import { I } from "./Icons";
+import {
+  useWorkspace,
+  type ActivityView,
+} from "../context/WorkspaceContext";
 
-const items = [
-  { id: "files", icon: I.Files, label: "Explorer", active: true, badge: undefined },
-  { id: "search", icon: I.Search, label: "Search" },
-  { id: "git", icon: I.Git, label: "Source Control", badge: 3 },
-  { id: "debug", icon: I.Debug, label: "Run & Debug" },
-  { id: "ext", icon: I.Extensions, label: "Extensions", badge: 12 },
-  { id: "ai", icon: I.Sparkle, label: "AI Assistant" },
-] as const;
+const items: {
+  id: ActivityView;
+  icon: keyof typeof I;
+  label: string;
+}[] = [
+  { id: "files", icon: "Files", label: "Explorer" },
+  { id: "search", icon: "Search", label: "Search" },
+  { id: "git", icon: "Git", label: "Source Control" },
+  { id: "debug", icon: "Debug", label: "Run & Debug" },
+  { id: "ext", icon: "Extensions", label: "Extensions" },
+  { id: "ai", icon: "Sparkle", label: "AI Assistant" },
+];
 
 export default function ActivityBar() {
+  const {
+    activityView,
+    setActivityView,
+    sidebarVisible,
+    setSidebarVisible,
+    setSettingsPanelOpen,
+    setRightPanelVisible,
+    rightPanelVisible,
+  } = useWorkspace();
+
+  const onClick = (id: ActivityView) => {
+    if (id === "ai") {
+      setRightPanelVisible(!rightPanelVisible);
+      return;
+    }
+    if (activityView === id && sidebarVisible) {
+      setSidebarVisible(false);
+    } else {
+      setActivityView(id);
+      setSidebarVisible(true);
+    }
+  };
+
   return (
     <aside className="activitybar">
       <div className="activitybar__group">
         {items.map((it) => {
-          const Icon = it.icon;
+          const Icon = I[it.icon];
+          const active = activityView === it.id && sidebarVisible;
           return (
             <button
               key={it.id}
-              className={`activitybar__item ${
-                "active" in it && it.active ? "is-active" : ""
-              }`}
+              className={`activitybar__item ${active ? "is-active" : ""}`}
               title={it.label}
+              onClick={() => onClick(it.id)}
             >
               <Icon size={20} />
-              {"badge" in it && it.badge ? (
-                <span className="activitybar__badge">{it.badge}</span>
-              ) : null}
             </button>
           );
         })}
@@ -37,7 +65,11 @@ export default function ActivityBar() {
         <button className="activitybar__item" title="Account">
           <I.Account size={20} />
         </button>
-        <button className="activitybar__item" title="Settings">
+        <button
+          className="activitybar__item"
+          title="Settings"
+          onClick={() => setSettingsPanelOpen(true)}
+        >
           <I.Settings size={20} />
         </button>
       </div>

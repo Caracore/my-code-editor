@@ -145,3 +145,27 @@
 .suggestion__icon {
   font-size: 14px;
 }
+
+/* === Host overrides for real CodeMirror editor === */
+.editor.editor--code-host,
+.editor.editor--welcome {
+  display: flex;
+  grid-template-columns: none;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.editor.editor--code-host > * {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.editor.editor--code-host .cm-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--bg-1);
+}
+.editor.editor--code-host .cm-scroller {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
