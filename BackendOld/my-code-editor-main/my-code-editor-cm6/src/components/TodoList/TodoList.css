@@ -1,0 +1,241 @@
+.todo-list {
+  width: 280px;
+  min-width: 220px;
+  max-width: 320px;
+  height: 100%;
+  background: var(--todo-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.todo-header {
+  padding: 15px 20px;
+  background: var(--secondary-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.todo-header h2 {
+  margin: 0;
+  color: var(--todo-fg);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.todo-create {
+  padding: 15px 20px;
+  background: var(--secondary-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.todo-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--todo-item-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--todo-fg);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.todo-input:focus {
+  border-color: var(--accent-color);
+}
+
+.todo-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--todo-item-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--todo-fg);
+  font-size: 13px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.todo-textarea:focus {
+  border-color: var(--accent-color);
+}
+
+.btn-create {
+  align-self: flex-start;
+  padding: 6px 16px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-create:hover {
+  background: var(--accent-color);
+  opacity: 0.8;
+}
+
+.todo-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.todo-empty {
+  text-align: center;
+  color: #6e6e6e;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+.todo-item {
+  background: var(--todo-item-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+
+.todo-item:hover {
+  background: var(--todo-item-hover-bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.todo-item.completed {
+  opacity: 0.6;
+}
+
+.todo-item.completed h3 {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.todo-view {
+  display: flex;
+  gap: 12px;
+  padding: 12px 15px;
+  align-items: flex-start;
+}
+
+.todo-check {
+  padding-top: 2px;
+}
+
+.todo-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.todo-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-content h3 {
+  margin: 0 0 6px 0;
+  color: var(--todo-fg);
+  font-size: 14px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.todo-content p {
+  margin: 0 0 8px 0;
+  color: var(--todo-fg);
+  opacity: 0.7;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.todo-date {
+  font-size: 11px;
+  color: var(--todo-fg);
+  opacity: 0.5;
+}
+
+.todo-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit,
+.btn-delete {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--todo-fg);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #e74856;
+  border-color: #e74856;
+  color: white;
+}
+
+.todo-edit {
+  padding: 12px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-save {
+  align-self: flex-start;
+  padding: 6px 16px;
+  background: #4ec9b0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-save:hover {
+  background: #3a9b85;
+}
+
+/* Scrollbar styling */
+.todo-items::-webkit-scrollbar {
+  width: 10px;
+}
+
+.todo-items::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.todo-items::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 5px;
+}
+
+.todo-items::-webkit-scrollbar-thumb:hover {
+  background: #4e4e4e;
+}

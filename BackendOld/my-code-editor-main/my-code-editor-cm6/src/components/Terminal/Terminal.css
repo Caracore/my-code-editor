@@ -1,0 +1,67 @@
+/* Container principal */
+.terminal-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Zone d'affichage */
+.terminal {
+    flex: 1;
+    background: var(--terminal-bg);
+    color: var(--terminal-fg);
+    padding: 8px;
+    overflow-y: auto;
+    font-family: monospace;
+}
+
+.terminal pre {
+    margin: 0;
+}
+
+/* Zone d'entrée */
+.input-container {
+    display: flex;
+    background: var(--terminal-input-bg);
+    padding: 4px;
+}
+
+/* Prompt */
+.terminal-prompt {
+    color: var(--terminal-prompt-fg);
+    font-family: monospace;
+    margin-right: 6px;
+    white-space: pre;
+}
+
+/* Input */
+.terminal-input {
+    flex: 1;
+    background: var(--terminal-input-bg);
+    color: var(--terminal-input-fg);
+    border: none;
+    padding: 6px;
+    font-family: monospace;
+}
+
+/* Bouton */
+.terminal-button {
+    background: var(--terminal-button-bg);
+    color: var(--terminal-button-fg);
+    border: 1px solid var(--terminal-button-border);
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.terminal-button:hover {
+    background: var(--terminal-button-hover-bg);
+}
+
+.terminal-shell-select {
+    background: var(--terminal-input-bg);
+    color: var(--terminal-input-fg);
+    border: none;
+    padding: 4px 6px;
+    font-family: monospace;
+    margin-left: 8px;
+}
