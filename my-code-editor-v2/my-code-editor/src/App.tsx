@@ -1,6 +1,7 @@
 import "./styles/theme.css";
 import "./styles/layout.css";
 
+import { useState } from "react";
 import TitleBar from "./components/TitleBar/TitleBar";
 import ActivityBar from "./components/ActivityBar/ActivityBar";
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -13,9 +14,16 @@ import CommandPalette from "./components/CommandPalette/CommandPalette";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 
 export default function App() {
+  const [showRight, setShowRight] = useState(true);
+  const [showBottom, setShowBottom] = useState(true);
+
   return (
     <WorkspaceProvider>
-      <div className="app">
+      <div
+        className={`app ${showRight ? "" : "app--no-right"} ${
+          showBottom ? "" : "app--no-bottom"
+        }`}
+      >
         <TitleBar />
         <div className="app__body">
           <ActivityBar />
@@ -25,9 +33,9 @@ export default function App() {
               <EditorTabs />
               <EditorArea />
             </div>
-            <BottomPanel />
+            {showBottom && <BottomPanel onClose={() => setShowBottom(false)} />}
           </main>
-          <RightPanel />
+          {showRight && <RightPanel onClose={() => setShowRight(false)} />}
         </div>
         <StatusBar />
         <CommandPalette />
@@ -35,3 +43,4 @@ export default function App() {
     </WorkspaceProvider>
   );
 }
+

@@ -27,7 +27,11 @@ const SUGGESTIONS = [
   "Optimize performance",
 ];
 
-export default function RightPanel() {
+interface RightPanelProps {
+  onClose?: () => void;
+}
+
+export default function RightPanel({ onClose }: RightPanelProps = {}) {
   const [tab, setTab] = useState<"chat" | "edit" | "agents">("chat");
   return (
     <aside className="rightpanel">
@@ -43,7 +47,7 @@ export default function RightPanel() {
         </button>
         <div className="rp-tabs__spacer" />
         <button className="rp-iconbtn" title="History"><I.More size={13} /></button>
-        <button className="rp-iconbtn" title="Close"><I.Close size={13} /></button>
+        <button className="rp-iconbtn" title="Close panel" onClick={onClose}><I.Close size={13} /></button>
       </div>
 
       <div className="rightpanel__model">

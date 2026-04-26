@@ -13,6 +13,9 @@
   grid-template-columns: var(--activitybar-w) 260px 1fr 320px;
   min-height: 0;
 }
+.app--no-right .app__body {
+  grid-template-columns: var(--activitybar-w) 260px 1fr;
+}
 
 .app__main {
   display: grid;
@@ -22,6 +25,9 @@
   background: var(--bg-3);
   border-left: 1px solid var(--border-1);
   border-right: 1px solid var(--border-1);
+}
+.app--no-bottom .app__main {
+  grid-template-rows: 1fr;
 }
 
 .app__editor-area {

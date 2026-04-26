@@ -15,7 +15,11 @@ const TABS = [
 let nextTermSeq = 1;
 const newTermId = () => `term-${Date.now().toString(36)}-${nextTermSeq++}`;
 
-export default function BottomPanel() {
+interface BottomPanelProps {
+  onClose?: () => void;
+}
+
+export default function BottomPanel({ onClose }: BottomPanelProps = {}) {
   const [tab, setTab] = useState("terminal");
   const { rootPath } = useWorkspace();
 
@@ -74,7 +78,9 @@ export default function BottomPanel() {
         >
           <I.Trash size={13} />
         </button>
-        <button className="bp-iconbtn" title="Close"><I.Close size={13} /></button>
+        <button className="bp-iconbtn" title="Close panel" onClick={onClose}>
+          <I.Close size={13} />
+        </button>
       </div>
 
       {tab === "terminal" && (
