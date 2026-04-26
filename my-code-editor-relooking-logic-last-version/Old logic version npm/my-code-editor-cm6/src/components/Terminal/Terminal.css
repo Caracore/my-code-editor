@@ -1,0 +1,91 @@
+/* =====================================================
+   Terminal — style IntelliJ Terminal Tool Window
+   ===================================================== */
+
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--terminal-bg);
+  border-top: 1px solid var(--border-color);
+}
+
+.terminal {
+  flex: 1;
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+  padding: var(--space-2);
+  overflow-y: auto;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+}
+
+.terminal pre {
+  margin: 0;
+  font-family: inherit;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  background: var(--terminal-input-bg);
+  padding: var(--space-1) var(--space-2);
+  border-top: 1px solid var(--border-color);
+  gap: var(--space-2);
+}
+
+.terminal-prompt {
+  color: var(--terminal-prompt-fg);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+  white-space: pre;
+  flex-shrink: 0;
+}
+
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  color: var(--terminal-input-fg);
+  border: none;
+  outline: none;
+  padding: 4px 0;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+}
+
+.terminal-input::placeholder {
+  color: var(--secondary-fg);
+}
+
+.terminal-button {
+  background: var(--terminal-button-bg);
+  color: var(--terminal-button-fg);
+  border: 1px solid var(--terminal-button-border);
+  padding: 4px var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-small);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.terminal-button:hover {
+  background: var(--terminal-button-hover-bg);
+}
+
+.terminal-shell-select {
+  background: transparent;
+  color: var(--terminal-fg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 3px var(--space-1);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+
+.terminal-shell-select:hover {
+  background: var(--terminal-button-hover-bg);
+}

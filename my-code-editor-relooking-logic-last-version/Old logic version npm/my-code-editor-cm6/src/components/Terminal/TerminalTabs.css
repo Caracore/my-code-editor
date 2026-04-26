@@ -1,0 +1,100 @@
+.terminal-tabs {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary, #1e1e1e);
+  border-bottom: 1px solid var(--border-color, #333);
+  height: 35px;
+  padding: 0 8px;
+  gap: 8px;
+}
+
+.terminal-tabs-list {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.terminal-tabs-list::-webkit-scrollbar {
+  height: 4px;
+}
+
+.terminal-tabs-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, #555);
+  border-radius: 2px;
+}
+
+.terminal-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: var(--bg-primary, #252526);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  min-width: 100px;
+  max-width: 200px;
+}
+
+.terminal-tab:hover {
+  background: var(--bg-hover, #2a2d2e);
+}
+
+.terminal-tab.active {
+  background: var(--bg-active, #1e1e1e);
+  border-color: var(--accent-color, #007acc);
+}
+
+.terminal-tab-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: var(--text-primary, #cccccc);
+}
+
+.terminal-tab-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #999);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.terminal-tab-close:hover {
+  background: var(--bg-hover, #3e3e3e);
+  color: var(--text-primary, #fff);
+}
+
+.terminal-new-btn {
+  background: var(--bg-primary, #252526);
+  border: 1px solid var(--border-color, #333);
+  color: var(--text-primary, #cccccc);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  min-width: 32px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.terminal-new-btn:hover {
+  background: var(--bg-hover, #2a2d2e);
+  border-color: var(--accent-color, #007acc);
+}

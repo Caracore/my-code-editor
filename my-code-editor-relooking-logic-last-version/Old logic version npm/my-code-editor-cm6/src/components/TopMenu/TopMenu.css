@@ -1,0 +1,72 @@
+/* =====================================================
+   TopMenu — barre de menu type IntelliJ
+   ===================================================== */
+
+.top-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+  height: 32px;
+  background: var(--menu-bg);
+  color: var(--menu-fg);
+  font-size: var(--font-size-small);
+  user-select: none;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.menu-item {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.menu-item:hover {
+  color: var(--menu-fg);
+  background: var(--menu-hover-bg);
+}
+
+.menu-item.active {
+  background: var(--menu-active-bg);
+}
+
+.menu-dropdown {
+  position: absolute;
+  margin-top: 4px;
+  background: var(--context-menu-bg);
+  border: 1px solid var(--context-menu-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) 0;
+  min-width: 220px;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  font-size: var(--font-size-small);
+}
+
+.dropdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 6px var(--space-3);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.dropdown-item:hover {
+  background: var(--menu-hover-bg);
+}
+
+.dropdown-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: var(--space-1) 0;
+}
+
+.shortcut {
+  opacity: 0.55;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}

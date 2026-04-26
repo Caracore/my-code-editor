@@ -1,0 +1,61 @@
+/* =====================================================
+   Toolbar — boutons icon-style (IntelliJ)
+   ===================================================== */
+
+.toolbar {
+  padding: var(--space-1) var(--space-2);
+  background: var(--toolbar-bg);
+  color: var(--toolbar-fg);
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  min-height: 36px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--font-size-small);
+}
+
+.toolbar button,
+.theme-select,
+.toolbar-select {
+  background: var(--toolbar-button-bg);
+  color: var(--toolbar-button-fg);
+  border: 1px solid var(--toolbar-button-border);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-small);
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.toolbar button:hover,
+.theme-select:hover,
+.toolbar-select:hover {
+  background: var(--toolbar-button-hover);
+}
+
+.toolbar button:active {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.toolbar select {
+  outline: none;
+}
+
+.toolbar select:focus {
+  border-color: var(--accent-color);
+}
+
+/* Séparateur vertical entre groupes d'actions */
+.toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background: var(--border-color);
+  margin: 0 var(--space-1);
+  flex-shrink: 0;
+}

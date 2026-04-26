@@ -1,0 +1,84 @@
+/* =====================================================
+   Sidebar — style IntelliJ Tool Window
+   ===================================================== */
+
+.sidebar {
+  width: 260px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-fg);
+  padding: var(--space-2) var(--space-1);
+  overflow-y: auto;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-color);
+  font-size: var(--font-size-small);
+  transition: transform var(--duration-base) var(--ease-out),
+              opacity var(--duration-base) var(--ease-out);
+}
+
+.sidebar.hidden {
+  transform: translateX(-12px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* En-tête type "EXPLORER" */
+.sidebar h2,
+.sidebar .sidebar-header {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--sidebar-header-fg);
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  margin: 0;
+  user-select: none;
+}
+
+/* Boutons d'action — flat IntelliJ */
+.sidebar button {
+  background: var(--sidebar-button-bg);
+  color: var(--sidebar-button-fg);
+  border: 1px solid var(--sidebar-button-border);
+  padding: var(--space-1) var(--space-2);
+  margin: 0 0 2px 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-small);
+  font-family: inherit;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.sidebar button:hover {
+  background: var(--sidebar-button-hover);
+}
+
+.sidebar button:active {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* Input création fichier */
+.sidebar input {
+  width: calc(100% - var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  background: var(--sidebar-input-bg);
+  color: var(--sidebar-input-fg);
+  border: 1px solid var(--sidebar-input-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-small);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.sidebar input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1px rgba(53, 116, 240, 0.30);
+}
+
+.context-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}

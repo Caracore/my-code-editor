@@ -1,0 +1,81 @@
+{
+  "name": "warm-sunrise",
+  "palette": {
+    "--primary-bg": "#FFF8F0",
+    "--primary-fg": "#2A1810",
+    "--secondary-bg": "#FFEEDD",
+    "--secondary-fg": "#4A2820",
+    "--accent-color": "#FF6B35",
+    "--border-color": "#DDCCBB",
+    
+    "--sidebar-bg": "#FFF0E0",
+    "--sidebar-fg": "#3A2010",
+    "--sidebar-button-bg": "#FFE5CC",
+    "--sidebar-button-fg": "#2A1810",
+    "--sidebar-button-hover": "#FFDDB8",
+    "--sidebar-button-border": "#DDAA88",
+    
+    "--toolbar-bg": "#FFFAF5",
+    "--toolbar-fg": "#2A1810",
+    "--toolbar-button-bg": "#FFE5CC",
+    "--toolbar-button-fg": "#3A2010",
+    "--toolbar-button-hover": "#FFDDB8",
+    
+    "--tabs-bg": "#FFF0E0",
+    "--tabs-fg": "#3A2010",
+    "--tabs-border": "#DDCCBB",
+    "--tab-active-bg": "#FFFAF5",
+    "--tab-active-fg": "#2A1810",
+    "--tab-hover-bg": "#FFE8D5",
+    
+    "--editor-bg": "#FFFCF7",
+    "--editor-fg": "#2A1810",
+    "--editor-selection-bg": "#FFE0B8",
+    "--editor-cursor": "#FF6B35",
+    
+    "--terminal-bg": "#FFF8F0",
+    "--terminal-fg": "#4A2820",
+    "--terminal-input-bg": "#FFEDD8",
+    "--terminal-input-fg": "#2A1810",
+    "--terminal-prompt-fg": "#FF6B35",
+    "--terminal-button-bg": "#FFE5CC",
+    "--terminal-button-hover-bg": "#FFDDB8",
+    "--terminal-button-fg": "#3A2010",
+    "--terminal-button-border": "#CC8855",
+    "--terminal-selection-bg": "#FFE0B8",
+    
+    "--xterm-black": "#2A1810",
+    "--xterm-red": "#D32F2F",
+    "--xterm-green": "#388E3C",
+    "--xterm-yellow": "#F57C00",
+    "--xterm-blue": "#1976D2",
+    "--xterm-magenta": "#7B1FA2",
+    "--xterm-cyan": "#0097A7",
+    "--xterm-white": "#757575",
+    "--xterm-bright-black": "#424242",
+    "--xterm-bright-red": "#E53935",
+    "--xterm-bright-green": "#43A047",
+    "--xterm-bright-yellow": "#FB8C00",
+    "--xterm-bright-blue": "#1E88E5",
+    "--xterm-bright-magenta": "#8E24AA",
+    "--xterm-bright-cyan": "#00ACC1",
+    "--xterm-bright-white": "#9E9E9E",
+    
+    "--context-menu-bg": "#FFF8F0",
+    "--context-menu-fg": "#3A2010",
+    "--context-menu-hover-bg": "#FFE8D5",
+    
+    "--welcome-bg": "#FFF8F0",
+    "--welcome-fg": "#2A1810",
+    "--welcome-accent": "#FF6B35"
+  },
+  "typography": {
+    "fontFamily": "Consolas, Monaco, 'Courier New', monospace",
+    "fontSize": 14
+  },
+  "codemirror": {
+    "dark": false,
+    "highlightActiveLine": true,
+    "highlightActiveLineGutter": true
+  }
+}
