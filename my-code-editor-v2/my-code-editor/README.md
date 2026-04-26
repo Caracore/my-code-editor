@@ -25,3 +25,6 @@ Faire Un design plus épurer...
 - Check avec lsp les erreurs, warning, et orthographe... Grammarly, et french pour commencer.
 - Faire class="rightpanel__tabs" => interactif et work.
 - Faire les icons notification, etc ... Interractive bottom
+- Faire shortcut + Personnalisation options, paramètres et commandPalette
+- Faire illuminé le fichier dans l'arborescence sélectionner dans le tabs bar et éditeur instance ...
+- Pouvoir fermer et ouvrir le chat AI RightPanel.
