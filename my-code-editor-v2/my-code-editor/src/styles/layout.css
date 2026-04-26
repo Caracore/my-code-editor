@@ -13,8 +13,14 @@
   grid-template-columns: var(--activitybar-w) 260px 1fr 320px;
   min-height: 0;
 }
+.app--no-sidebar .app__body {
+  grid-template-columns: var(--activitybar-w) 1fr 320px;
+}
 .app--no-right .app__body {
   grid-template-columns: var(--activitybar-w) 260px 1fr;
+}
+.app--no-sidebar.app--no-right .app__body {
+  grid-template-columns: var(--activitybar-w) 1fr;
 }
 
 .app__main {

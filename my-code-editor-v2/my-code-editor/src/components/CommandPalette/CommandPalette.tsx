@@ -31,7 +31,7 @@ export default function CommandPalette() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k" && !e.shiftKey && !e.altKey) {
         e.preventDefault();
         setOpen((v) => !v);
         setQ("");
@@ -40,8 +40,17 @@ export default function CommandPalette() {
         setOpen(false);
       }
     };
+    const onOpen = () => {
+      setOpen(true);
+      setQ("");
+      setIdx(0);
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("commandPalette:open", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("commandPalette:open", onOpen);
+    };
   }, []);
 
   if (!open) {

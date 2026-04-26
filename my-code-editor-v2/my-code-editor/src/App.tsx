@@ -1,7 +1,8 @@
 import "./styles/theme.css";
 import "./styles/layout.css";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import TitleBar from "./components/TitleBar/TitleBar";
 import ActivityBar from "./components/ActivityBar/ActivityBar";
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -12,35 +13,87 @@ import BottomPanel from "./components/BottomPanel/BottomPanel";
 import StatusBar from "./components/StatusBar/StatusBar";
 import CommandPalette from "./components/CommandPalette/CommandPalette";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
+import { useAppShortcuts } from "./hooks/useAppShortcuts";
 
 export default function App() {
+  const [showSidebar, setShowSidebar] = useState(true);
   const [showRight, setShowRight] = useState(true);
   const [showBottom, setShowBottom] = useState(true);
+
+  const toggleSidebar = useCallback(() => setShowSidebar((v) => !v), []);
+  const toggleRight = useCallback(() => setShowRight((v) => !v), []);
+  const toggleBottom = useCallback(() => setShowBottom((v) => !v), []);
+
+  // Centralised shortcut/menu-action handlers. The same actions fire
+  // from menus, the command palette, status-bar buttons and shortcuts.
+  useAppShortcuts({
+    "view:toggle-sidebar": toggleSidebar,
+    "view:toggle-right":   toggleRight,
+    "view:toggle-bottom":  toggleBottom,
+    "tools:terminal": () => {
+      setShowBottom(true);
+      // After paint, ask BottomPanel to focus its terminal tab.
+      requestAnimationFrame(() =>
+        window.dispatchEvent(new CustomEvent("terminal:focus")),
+      );
+    },
+    "terminal:new": () => {
+      setShowBottom(true);
+      requestAnimationFrame(() =>
+        window.dispatchEvent(new CustomEvent("terminal:new")),
+      );
+    },
+    "view:command-palette": () =>
+      window.dispatchEvent(new CustomEvent("commandPalette:open")),
+    "nav:file": () =>
+      window.dispatchEvent(new CustomEvent("commandPalette:open")),
+    "view:fullscreen": () => {
+      const w = getCurrentWindow();
+      w.isFullscreen()
+        .then((isFs) => w.setFullscreen(!isFs))
+        .catch(() => {});
+    },
+    "window:reload": () => window.location.reload(),
+  });
 
   return (
     <WorkspaceProvider>
       <div
-        className={`app ${showRight ? "" : "app--no-right"} ${
-          showBottom ? "" : "app--no-bottom"
-        }`}
+        className={[
+          "app",
+          showSidebar ? "" : "app--no-sidebar",
+          showRight ? "" : "app--no-right",
+          showBottom ? "" : "app--no-bottom",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         <TitleBar />
         <div className="app__body">
-          <ActivityBar />
-          <Sidebar />
+          <ActivityBar
+            sidebarOpen={showSidebar}
+            onToggleSidebar={toggleSidebar}
+          />
+          {showSidebar && <Sidebar onClose={toggleSidebar} />}
           <main className="app__main">
             <div className="app__editor-area">
               <EditorTabs />
               <EditorArea />
             </div>
-            {showBottom && <BottomPanel onClose={() => setShowBottom(false)} />}
+            {showBottom && <BottomPanel onClose={toggleBottom} />}
           </main>
-          {showRight && <RightPanel onClose={() => setShowRight(false)} />}
+          {showRight && <RightPanel onClose={toggleRight} />}
         </div>
-        <StatusBar />
+        <StatusBar
+          terminalOpen={showBottom}
+          rightOpen={showRight}
+          onToggleTerminal={toggleBottom}
+          onToggleRight={toggleRight}
+        />
         <CommandPalette />
       </div>
     </WorkspaceProvider>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { I } from "../Icons";
 import TerminalView from "./TerminalView";
 import { useWorkspace } from "../../context/WorkspaceContext";
@@ -52,8 +52,31 @@ export default function BottomPanel({ onClose }: BottomPanelProps = {}) {
     [terminals],
   );
 
+  // Listen to global signals from shortcuts / menus.
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const onNew = () => addTerminal();
+    const onFocus = () => {
+      setTab("terminal");
+      // xterm renders a hidden textarea; clicking the host gives it focus
+      // (TerminalView attaches its own click->focus listener).
+      requestAnimationFrame(() => {
+        const ta = hostRef.current?.querySelector(
+          ".bp-term-pane.is-active .xterm-helper-textarea",
+        ) as HTMLTextAreaElement | null;
+        ta?.focus();
+      });
+    };
+    window.addEventListener("terminal:new", onNew);
+    window.addEventListener("terminal:focus", onFocus);
+    return () => {
+      window.removeEventListener("terminal:new", onNew);
+      window.removeEventListener("terminal:focus", onFocus);
+    };
+  }, []);
+
   return (
-    <section className="bottompanel">
+    <section className="bottompanel" ref={hostRef}>
       <div className="bottompanel__tabs">
         {TABS.map((t) => (
           <button
