@@ -19,11 +19,13 @@ const BOTTOM = [
 interface ActivityBarProps {
   sidebarOpen?: boolean;
   onToggleSidebar?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export default function ActivityBar({
   sidebarOpen = true,
   onToggleSidebar,
+  onOpenSettings,
 }: ActivityBarProps = {}) {
   const [active, setActive] = useState("files");
 
@@ -38,6 +40,10 @@ export default function ActivityBar({
     if (id === "ai") {
       window.dispatchEvent(new CustomEvent("menu-action", { detail: "view:toggle-right" }));
       setActive(id);
+      return;
+    }
+    if (id === "settings") {
+      onOpenSettings?.();
       return;
     }
     setActive(id);
@@ -66,7 +72,12 @@ export default function ActivityBar({
       </div>
       <div className="activitybar__group">
         {BOTTOM.map((item) => (
-          <button key={item.id} className="activitybar__btn" title={item.label}>
+          <button
+            key={item.id}
+            className="activitybar__btn"
+            title={item.id === "settings" ? "Settings (Ctrl+,)" : item.label}
+            onClick={() => handleClick(item.id)}
+          >
             {item.icon}
           </button>
         ))}

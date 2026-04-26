@@ -6,6 +6,7 @@ interface StatusBarProps {
   rightOpen?: boolean;
   onToggleTerminal?: () => void;
   onToggleRight?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export default function StatusBar({
@@ -13,6 +14,7 @@ export default function StatusBar({
   rightOpen = true,
   onToggleTerminal,
   onToggleRight,
+  onOpenSettings,
 }: StatusBarProps = {}) {
   return (
     <footer className="statusbar">
@@ -61,6 +63,13 @@ export default function StatusBar({
         </button>
         <button className="sb-item" title="Network"><I.Wifi size={12} /></button>
         <button className="sb-item" title="Notifications"><I.Bell size={12} /></button>
+        <button
+          className="sb-item"
+          title="Settings (Ctrl+,)"
+          onClick={onOpenSettings}
+        >
+          <I.Settings size={12} />
+        </button>
       </div>
     </footer>
   );

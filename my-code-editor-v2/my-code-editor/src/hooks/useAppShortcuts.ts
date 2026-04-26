@@ -25,6 +25,9 @@ const COMBOS: Record<string, string> = {
 
   // Window
   "ctrl+r":              "window:reload",
+
+  // Settings
+  "ctrl+,":              "tools:settings",
 };
 
 /** Build a normalised "ctrl+shift+x" string from a KeyboardEvent. */
@@ -70,6 +73,7 @@ const ALWAYS_ACTIVE = new Set<string>([
   "file:close-editor",
   "window:reload",
   "view:fullscreen",
+  "tools:settings",
 ]);
 
 /**

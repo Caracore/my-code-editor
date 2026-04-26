@@ -4,6 +4,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { UnlistenFn } from "@tauri-apps/api/event";
+import { useUserSettings } from "../../context/UserSettingsContext";
 import "@xterm/xterm/css/xterm.css";
 
 interface Props {
@@ -20,16 +21,39 @@ interface Props {
  */
 export default function TerminalView({ sessionId, cwd }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const termRef = useRef<Terminal | null>(null);
+  const fitRef = useRef<FitAddon | null>(null);
+  const { settings } = useUserSettings();
+  const { terminalFontSize, terminalCursorBlink, editorFontFamily } = settings;
+
+  // Hot-update visual settings without recreating the PTY session.
+  useEffect(() => {
+    const term = termRef.current;
+    if (!term) return;
+    term.options.fontFamily = editorFontFamily;
+    term.options.fontSize = terminalFontSize;
+    term.options.cursorBlink = terminalCursorBlink;
+    try {
+      fitRef.current?.fit();
+      invoke("terminal_resize", {
+        id: sessionId,
+        cols: term.cols,
+        rows: term.rows,
+      }).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }, [editorFontFamily, terminalFontSize, terminalCursorBlink, sessionId]);
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
 
     const term = new Terminal({
-      fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace',
-      fontSize: 12.5,
+      fontFamily: editorFontFamily,
+      fontSize: terminalFontSize,
       lineHeight: 1.25,
-      cursorBlink: true,
+      cursorBlink: terminalCursorBlink,
       cursorStyle: "bar",
       allowProposedApi: true,
       scrollback: 5000,
@@ -61,6 +85,8 @@ export default function TerminalView({ sessionId, cwd }: Props) {
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.open(host);
+    termRef.current = term;
+    fitRef.current = fit;
 
     let unlistenData: UnlistenFn | null = null;
     let unlistenExit: UnlistenFn | null = null;
@@ -128,6 +154,8 @@ export default function TerminalView({ sessionId, cwd }: Props) {
       unlistenData?.();
       unlistenExit?.();
       term.dispose();
+      termRef.current = null;
+      fitRef.current = null;
       // Keep the shell process alive across remounts? -> no, tear it down.
       invoke("terminal_close", { id: sessionId }).catch(() => {});
     };

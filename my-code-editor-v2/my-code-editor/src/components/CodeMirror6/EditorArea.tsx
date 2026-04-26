@@ -45,6 +45,7 @@ import { cpp } from "@codemirror/lang-cpp";
 
 import { smoothCaret } from "../../cursor/cursorlayer";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import { useUserSettings } from "../../context/UserSettingsContext";
 import Welcome from "../Welcome/Welcome";
 import "./EditorArea.css";
 
@@ -107,7 +108,7 @@ function buildHighlightStyle() {
   ]);
 }
 
-function buildEditorTheme() {
+function buildEditorTheme(opts: { fontSize: number; fontFamily: string }) {
   const css = (v: string, fb: string) =>
     getComputedStyle(document.documentElement).getPropertyValue(v).trim() || fb;
 
@@ -115,12 +116,12 @@ function buildEditorTheme() {
     {
       "&": {
         height: "100%",
-        fontSize: "13px",
+        fontSize: `${opts.fontSize}px`,
         backgroundColor: css("--bg-3", "#1e232c"),
         color: css("--text-1", "#e6e8ee"),
       },
       ".cm-scroller": {
-        fontFamily: css("--font-mono", "JetBrains Mono, Consolas, monospace"),
+        fontFamily: opts.fontFamily,
         lineHeight: "1.55",
         overflow: "auto",
       },
@@ -282,12 +283,22 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const { settings } = useUserSettings();
+  const {
+    editorFontSize,
+    editorFontFamily,
+    editorTabSize,
+    editorLineNumbers,
+    editorWordWrap,
+    editorActiveLine,
+  } = settings;
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  // Re-create the editor when the language changes (different grammar).
+  // Re-create the editor when the language or any rendering-related
+  // user setting changes.
   useEffect(() => {
     if (!hostRef.current) return;
 
@@ -297,45 +308,48 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
       }
     });
 
+    const indent = " ".repeat(editorTabSize);
+    const extensions = [
+      ...(editorLineNumbers ? [lineNumbers()] : []),
+      highlightActiveLineGutter(),
+      foldGutter(),
+      drawSelection(),
+      rectangularSelection(),
+      crosshairCursor(),
+      history(),
+      indentOnInput(),
+      indentUnit.of(indent),
+      bracketMatching(),
+      closeBrackets(),
+      ...(editorActiveLine ? [highlightActiveLine()] : []),
+      highlightSelectionMatches(),
+      ...(editorWordWrap ? [EditorView.lineWrapping] : []),
+      EditorState.allowMultipleSelections.of(true),
+      autocompletion({
+        activateOnTyping: true,
+        maxRenderedOptions: 30,
+        defaultKeymap: true,
+      }),
+      keymap.of([
+        indentWithTab,
+        ...closeBracketsKeymap,
+        ...defaultKeymap,
+        ...historyKeymap,
+        ...searchKeymap,
+        ...foldKeymap,
+        ...completionKeymap,
+        ...lintKeymap,
+      ]),
+      getLanguageExtension(language),
+      syntaxHighlighting(buildHighlightStyle()),
+      buildEditorTheme({ fontSize: editorFontSize, fontFamily: editorFontFamily }),
+      smoothCaret,
+      updateListener,
+    ];
+
     const state = EditorState.create({
       doc: value,
-      extensions: [
-        lineNumbers(),
-        highlightActiveLineGutter(),
-        foldGutter(),
-        drawSelection(),
-        rectangularSelection(),
-        crosshairCursor(),
-        history(),
-        indentOnInput(),
-        indentUnit.of("  "),
-        bracketMatching(),
-        closeBrackets(),
-        highlightActiveLine(),
-        highlightSelectionMatches(),
-        EditorView.lineWrapping,
-        EditorState.allowMultipleSelections.of(true),
-        autocompletion({
-          activateOnTyping: true,
-          maxRenderedOptions: 30,
-          defaultKeymap: true,
-        }),
-        keymap.of([
-          indentWithTab,
-          ...closeBracketsKeymap,
-          ...defaultKeymap,
-          ...historyKeymap,
-          ...searchKeymap,
-          ...foldKeymap,
-          ...completionKeymap,
-          ...lintKeymap,
-        ]),
-        getLanguageExtension(language),
-        syntaxHighlighting(buildHighlightStyle()),
-        buildEditorTheme(),
-        smoothCaret,
-        updateListener,
-      ],
+      extensions,
     });
 
     const view = new EditorView({ state, parent: hostRef.current });
@@ -346,7 +360,15 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
       viewRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language]);
+  }, [
+    language,
+    editorFontSize,
+    editorFontFamily,
+    editorTabSize,
+    editorLineNumbers,
+    editorWordWrap,
+    editorActiveLine,
+  ]);
 
   // Sync external value (typing in the tab, switching tabs, etc.)
   useEffect(() => {

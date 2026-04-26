@@ -35,6 +35,10 @@
 - Faire shortcut + Personnalisation options, paramètres et commandPalette
 - >> Faire illuminé le fichier dans l'arborescence sélectionner dans le tabs bar et éditeur instance ...
 <!-- - >> Pouvoir fermer et ouvrir le chat AI RightPanel. -->
-
+- Faire un resize des Bottom panel, etc ... Rightpanel, sidebar + ajout de todolist à la sidebar...
+- Ajout de save et mettre en place des plugin et theme.
 >>> Settings: paramètres: 
 >>> Shortcut, var css + theme
+>>> Ajout de la mini-map et tout complet pour que ce soit traiter backend et non pas frontend. Var css, .
+
+# FAIRE LE PLAN POUR LE DESIGN ET BACKEND DE L'IDE
