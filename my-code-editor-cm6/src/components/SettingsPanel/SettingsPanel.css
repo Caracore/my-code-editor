@@ -1,189 +1,238 @@
+/* =====================================================
+   SettingsPanel — style IntelliJ Settings dialog
+   ===================================================== */
+
 .settings-panel-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .settings-panel {
   background: var(--settings-bg);
   color: var(--settings-fg);
-  width: 600px;
+  width: 720px;
+  max-width: 92vw;
   max-height: 80vh;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  animation: sp-fadein var(--duration-base) var(--ease-out);
+}
+
+@keyframes sp-fadein {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .settings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-color);
+  background: var(--secondary-bg);
 }
 
 .settings-header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .close-btn {
-  background: none;
+  background: transparent;
   border: none;
   color: var(--settings-fg);
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .close-btn:hover {
-  color: var(--settings-fg);
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .settings-content {
-  padding: 16px;
+  padding: var(--space-4);
   overflow-y: auto;
   flex: 1;
 }
 
 .settings-content h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 16px;
-  color: #4a90e2;
+  margin: 0 0 var(--space-3) 0;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--secondary-fg);
 }
 
 .settings-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .settings-toggle {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--settings-input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-small);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.settings-toggle:hover {
+  border-color: var(--accent-color);
 }
 
 .settings-toggle input[type="checkbox"] {
-  width: 40px;
-  height: 20px;
+  width: 32px;
+  height: 18px;
   cursor: pointer;
   appearance: none;
-  background: #555;
-  border-radius: 10px;
+  background: #4A4D52;
+  border-radius: 9px;
   position: relative;
-  transition: background 0.3s;
+  transition: background var(--duration-base) var(--ease-out);
+  flex-shrink: 0;
 }
 
 .settings-toggle input[type="checkbox"]:checked {
-  background: #4a90e2;
+  background: var(--accent-color);
 }
 
 .settings-toggle input[type="checkbox"]::before {
   content: "";
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: white;
+  background: #FFFFFF;
   top: 2px;
   left: 2px;
-  transition: left 0.3s;
+  transition: left var(--duration-base) var(--ease-out);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.30);
 }
 
 .settings-toggle input[type="checkbox"]:checked::before {
-  left: 22px;
+  left: 16px;
 }
 
 .shortcuts-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-1);
 }
 
 .shortcut-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--settings-input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-small);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.shortcut-item:hover {
+  border-color: var(--accent-color);
 }
 
 .action-label {
-  font-size: 14px;
   flex: 1;
 }
 
 .shortcut-display {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .shortcut-display kbd {
-  background: var(--settings-input-bg);
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--settings-input-border);
-  font-family: monospace;
-  font-size: 12px;
+  background: var(--settings-bg);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.20);
 }
 
 .shortcut-display button {
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   padding: 4px;
+  color: var(--secondary-fg);
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .shortcut-display button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary-fg);
 }
 
 .shortcut-edit {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .shortcut-input {
-  background: var(--settings-input-bg);
+  background: var(--settings-bg);
   color: var(--settings-input-fg);
   border: 1px solid var(--accent-color);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 12px;
+  padding: 4px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
   min-width: 200px;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(53, 116, 240, 0.20);
 }
 
 .shortcut-edit button {
   background: var(--settings-input-bg);
   color: var(--settings-fg);
-  border: 1px solid var(--settings-input-border);
-  padding: 4px 8px;
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  padding: 4px var(--space-2);
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-small);
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
 }
 
 .shortcut-edit button:hover {
-  background: var(--sidebar-button-hover);
+  background: rgba(255, 255, 255, 0.06);
   border-color: var(--accent-color);
 }
 
@@ -191,64 +240,70 @@
 .opacity-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-2);
 }
 
 .opacity-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--settings-input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
 }
 
 .opacity-label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: var(--font-size-small);
 }
 
 .opacity-value {
-  font-family: monospace;
-  font-size: 12px;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
   color: var(--accent-color);
-  background: var(--settings-input-bg);
-  padding: 2px 8px;
-  border-radius: 4px;
+  background: var(--settings-bg);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 
 .opacity-slider {
   width: 100%;
-  height: 6px;
+  height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--settings-input-bg);
-  border-radius: 3px;
+  background: var(--settings-bg);
+  border-radius: 2px;
   cursor: pointer;
+  outline: none;
 }
 
 .opacity-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--accent-color);
   cursor: pointer;
-  transition: transform 0.2s;
+  border: 2px solid var(--settings-bg);
+  box-shadow: 0 0 0 1px var(--accent-color);
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .opacity-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.15);
 }
 
 .opacity-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--accent-color);
   cursor: pointer;
-  border: none;
+  border: 2px solid var(--settings-bg);
+  box-shadow: 0 0 0 1px var(--accent-color);
 }

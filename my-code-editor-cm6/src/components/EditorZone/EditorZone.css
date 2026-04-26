@@ -1,3 +1,7 @@
+/* =====================================================
+   EditorZone — split indicators (couleur d'accent unifiée)
+   ===================================================== */
+
 .editor-zone {
   position: relative;
   width: 100%;
@@ -14,7 +18,7 @@
   bottom: 0;
   width: 25%;
   pointer-events: none;
-  transition: all 0.2s ease;
+  transition: all var(--duration-base) var(--ease-out);
   border: 2px dashed transparent;
   background: transparent;
   display: flex;
@@ -24,43 +28,29 @@
 }
 
 .split-indicator.active {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(53, 116, 240, 0.10);
+  border-color: rgba(53, 116, 240, 0.55);
   backdrop-filter: blur(4px);
-  animation: pulse 1s ease-in-out infinite;
+  animation: split-pulse 1.2s ease-in-out infinite;
 }
 
-.split-left {
-  left: 0;
-  border-right-width: 3px;
-}
-
-.split-right {
-  right: 0;
-  border-left-width: 3px;
-}
+.split-left  { left: 0;  border-right-width: 3px; }
+.split-right { right: 0; border-left-width: 3px; }
 
 .split-label {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 1.6rem;
+  font-weight: 600;
   color: transparent;
-  transition: color 0.2s ease;
-  text-shadow: 0 0 10px rgba(99, 102, 241, 0);
+  transition: color var(--duration-base) var(--ease-out);
+  text-shadow: 0 0 10px rgba(53, 116, 240, 0);
 }
 
 .split-indicator.active .split-label {
-  color: rgb(99, 102, 241);
-  text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+  color: var(--accent-color);
+  text-shadow: 0 0 12px rgba(53, 116, 240, 0.5);
 }
 
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
+@keyframes split-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.65; }
 }

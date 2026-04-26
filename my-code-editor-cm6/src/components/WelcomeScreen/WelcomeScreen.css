@@ -10,8 +10,8 @@
 }
 
 .welcome-screen.drag-over {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
-  border: 3px dashed rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, rgba(53, 116, 240, 0.10), rgba(53, 116, 240, 0.05));
+  border: 2px dashed rgba(53, 116, 240, 0.55);
   box-sizing: border-box;
 }
 
@@ -19,7 +19,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, rgba(99, 102, 241, 0.05) 100%);
+  background: radial-gradient(circle at center, transparent 0%, rgba(53, 116, 240, 0.06) 100%);
   pointer-events: none;
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -30,11 +30,11 @@
 }
 
 .welcome-logo {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 20px;
-  animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+  width: 88px;
+  height: 88px;
+  margin-bottom: var(--space-4);
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
 }
 
 .welcome-title {
@@ -54,9 +54,9 @@
 }
 
 .welcome-screen.drag-over .welcome-subtitle {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   opacity: 1;
-  color: rgb(99, 102, 241);
+  color: var(--accent-color);
   font-weight: 600;
 }
 
@@ -121,12 +121,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
 }
 
 @keyframes pulse {
@@ -141,9 +137,9 @@
 /* Zones de drop pour split view */
 .drop-indicator {
   position: absolute;
-  background: rgba(99, 102, 241, 0.1);
-  border: 2px dashed rgba(99, 102, 241, 0.3);
-  transition: all 0.2s ease;
+  background: rgba(53, 116, 240, 0.10);
+  border: 2px dashed rgba(53, 116, 240, 0.35);
+  transition: all var(--duration-base) var(--ease-out);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,17 +148,17 @@
 }
 
 .drop-indicator.active {
-  background: rgba(99, 102, 241, 0.25);
-  border-color: rgb(99, 102, 241);
+  background: rgba(53, 116, 240, 0.22);
+  border-color: var(--accent-color);
   border-style: solid;
 }
 
 .drop-label {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: rgb(99, 102, 241);
+  color: var(--accent-color);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .drop-indicator.active .drop-label {

@@ -1,54 +1,56 @@
+/* =====================================================
+   SearchBar — style IntelliJ Find in Editor
+   ===================================================== */
+
 .search-bar {
   position: absolute;
   top: 0;
   right: 0;
   z-index: 100;
-  background: var(--searchbar-bg, var(--editor-panel-bg, #1e1e1e));
-  border: 1px solid var(--searchbar-border, var(--editor-panel-border, #3c3c3c));
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  margin: 8px;
-  animation: slideDown 0.2s ease-out;
+  background: var(--searchbar-bg);
+  border: 1px solid var(--searchbar-border);
+  border-top: none;
+  border-right: none;
+  border-radius: 0 0 0 var(--radius-md);
+  box-shadow: var(--shadow-md);
+  margin: 0;
+  animation: slideDown var(--duration-base) var(--ease-out);
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .search-bar-content {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: var(--space-2);
+  padding: 6px var(--space-2);
 }
 
 .search-input-container {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--searchbar-input-bg, var(--editor-bg, #0d0d0d));
-  border: 1px solid var(--searchbar-input-border, var(--editor-gutter-border, #333333));
-  border-radius: 3px;
-  padding: 4px 8px;
-  min-width: 250px;
-  transition: border-color 0.2s;
+  background: var(--searchbar-input-bg);
+  border: 1px solid var(--searchbar-input-border);
+  border-radius: var(--radius-sm);
+  padding: 4px var(--space-2);
+  min-width: 280px;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .search-input-container:focus-within {
-  border-color: var(--editor-autocomplete-selected-bg, #094771);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1px rgba(53, 116, 240, 0.30);
 }
 
 .search-icon {
   width: 14px;
   height: 14px;
-  color: var(--searchbar-placeholder, var(--editor-line-number-fg, #858585));
+  color: var(--searchbar-placeholder);
   flex-shrink: 0;
 }
 
@@ -57,86 +59,85 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--searchbar-input-fg, var(--editor-fg, #e0e0e0));
-  font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
-  font-size: var(--font-size-small, 13px);
+  color: var(--searchbar-input-fg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-small);
   padding: 2px 0;
 }
 
 .search-input::placeholder {
-  color: var(--searchbar-placeholder, var(--editor-line-number-fg, #858585));
+  color: var(--searchbar-placeholder);
 }
 
 .match-count {
-  color: var(--editor-line-number-active-fg, #c6c6c6);
+  color: var(--secondary-fg);
   font-size: 11px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-family-mono);
   white-space: nowrap;
   flex-shrink: 0;
-  padding-left: 4px;
-  border-left: 1px solid var(--editor-gutter-border, #333333);
+  padding-left: var(--space-1);
+  border-left: 1px solid var(--border-color);
 }
 
 .search-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .search-btn {
   background: transparent;
   border: 1px solid transparent;
-  color: var(--editor-line-number-active-fg, #c6c6c6);
+  color: var(--primary-fg);
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 3px;
+  padding: 4px var(--space-2);
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 24px;
+  min-width: 24px;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
 }
 
 .search-btn:hover:not(:disabled) {
-  background: var(--editor-active-line-bg, rgba(255, 255, 255, 0.05));
-  border-color: var(--editor-gutter-border, #333333);
+  background: var(--toolbar-button-hover);
 }
 
 .search-btn:active:not(:disabled) {
-  background: var(--editor-selection-match-bg, #515c6a);
+  background: var(--editor-selection-match-bg);
 }
 
 .search-btn:disabled {
-  opacity: 0.3;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .search-btn.toggle-btn {
-  min-width: 28px;
-  font-family: monospace;
+  font-family: var(--font-family-mono);
 }
 
 .search-btn.toggle-btn.active {
-  background: var(--editor-autocomplete-selected-bg, #094771);
-  border-color: var(--editor-autocomplete-selected-bg, #094771);
-  color: var(--editor-autocomplete-selected-fg, #ffffff);
+  background: rgba(53, 116, 240, 0.25);
+  border-color: var(--accent-color);
+  color: var(--primary-fg);
 }
 
 .search-btn.nav-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 .search-btn.close-btn {
-  color: var(--editor-line-number-fg, #858585);
+  color: var(--secondary-fg);
 }
 
 .search-btn.close-btn:hover {
-  color: var(--editor-fg, #e0e0e0);
-  background: rgba(255, 50, 50, 0.2);
-  border-color: rgba(255, 50, 50, 0.4);
+  background: rgba(219, 92, 92, 0.18);
+  color: var(--color-error);
 }
 
 .search-btn.close-btn svg {
@@ -147,39 +148,24 @@
 .search-divider {
   width: 1px;
   height: 18px;
-  background: var(--editor-gutter-border, #333333);
+  background: var(--border-color);
   margin: 0 2px;
 }
 
-/* Responsive pour petits écrans */
 @media (max-width: 600px) {
-  .search-bar {
-    left: 0;
-    right: 0;
-    margin: 4px;
-  }
-  
-  .search-input-container {
-    min-width: 150px;
-  }
-  
-  .search-controls {
-    gap: 2px;
-  }
-  
-  .search-btn {
-    padding: 4px 6px;
-  }
+  .search-bar { left: 0; right: 0; margin: 4px; border-radius: var(--radius-md); }
+  .search-input-container { min-width: 150px; }
+  .search-controls { gap: 2px; }
+  .search-btn { padding: 4px 6px; }
 }
 
-/* Styles pour le surlignage des correspondances dans l'éditeur */
 .search-match {
-  background-color: var(--searchbar-match-bg, rgba(255, 215, 0, 0.3)) !important;
+  background-color: var(--searchbar-match-bg) !important;
   border-radius: 2px;
 }
 
 .search-match-current {
-  background-color: var(--searchbar-match-current-bg, rgba(255, 140, 0, 0.5)) !important;
+  background-color: var(--searchbar-match-current-bg) !important;
   border-radius: 2px;
-  box-shadow: 0 0 0 1px var(--searchbar-match-current-border, rgba(255, 140, 0, 0.8));
+  box-shadow: 0 0 0 1px var(--searchbar-match-current-border);
 }
