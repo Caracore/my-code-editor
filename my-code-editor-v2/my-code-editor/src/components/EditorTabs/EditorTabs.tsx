@@ -1,30 +1,32 @@
-import { useState } from "react";
 import { I } from "../Icons";
+import { useWorkspace } from "../../context/WorkspaceContext";
 import "./EditorTabs.css";
-
-type Tab = { id: string; name: string; ext: string; dirty?: boolean; pinned?: boolean };
-
-const INIT: Tab[] = [
-  { id: "1", name: "App.tsx",         ext: "tsx", pinned: true },
-  { id: "2", name: "Sidebar.tsx",     ext: "tsx" },
-  { id: "3", name: "EditorArea.tsx",  ext: "tsx", dirty: true },
-  { id: "4", name: "theme.css",       ext: "css" },
-  { id: "5", name: "package.json",    ext: "json" },
-];
 
 const COLOR: Record<string, string> = {
   tsx: "#1a73c4", ts: "#3178c6", css: "#264de4",
   json: "#8a8a8a", md: "#444", toml: "#d34516",
+  js: "#f7df1e", jsx: "#1a73c4", html: "#e34f26",
+  py: "#3776ab", rs: "#d34516", cpp: "#00599c",
 };
 
 export default function EditorTabs() {
-  const [tabs, setTabs] = useState(INIT);
-  const [active, setActive] = useState("3");
+  const { tabs, activeId, setActive, closeTab, togglePinned } = useWorkspace();
 
-  const close = (id: string) => (e: React.MouseEvent) => {
+  const onClose = (id: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    setTabs((t) => t.filter((x) => x.id !== id));
+    closeTab(id);
   };
+
+  // Middle-click closes the tab
+  const onAuxClick = (id: string) => (e: React.MouseEvent) => {
+    if (e.button === 1) {
+      e.preventDefault();
+      closeTab(id);
+    }
+  };
+
+  // Double-click toggles pinned state
+  const onDoubleClick = (id: string) => () => togglePinned(id);
 
   return (
     <div className="tabs">
@@ -32,13 +34,23 @@ export default function EditorTabs() {
         {tabs.map((t) => (
           <div
             key={t.id}
-            className={`tab ${active === t.id ? "is-active" : ""}`}
+            className={`tab ${activeId === t.id ? "is-active" : ""} ${t.pinned ? "is-pinned" : ""}`}
             onClick={() => setActive(t.id)}
+            onAuxClick={onAuxClick(t.id)}
+            onDoubleClick={onDoubleClick(t.id)}
+            title={t.path}
           >
             <span className="tab__color" style={{ background: COLOR[t.ext] ?? "#666" }} />
             <span className="tab__name">{t.name}</span>
-            {t.dirty && <span className="tab__dirty" title="Unsaved" />}
-            <button className="tab__close" onClick={close(t.id)}>
+            {t.pinned && <span className="tab__pin" title="Pinned">📌</span>}
+            {t.dirty
+              ? <span className="tab__dirty" title="Unsaved changes" />
+              : null}
+            <button
+              className="tab__close"
+              onClick={onClose(t.id)}
+              title="Close (Ctrl+W)"
+            >
               <I.Close size={11} />
             </button>
           </div>
@@ -51,4 +63,3 @@ export default function EditorTabs() {
     </div>
   );
 }
-

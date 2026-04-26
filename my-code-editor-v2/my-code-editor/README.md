@@ -7,9 +7,13 @@ Faire Un design plus épurer...
 # A faire :
 
 - J'aimerai que les tabs bar et la class="editor__breadcrumbs" soit relier
-- Fermer, minimize et maximize marche pour pouvoir quitter :)
+
+[//]: # (- Fermer, minimize et maximize marche pour pouvoir quitter :&#41;)
 - Ajout de responsive
-- MenuDropDown pour le topmenu
+- Ajouter Drag and drop ! DnDkit ?
+- Ajouter les couleurs dans le gutter (goutière) barre vertical lineNumber;
+
+[//]: # (- MenuDropDown pour le topmenu)
 - Retravailler le cursor
 - Refaire le commandPalette
 - Status bar interractive

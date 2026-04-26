@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { EditorState } from "@codemirror/state";
 import {
   EditorView,
@@ -44,6 +44,7 @@ import { rust } from "@codemirror/lang-rust";
 import { cpp } from "@codemirror/lang-cpp";
 
 import { smoothCaret } from "../../cursor/cursorlayer";
+import { useWorkspace } from "../../context/WorkspaceContext";
 import "./EditorArea.css";
 
 /* ============================================================
@@ -254,31 +255,38 @@ function buildEditorTheme() {
 }
 
 interface EditorAreaProps {
+  /** Optional override — when provided, the editor ignores the workspace context. */
   value?: string;
   language?: string;
   onChange?: (v: string) => void;
   filePath?: string;
 }
 
-export default function EditorArea({
-  value,
-  language = "tsx",
-  onChange,
-  filePath = "src/components/EditorArea.tsx",
-}: EditorAreaProps) {
+export default function EditorArea(props: EditorAreaProps = {}) {
+  const ws = useWorkspace();
+  const active = ws.activeTab;
+
+  // Bind to the active workspace tab unless explicit props are passed.
+  const language = props.language ?? active?.language ?? "tsx";
+  const filePath = props.filePath ?? active?.path ?? "untitled";
+  const value = props.value ?? active?.content ?? SAMPLE_DOC;
+  const onChange =
+    props.onChange ??
+    ((v: string) => {
+      if (active) ws.updateContent(active.id, v);
+    });
+
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
-  const [internalDoc] = useState<string>(value ?? SAMPLE_DOC);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  // Re-create the editor when the language changes (different grammar).
   useEffect(() => {
     if (!hostRef.current) return;
-
-    const startDoc = value ?? internalDoc;
 
     const updateListener = EditorView.updateListener.of((u) => {
       if (u.docChanged) {
@@ -287,7 +295,7 @@ export default function EditorArea({
     });
 
     const state = EditorState.create({
-      doc: startDoc,
+      doc: value,
       extensions: [
         lineNumbers(),
         highlightActiveLineGutter(),
@@ -335,12 +343,12 @@ export default function EditorArea({
       viewRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language]);
+  }, [language, active?.id]);
 
-  // Sync external value
+  // Sync external value (typing in the tab, switching tabs, etc.)
   useEffect(() => {
     const view = viewRef.current;
-    if (!view || value === undefined) return;
+    if (!view) return;
     const current = view.state.doc.toString();
     if (current !== value) {
       view.dispatch({
@@ -349,20 +357,69 @@ export default function EditorArea({
     }
   }, [value]);
 
+  /* ------------------------------------------------------------
+     Interactive breadcrumbs derived from the active tab's path.
+     - Each path segment is clickable
+     - Clicking the filename focuses the editor
+     - Dispatches `breadcrumb:click` events for future hooks
+     - Shows a dirty dot when the active tab has unsaved changes
+     ------------------------------------------------------------ */
   const segments = filePath.split("/").filter(Boolean);
   const fileName = segments[segments.length - 1] ?? "untitled";
   const dirs = segments.slice(0, -1);
+
+  const onCrumbClick = (segment: string, idx: number, isFile: boolean) => {
+    const subPath = segments.slice(0, idx + 1).join("/");
+    window.dispatchEvent(
+      new CustomEvent("breadcrumb:click", {
+        detail: { segment, path: subPath, isFile, tabId: active?.id ?? null },
+      })
+    );
+    if (isFile) {
+      // Focus the editor when clicking the filename
+      requestAnimationFrame(() => viewRef.current?.focus());
+    }
+  };
+
+  if (!active && !props.value) {
+    // Empty workspace placeholder
+    return (
+      <div className="editor">
+        <div className="editor__breadcrumbs">
+          <span className="editor__bc-empty">No file open</span>
+        </div>
+        <div className="editor__viewport editor__viewport--cm">
+          <div className="editor__empty-state">
+            <p>Open a file from the sidebar or press <kbd>Ctrl</kbd>+<kbd>P</kbd></p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="editor">
       <div className="editor__breadcrumbs">
         {dirs.map((d, i) => (
-          <span key={i}>
-            <span>{d}</span>
+          <span key={`${d}-${i}`} className="editor__bc-group">
+            <button
+              className="editor__bc-segment"
+              onClick={() => onCrumbClick(d, i, false)}
+              title={segments.slice(0, i + 1).join("/")}
+            >
+              {d}
+            </button>
             <span className="editor__bc-sep">›</span>
           </span>
         ))}
-        <span className="editor__bc-current">{fileName}</span>
+        <button
+          className="editor__bc-segment editor__bc-current"
+          onClick={() => onCrumbClick(fileName, segments.length - 1, true)}
+          title={`${filePath}${active?.dirty ? " (unsaved)" : ""}`}
+        >
+          {fileName}
+          {active?.dirty && <span className="editor__bc-dirty" aria-label="Unsaved" />}
+        </button>
       </div>
 
       <div className="editor__viewport editor__viewport--cm">

@@ -7,18 +7,71 @@
 }
 
 .editor__breadcrumbs {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 2px;
   height: 26px;
-  padding: 0 14px;
+  padding: 0 10px;
   font-size: 11.5px;
   color: var(--text-3);
   background: var(--bg-3);
   border-bottom: 1px solid var(--border-1);
   flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
+.editor__bc-group { display: inline-flex; align-items: center; }
 .editor__bc-sep { color: var(--text-4); margin: 0 4px; }
-.editor__bc-current { color: var(--text-2); }
-.editor__bc-symbol { color: var(--syn-fn); font-family: var(--font-mono); font-size: 11px; }
+.editor__bc-segment {
+  display: inline-flex; align-items: center; gap: 4px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  font-size: 11.5px;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  transition: background .12s, color .12s;
+}
+.editor__bc-segment:hover {
+  background: var(--bg-4);
+  color: var(--text-1);
+}
+.editor__bc-current {
+  color: var(--text-1);
+  font-weight: 500;
+}
+.editor__bc-dirty {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--warn);
+  box-shadow: 0 0 6px rgba(245, 177, 76, 0.6);
+}
+.editor__bc-empty {
+  color: var(--text-4);
+  font-style: italic;
+  padding: 0 4px;
+}
+
+.editor__empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: 13px;
+}
+.editor__empty-state kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  margin: 0 2px;
+  color: var(--text-2);
+}
 
 /* ================================================================
    CodeMirror 6 host — fills the remaining space below breadcrumbs

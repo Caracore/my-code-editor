@@ -51,7 +51,14 @@
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--warn);
+  box-shadow: 0 0 6px rgba(245, 177, 76, 0.6);
 }
+.tab__pin {
+  font-size: 9px;
+  filter: grayscale(.4);
+  margin-right: -2px;
+}
+.tab.is-pinned { font-style: italic; }
 .tab__close {
   width: 18px; height: 18px;
   display: inline-flex; align-items: center; justify-content: center;

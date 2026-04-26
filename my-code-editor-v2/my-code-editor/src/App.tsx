@@ -10,25 +10,28 @@ import RightPanel from "./components/RightPanel/RightPanel";
 import BottomPanel from "./components/BottomPanel/BottomPanel";
 import StatusBar from "./components/StatusBar/StatusBar";
 import CommandPalette from "./components/CommandPalette/CommandPalette";
+import { WorkspaceProvider } from "./context/WorkspaceContext";
 
 export default function App() {
   return (
-    <div className="app">
-      <TitleBar />
-      <div className="app__body">
-        <ActivityBar />
-        <Sidebar />
-        <main className="app__main">
-          <div className="app__editor-area">
-            <EditorTabs />
-            <EditorArea />
-          </div>
-          <BottomPanel />
-        </main>
-        <RightPanel />
+    <WorkspaceProvider>
+      <div className="app">
+        <TitleBar />
+        <div className="app__body">
+          <ActivityBar />
+          <Sidebar />
+          <main className="app__main">
+            <div className="app__editor-area">
+              <EditorTabs />
+              <EditorArea />
+            </div>
+            <BottomPanel />
+          </main>
+          <RightPanel />
+        </div>
+        <StatusBar />
+        <CommandPalette />
       </div>
-      <StatusBar />
-      <CommandPalette />
-    </div>
+    </WorkspaceProvider>
   );
 }
