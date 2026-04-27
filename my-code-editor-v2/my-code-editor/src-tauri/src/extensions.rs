@@ -83,3 +83,67 @@ pub fn read_extension(kind: String, name: String) -> Result<String, String> {
     p.push(&name);
     fs::read_to_string(&p).map_err(|e| e.to_string())
 }
+
+/// Copy a user-picked file from anywhere on disk into the extensions
+/// folder for the given kind. Returns the destination filename.
+///
+/// - Themes accept `*.json` only.
+/// - Plugins accept `*.js` / `*.mjs` only.
+///
+/// If a file with the same name already exists, the new file is renamed
+/// to `<stem>-<n>.<ext>` so existing extensions are never overwritten.
+#[tauri::command]
+pub fn import_extension(kind: String, src_path: String) -> Result<ExtensionFile, String> {
+    let allowed: &[&str] = match kind.as_str() {
+        "themes" => &["json"],
+        "plugins" => &["js", "mjs"],
+        _ => return Err(format!("invalid extension kind: {kind}")),
+    };
+    let src = PathBuf::from(&src_path);
+    if !src.is_file() {
+        return Err(format!("source is not a file: {src_path}"));
+    }
+    let ext = src
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    if !allowed.iter().any(|e| *e == ext.as_str()) {
+        return Err(format!(
+            "unsupported extension '.{ext}' for {kind} (allowed: {:?})",
+            allowed
+        ));
+    }
+    let dst_root = ext_root(&kind)?;
+    if !dst_root.exists() {
+        fs::create_dir_all(&dst_root).map_err(|e| e.to_string())?;
+    }
+    let original_name = src
+        .file_name()
+        .and_then(|s| s.to_str())
+        .ok_or_else(|| "invalid source filename".to_string())?
+        .to_string();
+
+    // Disambiguate to avoid overwriting an existing extension.
+    let stem = src
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("extension")
+        .to_string();
+    let mut candidate = original_name.clone();
+    let mut dst = dst_root.join(&candidate);
+    let mut n = 1u32;
+    while dst.exists() {
+        candidate = format!("{stem}-{n}.{ext}");
+        dst = dst_root.join(&candidate);
+        n += 1;
+        if n > 999 {
+            return Err("too many duplicates".into());
+        }
+    }
+    fs::copy(&src, &dst).map_err(|e| e.to_string())?;
+    Ok(ExtensionFile {
+        name: candidate,
+        path: dst.to_string_lossy().to_string(),
+    })
+}

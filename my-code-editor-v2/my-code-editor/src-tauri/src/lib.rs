@@ -8,7 +8,7 @@ use terminal::{
 };
 
 mod extensions;
-use extensions::{extensions_dir, list_extensions, read_extension};
+use extensions::{extensions_dir, import_extension, list_extensions, read_extension};
 
 mod lsp;
 use lsp::{send_lsp_notification, send_lsp_request, start_lsp, stop_lsp, LspState};
@@ -99,6 +99,7 @@ pub fn run() {
             extensions_dir,
             list_extensions,
             read_extension,
+            import_extension,
             terminal_open,
             terminal_write,
             terminal_resize,

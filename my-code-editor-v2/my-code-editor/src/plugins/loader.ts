@@ -106,3 +106,40 @@ export async function getExtensionsDir(kind: "themes" | "plugins"): Promise<stri
     return null;
   }
 }
+
+/**
+ * Prompt the user to pick a theme or plugin file from disk and copy it
+ * into the user's extensions folder. Returns the destination filename
+ * on success or `null` if the user cancelled the dialog.
+ */
+export async function importExtensionFromDisk(
+  kind: "themes" | "plugins",
+): Promise<string | null> {
+  let srcPath: string | null = null;
+  try {
+    const dialog = await import("@tauri-apps/plugin-dialog");
+    const filters =
+      kind === "themes"
+        ? [{ name: "Theme JSON", extensions: ["json"] }]
+        : [{ name: "Plugin JS", extensions: ["js", "mjs"] }];
+    const picked = await dialog.open({
+      multiple: false,
+      directory: false,
+      filters,
+      title: kind === "themes" ? "Import a theme" : "Import a plugin",
+    });
+    if (!picked) return null;
+    srcPath = Array.isArray(picked) ? picked[0] ?? null : (picked as string);
+  } catch (e) {
+    console.warn("[extensions] dialog failed:", e);
+    return null;
+  }
+  if (!srcPath) return null;
+  try {
+    const file = await invoke<ExtFile>("import_extension", { kind, srcPath });
+    return file.name;
+  } catch (e) {
+    console.warn(`[extensions] could not import ${kind}:`, e);
+    throw e instanceof Error ? e : new Error(String(e));
+  }
+}

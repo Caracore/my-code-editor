@@ -15,7 +15,7 @@ import type { Extension } from "@codemirror/state";
 import { BUILTIN_THEMES } from "../themes/builtin";
 import type { ThemeManifest } from "../themes/types";
 import { applyTheme } from "../themes/ThemeManager";
-import { loadUserPlugins, loadUserThemes, getExtensionsDir } from "./loader";
+import { loadUserPlugins, loadUserThemes, getExtensionsDir, importExtensionFromDisk } from "./loader";
 import { useUserSettings } from "../context/UserSettingsContext";
 
 interface PluginsCtx {
@@ -41,6 +41,12 @@ interface PluginsCtx {
   reload(): Promise<void>;
   /** Open the OS file explorer at the extension folder. */
   openExtensionsDir(kind: "themes" | "plugins"): Promise<void>;
+  /**
+   * Prompt the user with a file picker to import a theme or plugin and
+   * copy it into the extensions folder. Resolves to the destination
+   * filename, or `null` if the dialog was cancelled.
+   */
+  importExtension(kind: "themes" | "plugins"): Promise<string | null>;
 }
 
 const PluginsContext = createContext<PluginsCtx | null>(null);
@@ -145,6 +151,15 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const importExtension = useCallback(
+    async (kind: "themes" | "plugins") => {
+      const name = await importExtensionFromDisk(kind);
+      if (name) await reloadDisk();
+      return name;
+    },
+    [reloadDisk],
+  );
+
   const value = useMemo<PluginsCtx>(
     () => ({
       manager,
@@ -161,10 +176,11 @@ export function PluginsProvider({ children }: { children: ReactNode }) {
       editorExtensions: manager.getEditorExtensions(),
       reload: reloadDisk,
       openExtensionsDir,
+      importExtension,
     }),
     // rev makes us re-derive whenever the manager mutates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [manager, rev, themes, activeTheme, enabledPlugins, togglePlugin, setActiveTheme, reloadDisk, openExtensionsDir],
+    [manager, rev, themes, activeTheme, enabledPlugins, togglePlugin, setActiveTheme, reloadDisk, openExtensionsDir, importExtension],
   );
 
   return (

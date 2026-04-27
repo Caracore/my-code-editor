@@ -40,3 +40,9 @@
 # FAIRE LE PLAN POUR LE DESIGN ET BACKEND DE L'IDE
 - Refaire les images discord de mon my-code-editor :)
 <!-- Rends les fenetres resizable comme le bottompanel (terminal) + Rightpanel, sidebar, etc. Mais pas touche à la fenêtre. -->
+
+- Faire un load file comme pour les dossier mais pour charger qu'un fichier.
+- Enregistrer en mémoire les dernier dossier ouvert et les rendre disponible pour éviter de rechercher son dossier encore une fois.
+- Rendre ouvrable le dossier de theme et plugin. Refresh le lsp pour pas qui reste sur un warning par exemple rust analyser quand je préfix _ la variable pour non usage...
+- Enlever le click droit de base par défaut et en fabriquer un
+- 

@@ -539,7 +539,18 @@ function ExtensionsSection({ filter }: { filter: string | null }) {
     togglePlugin,
     reload,
     openExtensionsDir,
+    importExtension,
   } = usePlugins();
+
+  const onImport = async (kind: "themes" | "plugins") => {
+    try {
+      const name = await importExtension(kind);
+      if (name) console.info(`[extensions] imported ${kind}/${name}`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      window.alert(`Could not import ${kind}: ${msg}`);
+    }
+  };
 
   const themeMatches = (t: { id: string; name: string; description?: string }) => {
     if (!filter) return true;
@@ -583,6 +594,9 @@ function ExtensionsSection({ filter }: { filter: string | null }) {
         })}
       </div>
       <div className="ext-actions">
+        <button className="settings__primary" onClick={() => void onImport("themes")}>
+          Import theme…
+        </button>
         <button className="settings__ghost" onClick={() => openExtensionsDir("themes")}>
           Open themes folder
         </button>
@@ -633,6 +647,9 @@ function ExtensionsSection({ filter }: { filter: string | null }) {
         )}
       </div>
       <div className="ext-actions">
+        <button className="settings__primary" onClick={() => void onImport("plugins")}>
+          Import plugin…
+        </button>
         <button className="settings__ghost" onClick={() => openExtensionsDir("plugins")}>
           Open plugins folder
         </button>
