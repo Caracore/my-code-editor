@@ -209,6 +209,39 @@ export const I = {
       <path d="M22 2 15 22l-4-9-9-4z" />
     </svg>
   ),
+  FilePlus: ({ size, ...p }: IconProps) => (
+    <svg {...base(size)} {...p}>
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+      <path d="M14 3v6h6" />
+      <path d="M12 12v6M9 15h6" />
+    </svg>
+  ),
+  FolderPlus: ({ size, ...p }: IconProps) => (
+    <svg {...base(size)} {...p}>
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M12 11v6M9 14h6" />
+    </svg>
+  ),
+  Edit: ({ size, ...p }: IconProps) => (
+    <svg {...base(size)} {...p}>
+      <path d="M4 20h4l11-11-4-4L4 16z" />
+      <path d="M14 6l4 4" />
+    </svg>
+  ),
+  Copy: ({ size, ...p }: IconProps) => (
+    <svg {...base(size)} {...p}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+    </svg>
+  ),
+  Refresh: ({ size, ...p }: IconProps) => (
+    <svg {...base(size)} {...p}>
+      <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
+      <path d="M21 4v4h-4" />
+      <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
+      <path d="M3 20v-4h4" />
+    </svg>
+  ),
 };
 
 export const Logo = ({ size = 20 }: { size?: number }) => (

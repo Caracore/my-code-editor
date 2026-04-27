@@ -2,10 +2,32 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { I } from "../Icons";
 import { useWorkspace } from "../../context/WorkspaceContext";
-import { extOf, readDir } from "../../services/fs";
+import {
+  createDir,
+  createFile,
+  deletePath,
+  dirname,
+  extOf,
+  joinPath,
+  movePath,
+  readDir,
+} from "../../services/fs";
 import type { DirEntry } from "../../services/fs";
 import ResizeHandle from "../ResizeHandle/ResizeHandle";
+import ContextMenu, { type ContextMenuItem } from "../ContextMenu/ContextMenu";
 import "./Sidebar.css";
+
+/** Target of an open context-menu request (or `null` for empty-area). */
+interface MenuTarget {
+  /** Absolute path the menu acts on. For files: the file. For folders: the folder. */
+  path: string;
+  /** Whether `path` points at a directory. */
+  isDir: boolean;
+  /** Whether this is the workspace root row. */
+  isRoot?: boolean;
+}
+
+type OpenMenu = (e: React.MouseEvent, target: MenuTarget) => void;
 
 /* ---------------------------------------------------------------- */
 /*  Live tree backed by the real filesystem (lazy-loaded)           */
@@ -48,9 +70,10 @@ interface FolderViewProps {
   bump: () => void;
   selectedPath: string | null;
   onFileClick: (entry: DirEntry) => void;
+  onContextMenu: OpenMenu;
 }
 
-function FolderView({ path, depth, state, bump, selectedPath, onFileClick }: FolderViewProps) {
+function FolderView({ path, depth, state, bump, selectedPath, onFileClick, onContextMenu }: FolderViewProps) {
   const entries = state.cache.get(path);
   if (!entries) {
     return (
@@ -78,6 +101,7 @@ function FolderView({ path, depth, state, bump, selectedPath, onFileClick }: Fol
             bump={bump}
             selectedPath={selectedPath}
             onFileClick={onFileClick}
+            onContextMenu={onContextMenu}
           />
         ) : (
           <FileNode
@@ -86,6 +110,7 @@ function FolderView({ path, depth, state, bump, selectedPath, onFileClick }: Fol
             depth={depth}
             selected={selectedPath === e.path}
             onClick={() => onFileClick(e)}
+            onContextMenu={onContextMenu}
           />
         )
       )}
@@ -94,10 +119,11 @@ function FolderView({ path, depth, state, bump, selectedPath, onFileClick }: Fol
 }
 
 function DirNode({
-  entry, depth, state, bump, selectedPath, onFileClick,
+  entry, depth, state, bump, selectedPath, onFileClick, onContextMenu,
 }: {
   entry: DirEntry; depth: number; state: TreeState; bump: () => void;
   selectedPath: string | null; onFileClick: (entry: DirEntry) => void;
+  onContextMenu: OpenMenu;
 }) {
   const isOpen = state.open.has(entry.path);
   const { setNodeRef: setDropRef, isOver } = useDroppable({
@@ -136,6 +162,7 @@ function DirNode({
         className={`tree__row tree__row--folder ${isOver ? "is-drop-target" : ""}`}
         style={{ paddingLeft: 8 + depth * 14 }}
         onClick={toggle}
+        onContextMenu={(e) => onContextMenu(e, { path: entry.path, isDir: true })}
         title={entry.path}
       >
         <span className={`tree__chev ${isOpen ? "is-open" : ""}`}>
@@ -152,6 +179,7 @@ function DirNode({
           bump={bump}
           selectedPath={selectedPath}
           onFileClick={onFileClick}
+          onContextMenu={onContextMenu}
         />
       )}
     </div>
@@ -159,9 +187,10 @@ function DirNode({
 }
 
 function FileNode({
-  entry, depth, selected, onClick,
+  entry, depth, selected, onClick, onContextMenu,
 }: {
   entry: DirEntry; depth: number; selected: boolean; onClick: () => void;
+  onContextMenu: OpenMenu;
 }) {
   const ext = extOf(entry.name);
   const {
@@ -176,6 +205,7 @@ function FileNode({
       className={`tree__row ${selected ? "is-selected" : ""} ${isDragging ? "is-dragging" : ""}`}
       style={{ paddingLeft: 8 + depth * 14 + 14 }}
       onClick={onClick}
+      onContextMenu={(e) => onContextMenu(e, { path: entry.path, isDir: false })}
       title={entry.path}
       {...attributes}
       {...listeners}
@@ -197,7 +227,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onClose, width, onResize }: SidebarProps = {}) {
-  const { activeTab, openFile, openFolder, closeFolder, rootPath, rootName, tabs } = useWorkspace();
+  const { activeTab, openFile, openFolder, closeFolder, rootPath, rootName, tabs, closeTab } = useWorkspace();
 
   // Tree state — refs for in-place mutation, with a `tick` to re-render.
   const stateRef = useRef<TreeState>({
@@ -209,6 +239,14 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
   const bump = useCallback(() => setTick((n) => n + 1), []);
 
   const [search, setSearch] = useState("");
+
+  // Context-menu state.
+  const [menu, setMenu] = useState<{
+    x: number;
+    y: number;
+    target: MenuTarget;
+  } | null>(null);
+  const closeMenu = useCallback(() => setMenu(null), []);
 
   // Load root contents whenever the workspace folder changes
   useEffect(() => {
@@ -266,6 +304,202 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
     [openFile]
   );
 
+  /** Refresh a folder's listing in-place. */
+  const refreshFolder = useCallback(
+    async (folder: string) => {
+      const s = stateRef.current;
+      try {
+        const entries = await readDir(folder);
+        s.cache.set(folder, entries);
+      } catch (e) {
+        console.error("refreshFolder failed:", e);
+      } finally {
+        bump();
+      }
+    },
+    [bump]
+  );
+
+  /** Close any open tab whose path is or is inside `removed`. */
+  const closeTabsUnder = useCallback(
+    (removed: string) => {
+      if (!closeTab) return;
+      const norm = removed.replace(/\\/g, "/");
+      for (const t of tabs) {
+        const tp = t.path.replace(/\\/g, "/");
+        if (tp === norm || tp.startsWith(norm + "/")) {
+          closeTab(t.id);
+        }
+      }
+    },
+    [tabs, closeTab]
+  );
+
+  /** Open the context menu for a tree row (or root). */
+  const openMenu: OpenMenu = useCallback((e, target) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenu({ x: e.clientX, y: e.clientY, target });
+  }, []);
+
+  /** Build the menu items for the current target. */
+  const buildMenuItems = useCallback(
+    (target: MenuTarget): ContextMenuItem[] => {
+      const isDir = target.isDir;
+      const isRoot = target.isRoot === true;
+      // Folder containing the target (where new file/folder will be created).
+      const containerDir = isDir ? target.path : dirname(target.path);
+      const s = stateRef.current;
+
+      const ensureOpen = async (folder: string) => {
+        if (!s.open.has(folder)) {
+          s.open.add(folder);
+        }
+        if (!s.cache.has(folder)) {
+          try {
+            s.cache.set(folder, await readDir(folder));
+          } catch (err) {
+            console.error("readDir failed:", err);
+            s.cache.set(folder, []);
+          }
+        }
+      };
+
+      const promptName = (title: string, initial = ""): string | null => {
+        const v = window.prompt(title, initial);
+        if (v === null) return null;
+        const trimmed = v.trim();
+        if (!trimmed) return null;
+        if (/[\\/]/.test(trimmed)) {
+          window.alert("Name cannot contain slashes.");
+          return null;
+        }
+        return trimmed;
+      };
+
+      const doNewFile = async () => {
+        const name = promptName("New file name:");
+        if (!name) return;
+        try {
+          await ensureOpen(containerDir);
+          const newPath = joinPath(containerDir, name);
+          await createFile(newPath);
+          await refreshFolder(containerDir);
+          openFile(newPath);
+        } catch (err) {
+          window.alert(`Failed to create file:\n${err}`);
+        }
+      };
+
+      const doNewFolder = async () => {
+        const name = promptName("New folder name:");
+        if (!name) return;
+        try {
+          await ensureOpen(containerDir);
+          const newPath = joinPath(containerDir, name);
+          await createDir(newPath);
+          await refreshFolder(containerDir);
+        } catch (err) {
+          window.alert(`Failed to create folder:\n${err}`);
+        }
+      };
+
+      const doRename = async () => {
+        const oldName = target.path.replace(/[\\/]+$/, "").split(/[\\/]/).pop() ?? "";
+        const name = promptName("Rename to:", oldName);
+        if (!name || name === oldName) return;
+        try {
+          const parent = dirname(target.path);
+          const newPath = joinPath(parent, name);
+          await movePath(target.path, newPath);
+          // Best-effort: close any tab pointing at the old path; user can reopen.
+          closeTabsUnder(target.path);
+          await refreshFolder(parent);
+        } catch (err) {
+          window.alert(`Failed to rename:\n${err}`);
+        }
+      };
+
+      const doDelete = async () => {
+        const label = isDir ? "folder" : "file";
+        const ok = window.confirm(
+          `Are you sure you want to delete this ${label}?\n\n${target.path}\n\nThis cannot be undone.`
+        );
+        if (!ok) return;
+        try {
+          await deletePath(target.path);
+          closeTabsUnder(target.path);
+          await refreshFolder(dirname(target.path));
+        } catch (err) {
+          window.alert(`Failed to delete:\n${err}`);
+        }
+      };
+
+      const doCopyPath = async () => {
+        try {
+          await navigator.clipboard.writeText(target.path);
+        } catch {
+          // ignore
+        }
+      };
+
+      const doRefresh = async () => {
+        await refreshFolder(isDir ? target.path : dirname(target.path));
+      };
+
+      const items: ContextMenuItem[] = [
+        {
+          id: "new-file",
+          label: "New File\u2026",
+          icon: <I.FilePlus size={14} />,
+          onSelect: doNewFile,
+        },
+        {
+          id: "new-folder",
+          label: "New Folder\u2026",
+          icon: <I.FolderPlus size={14} />,
+          onSelect: doNewFolder,
+        },
+      ];
+
+      if (!isRoot) {
+        items.push({ id: "sep1", separator: true });
+        items.push({
+          id: "rename",
+          label: "Rename\u2026",
+          icon: <I.Edit size={14} />,
+          shortcut: "F2",
+          onSelect: doRename,
+        });
+        items.push({
+          id: "delete",
+          label: "Delete",
+          icon: <I.Trash size={14} />,
+          shortcut: "Del",
+          danger: true,
+          onSelect: doDelete,
+        });
+      }
+
+      items.push({ id: "sep2", separator: true });
+      items.push({
+        id: "copy-path",
+        label: "Copy Path",
+        icon: <I.Copy size={14} />,
+        onSelect: doCopyPath,
+      });
+      items.push({
+        id: "refresh",
+        label: "Refresh",
+        icon: <I.Refresh size={14} />,
+        onSelect: doRefresh,
+      });
+
+      return items;
+    },
+    [openFile, refreshFolder, closeTabsUnder]
+  );
+
   const collapseAll = () => {
     const s = stateRef.current;
     s.open.clear();
@@ -307,6 +541,7 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
           bump={bump}
           selectedPath={selectedPath}
           onFileClick={onFileClick}
+          onContextMenu={openMenu}
         />
       ) : (
         <FileNode
@@ -315,6 +550,7 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
           depth={1}
           selected={selectedPath === e.path}
           onClick={() => onFileClick(e)}
+          onContextMenu={openMenu}
         />
       )
     );
@@ -381,8 +617,20 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
             />
           </div>
 
-          <div className="sidebar__tree">
-            <RootDropRow rootPath={rootPath} rootName={rootName} />
+          <div
+            className="sidebar__tree"
+            onContextMenu={(e) => {
+              // Right-click on the empty area of the tree -> root menu.
+              if (e.target === e.currentTarget && rootPath) {
+                openMenu(e, { path: rootPath, isDir: true, isRoot: true });
+              }
+            }}
+          >
+            <RootDropRow
+              rootPath={rootPath}
+              rootName={rootName}
+              onContextMenu={openMenu}
+            />
             {renderRoot()}
           </div>
         </>
@@ -399,6 +647,14 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
       {width !== undefined && onResize && (
         <ResizeHandle edge="right" size={width} onResize={onResize} min={180} max={600} />
       )}
+      {menu && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          items={buildMenuItems(menu.target)}
+          onClose={closeMenu}
+        />
+      )}
     </aside>
   );
 }
@@ -406,9 +662,11 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
 function RootDropRow({
   rootPath,
   rootName,
+  onContextMenu,
 }: {
   rootPath: string;
   rootName: string | null;
+  onContextMenu: OpenMenu;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `folder::${rootPath}`,
@@ -419,6 +677,9 @@ function RootDropRow({
       ref={setNodeRef}
       className={`tree__row tree__row--folder tree__row--root ${isOver ? "is-drop-target" : ""}`}
       title={rootPath}
+      onContextMenu={(e) =>
+        onContextMenu(e, { path: rootPath, isDir: true, isRoot: true })
+      }
     >
       <span className="tree__chev is-open">
         <I.ChevronRight size={12} />

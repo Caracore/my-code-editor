@@ -28,6 +28,21 @@ export async function movePath(from: string, to: string): Promise<string> {
   return invoke<string>("move_path", { from, to });
 }
 
+/** Create a new empty file. Returns the absolute path. */
+export async function createFile(path: string): Promise<string> {
+  return invoke<string>("create_file", { path });
+}
+
+/** Create a new directory (single level). Returns the absolute path. */
+export async function createDir(path: string): Promise<string> {
+  return invoke<string>("create_dir", { path });
+}
+
+/** Delete a file or folder (recursive for folders). */
+export async function deletePath(path: string): Promise<void> {
+  return invoke<void>("delete_path", { path });
+}
+
 /** Return the parent folder of a path (handles both \ and /). */
 export function dirname(path: string): string {
   const norm = path.replace(/\\/g, "/").replace(/\/+$/, "");

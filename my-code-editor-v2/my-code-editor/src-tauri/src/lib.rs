@@ -84,6 +84,53 @@ fn move_path(from: String, to: String) -> Result<String, String> {
     Ok(to_pb.to_string_lossy().to_string())
 }
 
+/// Create a new (empty) file. Refuses to overwrite an existing path.
+#[tauri::command]
+fn create_file(path: String) -> Result<String, String> {
+    let p = PathBuf::from(&path);
+    if p.exists() {
+        return Err(format!("path already exists: {path}"));
+    }
+    if let Some(parent) = p.parent() {
+        if !parent.exists() {
+            return Err(format!("parent folder does not exist: {}", parent.display()));
+        }
+    }
+    fs::write(&p, "").map_err(|e| e.to_string())?;
+    Ok(p.to_string_lossy().to_string())
+}
+
+/// Create a new directory (single level). Refuses to overwrite an existing path.
+#[tauri::command]
+fn create_dir(path: String) -> Result<String, String> {
+    let p = PathBuf::from(&path);
+    if p.exists() {
+        return Err(format!("path already exists: {path}"));
+    }
+    if let Some(parent) = p.parent() {
+        if !parent.exists() {
+            return Err(format!("parent folder does not exist: {}", parent.display()));
+        }
+    }
+    fs::create_dir(&p).map_err(|e| e.to_string())?;
+    Ok(p.to_string_lossy().to_string())
+}
+
+/// Delete a file or folder (recursively for folders).
+#[tauri::command]
+fn delete_path(path: String) -> Result<(), String> {
+    let p = PathBuf::from(&path);
+    if !p.exists() {
+        return Err(format!("path does not exist: {path}"));
+    }
+    if p.is_dir() {
+        fs::remove_dir_all(&p).map_err(|e| e.to_string())?;
+    } else {
+        fs::remove_file(&p).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -96,6 +143,9 @@ pub fn run() {
             read_file,
             write_file,
             move_path,
+            create_file,
+            create_dir,
+            delete_path,
             extensions_dir,
             list_extensions,
             read_extension,

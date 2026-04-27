@@ -107,7 +107,7 @@
 .tree__row--root {
   font-weight: 600;
   color: var(--text-1) !important;
-  pointer-events: none;
+  cursor: default;
 }
 
 .sidebar__no-folder {
