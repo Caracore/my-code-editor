@@ -10,10 +10,10 @@
 [//]: # (- J'aimerai que les tabs bar et la class="editor__breadcrumbs" soit relier)
 
 [//]: # (- Fermer, minimize et maximize marche pour pouvoir quitter :&#41;)
-- Ajout de responsive
+- Ajout de responsive avec mode compact et comfortable
 
-- Ajouter Drag and drop ! DnDkit ? : prompt => 
-Dans mon IDE projet ajoutons le drag and drop. DnDkit ? Pour les tabs la sidebar pour mettre les fichiers dans un autre dossier etc. et le code editor pour en ouvrir 2 soit verticale soit horizontal, soit en 4 fichiers max dans le code editor pour vertical + horizontal gauche et droit.
+<!-- - Ajouter Drag and drop ! DnDkit ? : prompt => 
+Dans mon IDE projet ajoutons le drag and drop. DnDkit ? Pour les tabs la sidebar pour mettre les fichiers dans un autre dossier etc. et le code editor pour en ouvrir 2 soit verticale soit horizontal, soit en 4 fichiers max dans le code editor pour vertical + horizontal gauche et droit. -->
 
 - Ajouter les couleurs dans le gutter (goutière) barre vertical lineNumber;
 
@@ -43,6 +43,7 @@ Dans mon IDE projet ajoutons le drag and drop. DnDkit ? Pour les tabs la sidebar
 <!-- - >> Pouvoir fermer et ouvrir le chat AI RightPanel. -->
 - Faire un resize des Bottom panel, etc ... Rightpanel, sidebar + ajout de todolist à la sidebar...
 - Ajout de save et mettre en place des plugin et theme.
+- Extension theme et plugins ouvrir le dossier à corriger.
 >>> Settings: paramètres: 
 >>> Shortcut, var css + theme
 >>> Ajout de la mini-map et tout complet pour que ce soit traiter backend et non pas frontend. Var css, .

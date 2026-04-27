@@ -7,6 +7,9 @@ use terminal::{
     terminal_close, terminal_open, terminal_resize, terminal_write, TerminalState,
 };
 
+mod extensions;
+use extensions::{extensions_dir, list_extensions, read_extension};
+
 #[derive(Serialize)]
 struct DirEntry {
     name: String,
@@ -89,6 +92,9 @@ pub fn run() {
             read_file,
             write_file,
             move_path,
+            extensions_dir,
+            list_extensions,
+            read_extension,
             terminal_open,
             terminal_write,
             terminal_resize,

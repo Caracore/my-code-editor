@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { I } from "../Icons";
+import { usePlugins } from "../../plugins/PluginsContext";
 import "./StatusBar.css";
 
 interface StatusBarProps {
@@ -16,6 +18,17 @@ export default function StatusBar({
   onToggleRight,
   onOpenSettings,
 }: StatusBarProps = {}) {
+  const { statusItemsLeft, statusItemsRight } = usePlugins();
+
+  // Some plugins (like the built-in clock) emit ticks via a custom event so
+  // their `render()` returns up-to-date content without re-registering.
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    const onTick = () => forceTick((n) => n + 1);
+    window.addEventListener("plugins:status-tick", onTick);
+    return () => window.removeEventListener("plugins:status-tick", onTick);
+  }, []);
+
   return (
     <footer className="statusbar">
       <div className="statusbar__group">
@@ -32,6 +45,16 @@ export default function StatusBar({
         <button className="sb-item">
           <I.Sparkle size={12} /> AI ready
         </button>
+        {statusItemsLeft.map((it) => (
+          <button
+            key={it.id}
+            className="sb-item sb-item--plugin"
+            title={it.tooltip}
+            onClick={it.onClick}
+          >
+            {it.render()}
+          </button>
+        ))}
       </div>
 
       <div className="statusbar__center">
@@ -47,6 +70,16 @@ export default function StatusBar({
         <button className="sb-item">UTF-8</button>
         <button className="sb-item">LF</button>
         <button className="sb-item">TypeScript JSX</button>
+        {statusItemsRight.map((it) => (
+          <button
+            key={it.id}
+            className="sb-item sb-item--plugin"
+            title={it.tooltip}
+            onClick={it.onClick}
+          >
+            {it.render()}
+          </button>
+        ))}
         <button
           className={`sb-item ${terminalOpen ? "is-active" : ""}`}
           title="Toggle Terminal (Ctrl+J)"

@@ -6,18 +6,27 @@ import {
   useUserSettings,
 } from "../../context/UserSettingsContext";
 import type { UserSettings } from "../../context/UserSettingsContext";
+import { usePlugins } from "../../plugins/PluginsContext";
 import "./SettingsPage.css";
 
 interface Props {
   onClose: () => void;
 }
 
-type SectionId = "editor" | "terminal" | "appearance" | "behaviour" | "shortcuts" | "about";
+type SectionId =
+  | "editor"
+  | "terminal"
+  | "appearance"
+  | "behaviour"
+  | "extensions"
+  | "shortcuts"
+  | "about";
 const SECTIONS: { id: SectionId; label: string; icon: ReactElement }[] = [
   { id: "editor",     label: "Editor",     icon: <I.File size={13} /> },
   { id: "terminal",   label: "Terminal",   icon: <I.Terminal size={13} /> },
   { id: "appearance", label: "Appearance", icon: <I.Sparkle size={13} /> },
   { id: "behaviour",  label: "Behaviour",  icon: <I.Settings size={13} /> },
+  { id: "extensions", label: "Extensions", icon: <I.Extensions size={13} /> },
   { id: "shortcuts",  label: "Shortcuts",  icon: <I.Search size={13} /> },
   { id: "about",      label: "About",      icon: <I.Ai size={13} /> },
 ];
@@ -47,8 +56,16 @@ export default function SettingsPage({ onClose }: Props) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+    const onSection = (e: Event) => {
+      const id = (e as CustomEvent).detail;
+      if (typeof id === "string") setSection(id as SectionId);
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("settings:set-section", onSection);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("settings:set-section", onSection);
+    };
   }, [onClose]);
 
   const matches = useMemo(() => {
@@ -103,6 +120,7 @@ export default function SettingsPage({ onClose }: Props) {
             {section === "terminal" && <TerminalSection settings={settings} set={set} filter={matches} />}
             {section === "appearance" && <AppearanceSection settings={settings} set={set} filter={matches} />}
             {section === "behaviour" && <BehaviourSection settings={settings} set={set} filter={matches} />}
+            {section === "extensions" && <ExtensionsSection filter={matches} />}
             {section === "shortcuts" && <ShortcutsSection filter={matches} />}
             {section === "about" && <AboutSection />}
           </main>
@@ -373,6 +391,121 @@ function ShortcutsSection({ filter }: { filter: string | null }) {
           )}
         </tbody>
       </table>
+    </section>
+  );
+}
+
+function ExtensionsSection({ filter }: { filter: string | null }) {
+  const {
+    themes,
+    activeTheme,
+    setActiveTheme,
+    knownPlugins,
+    enabledPlugins,
+    togglePlugin,
+    reload,
+    openExtensionsDir,
+  } = usePlugins();
+
+  const themeMatches = (t: { id: string; name: string; description?: string }) => {
+    if (!filter) return true;
+    return (
+      t.name.toLowerCase().includes(filter) ||
+      t.id.toLowerCase().includes(filter) ||
+      (t.description?.toLowerCase().includes(filter) ?? false)
+    );
+  };
+
+  return (
+    <section className="set-section">
+      <h2>Themes</h2>
+      <p className="set-section__hint">
+        Drop additional <code>*.json</code> theme files into your themes folder
+        to extend this list.
+      </p>
+      <div className="ext-grid">
+        {themes.filter(themeMatches).map((t) => {
+          const isActive = activeTheme?.id === t.id;
+          return (
+            <button
+              key={t.id}
+              className={`ext-card ${isActive ? "is-active" : ""}`}
+              onClick={() => setActiveTheme(t.id)}
+            >
+              <div className="ext-card__swatches">
+                <span style={{ background: t.variables["--bg-1"] ?? "#222" }} />
+                <span style={{ background: t.variables["--bg-3"] ?? "#333" }} />
+                <span style={{ background: t.variables["--accent"] ?? "#7c5cff" }} />
+                <span style={{ background: t.variables["--accent-2"] ?? "#5ad1ff" }} />
+              </div>
+              <div className="ext-card__title">{t.name}</div>
+              <div className="ext-card__meta">
+                <span className={`ext-tag ext-tag--${t.type}`}>{t.type}</span>
+                <span className="ext-tag">{t.source ?? "builtin"}</span>
+              </div>
+              {t.description && <div className="ext-card__desc">{t.description}</div>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="ext-actions">
+        <button className="settings__ghost" onClick={() => openExtensionsDir("themes")}>
+          Open themes folder
+        </button>
+        <button className="settings__ghost" onClick={() => void reload()}>
+          Reload from disk
+        </button>
+      </div>
+
+      <h2 style={{ marginTop: 28 }}>Plugins</h2>
+      <p className="set-section__hint">
+        Built-in plugins ship with the IDE; user plugins live in your plugins
+        folder as <code>*.js</code> modules using <code>module.exports</code>.
+      </p>
+      <div className="ext-list">
+        {knownPlugins
+          .filter((p) =>
+            !filter
+              ? true
+              : p.manifest.name.toLowerCase().includes(filter) ||
+                p.manifest.id.toLowerCase().includes(filter) ||
+                (p.manifest.description?.toLowerCase().includes(filter) ?? false),
+          )
+          .map((p) => {
+            const id = p.manifest.id;
+            const enabled = enabledPlugins.has(id);
+            return (
+              <div key={id} className="ext-row">
+                <div className="ext-row__main">
+                  <div className="ext-row__title">
+                    {p.manifest.name}
+                    <span className="ext-tag">{p.manifest.source ?? "builtin"}</span>
+                    <span className="ext-row__ver">v{p.manifest.version}</span>
+                  </div>
+                  {p.manifest.description && (
+                    <div className="ext-row__desc">{p.manifest.description}</div>
+                  )}
+                  <div className="ext-row__id">{id}</div>
+                </div>
+                <Toggle
+                  checked={enabled}
+                  onChange={(v) => void togglePlugin(id, v)}
+                />
+              </div>
+            );
+          })}
+        {knownPlugins.length === 0 && (
+          <div className="ext-empty">No plugins available.</div>
+        )}
+      </div>
+      <div className="ext-actions">
+        <button className="settings__ghost" onClick={() => openExtensionsDir("plugins")}>
+          Open plugins folder
+        </button>
+        <button className="settings__ghost" onClick={() => void reload()}>
+          Reload from disk
+        </button>
+      </div>
     </section>
   );
 }

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { I } from "../Icons";
+import { usePlugins } from "../../plugins/PluginsContext";
 import "./CommandPalette.css";
 
 type Item = {
@@ -29,6 +30,18 @@ export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [idx, setIdx] = useState(0);
+  const { commands: pluginCommands } = usePlugins();
+
+  const allItems = useMemo<Item[]>(() => {
+    const pluginItems: Item[] = pluginCommands.map((c) => ({
+      group: c.group ?? "Plugins",
+      icon: <I.Extensions size={13} />,
+      title: c.title,
+      shortcut: c.shortcut,
+      action: () => { void c.run(); },
+    }));
+    return [...ITEMS, ...pluginItems];
+  }, [pluginCommands]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -62,7 +75,7 @@ export default function CommandPalette() {
     );
   }
 
-  const filtered = ITEMS.filter((i) =>
+  const filtered = allItems.filter((i) =>
     i.title.toLowerCase().includes(q.toLowerCase()) ||
     i.group.toLowerCase().includes(q.toLowerCase())
   );

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { EditorState } from "@codemirror/state";
+import { usePlugins } from "../../plugins/PluginsContext";
 import {
   EditorView,
   keymap,
@@ -346,6 +347,7 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
     editorWordWrap,
     editorActiveLine,
   } = settings;
+  const { editorExtensions: pluginEditorExtensions } = usePlugins();
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -399,6 +401,7 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
       buildEditorTheme({ fontSize: editorFontSize, fontFamily: editorFontFamily }),
       smoothCaret,
       updateListener,
+      ...pluginEditorExtensions,
     ];
 
     const state = EditorState.create({
@@ -422,6 +425,7 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
     editorLineNumbers,
     editorWordWrap,
     editorActiveLine,
+    pluginEditorExtensions,
   ]);
 
   // Sync external value (typing in the tab, switching tabs, etc.)

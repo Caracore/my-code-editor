@@ -14,6 +14,7 @@ import CommandPalette from "./components/CommandPalette/CommandPalette";
 import SettingsPage from "./components/Settings/SettingsPage";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { UserSettingsProvider } from "./context/UserSettingsContext";
+import { PluginsProvider } from "./plugins/PluginsContext";
 import { useAppShortcuts } from "./hooks/useAppShortcuts";
 import { AppDndProvider } from "./components/dnd/AppDndProvider";
 
@@ -28,6 +29,12 @@ export default function App() {
   const toggleBottom = useCallback(() => setShowBottom((v) => !v), []);
   const openSettings = useCallback(() => setShowSettings(true), []);
   const closeSettings = useCallback(() => setShowSettings(false), []);
+  const openExtensions = useCallback(() => {
+    setShowSettings(true);
+    requestAnimationFrame(() =>
+      window.dispatchEvent(new CustomEvent("settings:set-section", { detail: "extensions" })),
+    );
+  }, []);
 
   // Centralised shortcut/menu-action handlers. The same actions fire
   // from menus, the command palette, status-bar buttons and shortcuts.
@@ -64,6 +71,7 @@ export default function App() {
 
   return (
     <UserSettingsProvider>
+      <PluginsProvider>
       <WorkspaceProvider>
         <AppDndProvider>
         <div
@@ -82,6 +90,7 @@ export default function App() {
               sidebarOpen={showSidebar}
               onToggleSidebar={toggleSidebar}
               onOpenSettings={openSettings}
+              onOpenExtensions={openExtensions}
             />
             {showSidebar && <Sidebar onClose={toggleSidebar} />}
             <main className="app__main">
@@ -104,6 +113,7 @@ export default function App() {
         </div>
         </AppDndProvider>
       </WorkspaceProvider>
+      </PluginsProvider>
     </UserSettingsProvider>
   );
 }

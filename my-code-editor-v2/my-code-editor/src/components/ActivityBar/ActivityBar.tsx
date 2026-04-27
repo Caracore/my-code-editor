@@ -20,12 +20,14 @@ interface ActivityBarProps {
   sidebarOpen?: boolean;
   onToggleSidebar?: () => void;
   onOpenSettings?: () => void;
+  onOpenExtensions?: () => void;
 }
 
 export default function ActivityBar({
   sidebarOpen = true,
   onToggleSidebar,
   onOpenSettings,
+  onOpenExtensions,
 }: ActivityBarProps = {}) {
   const [active, setActive] = useState("files");
 
@@ -44,6 +46,11 @@ export default function ActivityBar({
     }
     if (id === "settings") {
       onOpenSettings?.();
+      return;
+    }
+    if (id === "ext") {
+      onOpenExtensions?.();
+      setActive(id);
       return;
     }
     setActive(id);

@@ -34,6 +34,10 @@ export interface UserSettings {
   autoSave: boolean;
   confirmOnExit: boolean;
   discordRpc: boolean;
+
+  // Extensibility
+  themeId: string;             // id of the active theme manifest
+  enabledPlugins: string[];    // ids of plugins activated at startup
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -55,6 +59,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
   autoSave: false,
   confirmOnExit: true,
   discordRpc: false,
+
+  themeId: "cosmos-dark",
+  enabledPlugins: ["builtin.hello-world", "builtin.clock"],
 };
 
 const STORAGE_KEY = "my-code-editor:user-settings:v1";

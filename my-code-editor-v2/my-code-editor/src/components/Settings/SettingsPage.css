@@ -328,3 +328,81 @@
   color: var(--text-2);
   white-space: pre-wrap;
 }
+
+/* ---------------- Extensions section ---------------- */
+.set-section__hint {
+  color: var(--text-3);
+  font-size: 12px;
+  margin: -2px 0 12px;
+}
+.set-section__hint code {
+  background: var(--bg-3);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+.ext-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.ext-card {
+  text-align: left;
+  background: var(--bg-3);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  color: var(--text-1);
+  cursor: pointer;
+  transition: border-color .12s, transform .08s;
+}
+.ext-card:hover { border-color: var(--accent); }
+.ext-card.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.ext-card__swatches {
+  display: flex; gap: 4px; margin-bottom: 8px;
+}
+.ext-card__swatches span {
+  width: 22px; height: 22px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.ext-card__title { font-weight: 600; font-size: 13px; }
+.ext-card__meta { display: flex; gap: 6px; margin-top: 4px; }
+.ext-card__desc {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.35;
+}
+.ext-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--bg-4);
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.ext-tag--light { background: rgba(245, 177, 76, .15); color: #f5b14c; }
+.ext-tag--dark  { background: var(--accent-soft); color: var(--accent); }
+
+.ext-list { display: flex; flex-direction: column; gap: 8px; }
+.ext-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+}
+.ext-row__main { flex: 1; min-width: 0; }
+.ext-row__title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 13px;
+}
+.ext-row__ver { color: var(--text-3); font-size: 11px; font-weight: 400; }
+.ext-row__desc { color: var(--text-2); font-size: 12px; margin-top: 2px; }
+.ext-row__id   { color: var(--text-4); font-size: 11px; margin-top: 4px; font-family: var(--font-mono); }
+.ext-empty { color: var(--text-3); font-size: 12px; padding: 12px; text-align: center; }
+.ext-actions { display: flex; gap: 8px; margin-top: 12px; }
