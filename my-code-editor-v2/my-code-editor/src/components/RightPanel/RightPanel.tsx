@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { I } from "../Icons";
+import ResizeHandle from "../ResizeHandle/ResizeHandle";
 import "./RightPanel.css";
 
 type Msg = { from: "ai" | "me"; text: string; code?: string };
@@ -29,12 +30,17 @@ const SUGGESTIONS = [
 
 interface RightPanelProps {
   onClose?: () => void;
+  width?: number;
+  onResize?: (w: number) => void;
 }
 
-export default function RightPanel({ onClose }: RightPanelProps = {}) {
+export default function RightPanel({ onClose, width, onResize }: RightPanelProps = {}) {
   const [tab, setTab] = useState<"chat" | "edit" | "agents">("chat");
   return (
     <aside className="rightpanel">
+      {width !== undefined && onResize && (
+        <ResizeHandle edge="left" size={width} onResize={onResize} min={220} max={800} />
+      )}
       <div className="rightpanel__tabs">
         <button className={`rp-tab ${tab === "chat" ? "is-active" : ""}`} onClick={() => setTab("chat")}>
           <I.Sparkle size={13} /> AI Chat

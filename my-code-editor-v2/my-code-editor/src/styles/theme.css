@@ -184,6 +184,38 @@
   --editor-strong:                var(--text-1);
   --editor-link:                  var(--syn-fn);
   --editor-link-url:              var(--syn-str);
+
+  /* =========================================================
+     Terminal (xterm.js)
+     The 23 ANSI / UI colour slots accepted by xterm. Defaults
+     derive from the global palette so a minimal theme file
+     produces a consistent terminal automatically.
+     ========================================================= */
+  --terminal-bg:                  var(--bg-2);
+  --terminal-fg:                  var(--text-1);
+  --terminal-cursor:              var(--accent-2);
+  --terminal-cursor-accent:       var(--bg-2);
+  --terminal-selection-bg:        var(--accent-glow-strong);
+
+  /* Standard ANSI 0–7 */
+  --terminal-black:               var(--bg-5);
+  --terminal-red:                 var(--danger);
+  --terminal-green:               var(--success);
+  --terminal-yellow:              var(--warn);
+  --terminal-blue:                var(--syn-fn);
+  --terminal-magenta:             var(--syn-kw);
+  --terminal-cyan:                var(--accent-2);
+  --terminal-white:               var(--text-2);
+
+  /* Bright ANSI 8–15 */
+  --terminal-bright-black:        var(--text-4);
+  --terminal-bright-red:          var(--syn-tag);
+  --terminal-bright-green:        var(--syn-str);
+  --terminal-bright-yellow:       var(--syn-type);
+  --terminal-bright-blue:         var(--accent);
+  --terminal-bright-magenta:      var(--syn-kw);
+  --terminal-bright-cyan:         var(--syn-prop);
+  --terminal-bright-white:        var(--text-1);
 }
 
 * { box-sizing: border-box; }

@@ -4,6 +4,7 @@
   background: var(--bg-2);
   border-top: 1px solid var(--border-1);
   min-height: 0;
+  position: relative;
 }
 
 .bottompanel__tabs {

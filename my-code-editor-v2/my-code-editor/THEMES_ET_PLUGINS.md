@@ -207,7 +207,51 @@ automatiquement. Surchargez-les pour un contrôle pixel-perfect.
 }
 ```
 
-### 3.5 Conseils
+### 3.5 Variables du terminal (xterm.js)
+
+Le terminal intégré (xterm.js) est lui aussi pilotable depuis le thème.
+Tous les `--terminal-*` ont des défauts dérivés du palette global, donc
+un thème minimal aura déjà un terminal cohérent. **Les changements sont
+réactifs** : changer de thème ré-applique immédiatement les couleurs aux
+terminaux ouverts.
+
+**Surfaces & curseur**
+`--terminal-bg`, `--terminal-fg`,
+`--terminal-cursor`, `--terminal-cursor-accent`,
+`--terminal-selection-bg`.
+
+**ANSI standards (0–7)**
+`--terminal-black`, `--terminal-red`, `--terminal-green`,
+`--terminal-yellow`, `--terminal-blue`, `--terminal-magenta`,
+`--terminal-cyan`, `--terminal-white`.
+
+**ANSI brillants (8–15)**
+`--terminal-bright-black`, `--terminal-bright-red`,
+`--terminal-bright-green`, `--terminal-bright-yellow`,
+`--terminal-bright-blue`, `--terminal-bright-magenta`,
+`--terminal-bright-cyan`, `--terminal-bright-white`.
+
+#### Exemple : palette terminal "Solarized-ish"
+
+```json
+{
+  "id": "solar",
+  "name": "Solar",
+  "type": "dark",
+  "variables": {
+    "--terminal-bg":  "#002b36",
+    "--terminal-fg":  "#839496",
+    "--terminal-red":     "#dc322f",
+    "--terminal-green":   "#859900",
+    "--terminal-yellow":  "#b58900",
+    "--terminal-blue":    "#268bd2",
+    "--terminal-magenta": "#d33682",
+    "--terminal-cyan":    "#2aa198"
+  }
+}
+```
+
+### 3.6 Conseils
 
 - Définissez toujours `--on-accent` cohérent avec `--accent` :
   `#ffffff` pour un thème clair, presque-noir pour un thème sombre.
@@ -215,6 +259,73 @@ automatiquement. Surchargez-les pour un contrôle pixel-perfect.
   titlebar/statusbar et les couleurs de scrollbar — sinon les modales et
   barres deviennent trop sombres.
 - Vous n'êtes pas obligé de tout définir, les défauts comblent le reste.
+
+---
+
+## 3.7 Personnaliser les raccourcis clavier (keymap)
+
+Toutes les actions de l'IDE qui ont un raccourci clavier sont
+**rebindables** depuis **Settings → Shortcuts**. La configuration est
+stockée dans les préférences utilisateur et appliquée **en temps réel**
+(pas besoin de recharger la fenêtre).
+
+### Comment rebinder
+
+1. Ouvrir les paramètres (`Ctrl+,`).
+2. Onglet **Shortcuts**.
+3. Cliquer sur le binding actuel d'une action — il passe en mode
+   « Press a key… ».
+4. Appuyer sur la nouvelle combinaison (par ex. `Ctrl+Alt+T`).
+   - `Esc` annule.
+   - Si la combinaison est déjà utilisée, un message d'erreur s'affiche
+     et le rebind est refusé.
+5. Boutons par ligne :
+   - **Reset** : remet la valeur par défaut (visible seulement si
+     modifié).
+   - **Clear** : supprime totalement le binding (action désactivée au
+     clavier mais toujours accessible via les menus / la palette).
+6. Bouton global **Reset all** en haut : rétablit *toute* la keymap.
+
+### Format des combos
+
+Stockées sous forme normalisée `ctrl+shift+p`, `ctrl+,`, `f11`, … L'ordre
+des modificateurs est fixé : `ctrl` → `alt` → `shift` → touche. La
+fonction `displayCombo` les rend joliment dans l'UI (`Ctrl+Shift+P`).
+
+### Liste des actions configurables
+
+Source : [`src/config/keymap.ts`](src/config/keymap.ts).
+
+| Groupe   | Action                  | Défaut          |
+|----------|-------------------------|-----------------|
+| View     | `view:toggle-sidebar`   | `Ctrl+B`        |
+| View     | `view:toggle-right`     | `Ctrl+Alt+B`    |
+| View     | `view:toggle-bottom`    | `Ctrl+J`        |
+| View     | `view:command-palette`  | `Ctrl+Shift+P`  |
+| View     | `nav:file`              | `Ctrl+P`        |
+| View     | `view:fullscreen`       | `F11`           |
+| Terminal | `tools:terminal`        | `` Ctrl+` ``    |
+| Terminal | `terminal:new`          | `` Ctrl+Shift+` `` |
+| File     | `file:save`             | `Ctrl+S`        |
+| File     | `file:close-editor`     | `Ctrl+W`        |
+| File     | `file:open-folder`      | `Ctrl+O`        |
+| File     | `file:new`              | `Ctrl+N`        |
+| Window   | `window:reload`         | `Ctrl+R`        |
+| Tools    | `tools:settings`        | `Ctrl+,`        |
+
+### Ajouter une nouvelle action bindable
+
+1. Ajouter une entrée dans `KEYMAP_DEFS` (`src/config/keymap.ts`) avec
+   `action`, `label`, `defaultCombo`, `group`.
+2. Si l'action doit fonctionner **pendant que l'utilisateur tape dans
+   l'éditeur ou le terminal**, l'ajouter aussi à
+   `ALWAYS_ACTIVE_ACTIONS`.
+3. Ajouter le handler côté UI dans `useAppShortcuts({...})` dans
+   `App.tsx`, ou laisser le hook router automatiquement vers le bus
+   `menu-action` si c'est une action menu.
+
+L'UI Settings s'auto-met à jour : toute entrée dans `KEYMAP_DEFS`
+apparaît immédiatement comme rebindable.
 
 ---
 

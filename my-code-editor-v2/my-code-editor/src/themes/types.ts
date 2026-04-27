@@ -85,6 +85,15 @@ export const THEMEABLE_VARS = [
   "--editor-heading", "--editor-heading-1", "--editor-heading-2", "--editor-heading-3",
   "--editor-emphasis", "--editor-strong",
   "--editor-link", "--editor-link-url",
+  // Terminal (xterm.js)
+  "--terminal-bg", "--terminal-fg",
+  "--terminal-cursor", "--terminal-cursor-accent", "--terminal-selection-bg",
+  "--terminal-black", "--terminal-red", "--terminal-green", "--terminal-yellow",
+  "--terminal-blue", "--terminal-magenta", "--terminal-cyan", "--terminal-white",
+  "--terminal-bright-black", "--terminal-bright-red",
+  "--terminal-bright-green", "--terminal-bright-yellow",
+  "--terminal-bright-blue", "--terminal-bright-magenta",
+  "--terminal-bright-cyan", "--terminal-bright-white",
 ] as const;
 
 export type ThemeableVar = (typeof THEMEABLE_VARS)[number];

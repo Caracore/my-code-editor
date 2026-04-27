@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { I } from "../Icons";
 import TerminalView from "./TerminalView";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import ResizeHandle from "../ResizeHandle/ResizeHandle";
 import "./BottomPanel.css";
 
 const TABS = [
@@ -17,9 +18,11 @@ const newTermId = () => `term-${Date.now().toString(36)}-${nextTermSeq++}`;
 
 interface BottomPanelProps {
   onClose?: () => void;
+  height?: number;
+  onResize?: (h: number) => void;
 }
 
-export default function BottomPanel({ onClose }: BottomPanelProps = {}) {
+export default function BottomPanel({ onClose, height, onResize }: BottomPanelProps = {}) {
   const [tab, setTab] = useState("terminal");
   const { rootPath } = useWorkspace();
 
@@ -77,6 +80,9 @@ export default function BottomPanel({ onClose }: BottomPanelProps = {}) {
 
   return (
     <section className="bottompanel" ref={hostRef}>
+      {height !== undefined && onResize && (
+        <ResizeHandle edge="top" size={height} onResize={onResize} min={120} max={800} />
+      )}
       <div className="bottompanel__tabs">
         {TABS.map((t) => (
           <button

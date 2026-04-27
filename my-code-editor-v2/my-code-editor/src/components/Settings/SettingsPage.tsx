@@ -7,6 +7,13 @@ import {
 } from "../../context/UserSettingsContext";
 import type { UserSettings } from "../../context/UserSettingsContext";
 import { usePlugins } from "../../plugins/PluginsContext";
+import {
+  KEYMAP_DEFS,
+  DEFAULT_KEYMAP,
+  comboFromEvent,
+  displayCombo,
+  isModifierOnly,
+} from "../../config/keymap";
 import "./SettingsPage.css";
 
 interface Props {
@@ -29,22 +36,6 @@ const SECTIONS: { id: SectionId; label: string; icon: ReactElement }[] = [
   { id: "extensions", label: "Extensions", icon: <I.Extensions size={13} /> },
   { id: "shortcuts",  label: "Shortcuts",  icon: <I.Search size={13} /> },
   { id: "about",      label: "About",      icon: <I.Ai size={13} /> },
-];
-
-const SHORTCUTS: { keys: string; desc: string }[] = [
-  { keys: "Ctrl+B",        desc: "Toggle Sidebar" },
-  { keys: "Ctrl+J",        desc: "Toggle Bottom Panel" },
-  { keys: "Ctrl+Alt+B",    desc: "Toggle AI Panel" },
-  { keys: "Ctrl+`",        desc: "Focus Terminal" },
-  { keys: "Ctrl+Shift+`",  desc: "New Terminal" },
-  { keys: "Ctrl+K",        desc: "Command Palette" },
-  { keys: "Ctrl+P",        desc: "Go to File" },
-  { keys: "Ctrl+S",        desc: "Save File" },
-  { keys: "Ctrl+W",        desc: "Close Editor" },
-  { keys: "Ctrl+O",        desc: "Open Folder" },
-  { keys: "Ctrl+,",        desc: "Open Settings" },
-  { keys: "Ctrl+R",        desc: "Reload Window" },
-  { keys: "F11",           desc: "Toggle Full Screen" },
 ];
 
 export default function SettingsPage({ onClose }: Props) {
@@ -361,36 +352,164 @@ function BehaviourSection({ settings, set, filter }: SectionProps) {
 }
 
 function ShortcutsSection({ filter }: { filter: string | null }) {
-  const rows = filter
-    ? SHORTCUTS.filter(
-        (s) =>
-          s.desc.toLowerCase().includes(filter) ||
-          s.keys.toLowerCase().includes(filter),
-      )
-    : SHORTCUTS;
+  const { settings, set } = useUserSettings();
+  const keymap = settings.keymap;
+  // action currently being rebound (null = idle).
+  const [editing, setEditing] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // While capturing, intercept the next keystroke globally and store it.
+  useEffect(() => {
+    if (!editing) return;
+    const onKey = (e: KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Escape cancels.
+      if (e.key === "Escape") {
+        setEditing(null);
+        setError(null);
+        return;
+      }
+      const combo = comboFromEvent(e);
+      if (isModifierOnly(combo)) return; // wait for the actual key
+
+      // Reject conflicts: combo already bound to a different action.
+      const conflict = Object.entries(keymap).find(
+        ([a, c]) => c === combo && a !== editing,
+      );
+      if (conflict) {
+        const def = KEYMAP_DEFS.find((d) => d.action === conflict[0]);
+        setError(`Already bound to “${def?.label ?? conflict[0]}”`);
+        return;
+      }
+      const next = { ...keymap, [editing]: combo };
+      set("keymap", next);
+      setEditing(null);
+      setError(null);
+    };
+    window.addEventListener("keydown", onKey, { capture: true });
+    return () => window.removeEventListener("keydown", onKey, { capture: true } as any);
+  }, [editing, keymap, set]);
+
+  const resetOne = (action: string) => {
+    const next = { ...keymap, [action]: DEFAULT_KEYMAP[action] ?? "" };
+    set("keymap", next);
+  };
+  const clearOne = (action: string) => {
+    const next = { ...keymap };
+    delete next[action];
+    set("keymap", next);
+  };
+  const resetAll = () => set("keymap", { ...DEFAULT_KEYMAP });
+
+  // Group rows for display.
+  const rows = useMemo(() => {
+    const filt = (d: (typeof KEYMAP_DEFS)[number]) => {
+      if (!filter) return true;
+      const combo = (keymap[d.action] ?? "").toLowerCase();
+      return (
+        d.label.toLowerCase().includes(filter) ||
+        d.action.toLowerCase().includes(filter) ||
+        combo.includes(filter)
+      );
+    };
+    return KEYMAP_DEFS.filter(filt);
+  }, [filter, keymap]);
+
+  const groups = useMemo(() => {
+    const m = new Map<string, typeof rows>();
+    for (const r of rows) {
+      if (!m.has(r.group)) m.set(r.group, [] as typeof rows);
+      m.get(r.group)!.push(r);
+    }
+    return [...m.entries()];
+  }, [rows]);
+
   return (
     <section className="set-section">
-      <h2>Keyboard shortcuts</h2>
-      <table className="set-shortcuts">
-        <thead>
-          <tr><th>Action</th><th>Combo</th></tr>
-        </thead>
-        <tbody>
-          {rows.map((s) => (
-            <tr key={s.keys + s.desc}>
-              <td>{s.desc}</td>
-              <td>
-                {s.keys.split("+").map((k) => (
-                  <kbd key={k}>{k}</kbd>
-                ))}
-              </td>
-            </tr>
-          ))}
-          {rows.length === 0 && (
-            <tr><td colSpan={2} className="set-shortcuts__empty">No matching shortcut.</td></tr>
-          )}
-        </tbody>
-      </table>
+      <div className="set-section__head">
+        <h2>Keyboard shortcuts</h2>
+        <button className="settings__ghost" onClick={resetAll} title="Restore default keymap">
+          Reset all
+        </button>
+      </div>
+      <p className="set-field__hint" style={{ marginTop: 0 }}>
+        Click a binding to rebind it. Press the new combination, or Escape to cancel.
+      </p>
+      {editing && error && (
+        <div className="set-shortcuts__error" role="alert">{error}</div>
+      )}
+
+      {groups.map(([group, list]) => (
+        <div key={group} className="set-shortcuts__group">
+          <h3 className="set-shortcuts__group-title">{group}</h3>
+          <table className="set-shortcuts">
+            <tbody>
+              {list.map((d) => {
+                const combo = keymap[d.action] ?? "";
+                const isEditing = editing === d.action;
+                const isDefault = combo === DEFAULT_KEYMAP[d.action];
+                return (
+                  <tr key={d.action}>
+                    <td className="set-shortcuts__label">
+                      <div>{d.label}</div>
+                      <div className="set-shortcuts__action-id">{d.action}</div>
+                    </td>
+                    <td className="set-shortcuts__combo">
+                      <button
+                        className={
+                          "set-shortcuts__binding" +
+                          (isEditing ? " is-editing" : "") +
+                          (!combo ? " is-empty" : "")
+                        }
+                        onClick={() => {
+                          setError(null);
+                          setEditing(isEditing ? null : d.action);
+                        }}
+                        title={isEditing ? "Press the new combination (Esc to cancel)" : "Click to rebind"}
+                      >
+                        {isEditing
+                          ? "Press a key…"
+                          : combo
+                            ? displayCombo(combo).split("+").map((k, i, arr) => (
+                                <span key={i}>
+                                  <kbd>{k}</kbd>
+                                  {i < arr.length - 1 && <span className="set-shortcuts__plus">+</span>}
+                                </span>
+                              ))
+                            : <em>unbound</em>}
+                      </button>
+                    </td>
+                    <td className="set-shortcuts__row-actions">
+                      {!isDefault && (
+                        <button
+                          className="settings__ghost"
+                          onClick={() => resetOne(d.action)}
+                          title="Reset to default"
+                        >
+                          Reset
+                        </button>
+                      )}
+                      {combo && (
+                        <button
+                          className="settings__ghost"
+                          onClick={() => clearOne(d.action)}
+                          title="Remove binding"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ))}
+      {rows.length === 0 && (
+        <div className="set-shortcuts__empty">No matching shortcut.</div>
+      )}
     </section>
   );
 }

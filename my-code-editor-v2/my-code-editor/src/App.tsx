@@ -24,6 +24,11 @@ export default function App() {
   const [showBottom, setShowBottom] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Panel sizes (px). Drag handles update these via useResize.
+  const [sidebarW, setSidebarW] = useState(260);
+  const [rightW, setRightW] = useState(320);
+  const [bottomH, setBottomH] = useState(240);
+
   const toggleSidebar = useCallback(() => setShowSidebar((v) => !v), []);
   const toggleRight = useCallback(() => setShowRight((v) => !v), []);
   const toggleBottom = useCallback(() => setShowBottom((v) => !v), []);
@@ -83,6 +88,11 @@ export default function App() {
           ]
             .filter(Boolean)
             .join(" ")}
+          style={{
+            ["--sidebar-w" as string]: `${sidebarW}px`,
+            ["--right-w" as string]: `${rightW}px`,
+            ["--bottom-h" as string]: `${bottomH}px`,
+          } as React.CSSProperties}
         >
           <TitleBar />
           <div className="app__body">
@@ -92,14 +102,14 @@ export default function App() {
               onOpenSettings={openSettings}
               onOpenExtensions={openExtensions}
             />
-            {showSidebar && <Sidebar onClose={toggleSidebar} />}
+            {showSidebar && <Sidebar onClose={toggleSidebar} width={sidebarW} onResize={setSidebarW} />}
             <main className="app__main">
               <div className="app__editor-area">
                 <EditorArea />
               </div>
-              {showBottom && <BottomPanel onClose={toggleBottom} />}
+              {showBottom && <BottomPanel onClose={toggleBottom} height={bottomH} onResize={setBottomH} />}
             </main>
-            {showRight && <RightPanel onClose={toggleRight} />}
+            {showRight && <RightPanel onClose={toggleRight} width={rightW} onResize={setRightW} />}
           </div>
           <StatusBar
             terminalOpen={showBottom}

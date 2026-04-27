@@ -26,6 +26,37 @@ export default function TerminalView({ sessionId, cwd }: Props) {
   const { settings } = useUserSettings();
   const { terminalFontSize, terminalCursorBlink, editorFontFamily } = settings;
 
+  // Read xterm theme from current CSS variables. Called at mount and on
+  // every `theme:applied` event so the terminal follows the active theme.
+  const readThemeFromCss = () => {
+    const css = getComputedStyle(document.documentElement);
+    const v = (name: string, fallback: string) =>
+      css.getPropertyValue(name).trim() || fallback;
+    return {
+      background: v("--terminal-bg", "#181c23"),
+      foreground: v("--terminal-fg", "#e6e8ee"),
+      cursor: v("--terminal-cursor", "#5ad1ff"),
+      cursorAccent: v("--terminal-cursor-accent", "#181c23"),
+      selectionBackground: v("--terminal-selection-bg", "rgba(124,92,255,0.35)"),
+      black: v("--terminal-black", "#1e232c"),
+      red: v("--terminal-red", "#f25f5c"),
+      green: v("--terminal-green", "#4ade80"),
+      yellow: v("--terminal-yellow", "#f5b14c"),
+      blue: v("--terminal-blue", "#82aaff"),
+      magenta: v("--terminal-magenta", "#c792ea"),
+      cyan: v("--terminal-cyan", "#5ad1ff"),
+      white: v("--terminal-white", "#b6bcc8"),
+      brightBlack: v("--terminal-bright-black", "#545b69"),
+      brightRed: v("--terminal-bright-red", "#f07178"),
+      brightGreen: v("--terminal-bright-green", "#c3e88d"),
+      brightYellow: v("--terminal-bright-yellow", "#ffcb6b"),
+      brightBlue: v("--terminal-bright-blue", "#7c5cff"),
+      brightMagenta: v("--terminal-bright-magenta", "#c792ea"),
+      brightCyan: v("--terminal-bright-cyan", "#89ddff"),
+      brightWhite: v("--terminal-bright-white", "#e6e8ee"),
+    };
+  };
+
   // Hot-update visual settings without recreating the PTY session.
   useEffect(() => {
     const term = termRef.current;
@@ -45,6 +76,17 @@ export default function TerminalView({ sessionId, cwd }: Props) {
     }
   }, [editorFontFamily, terminalFontSize, terminalCursorBlink, sessionId]);
 
+  // Re-apply terminal theme whenever the global theme changes.
+  useEffect(() => {
+    const apply = () => {
+      const term = termRef.current;
+      if (!term) return;
+      term.options.theme = readThemeFromCss();
+    };
+    window.addEventListener("theme:applied", apply);
+    return () => window.removeEventListener("theme:applied", apply);
+  }, []);
+
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
@@ -57,29 +99,7 @@ export default function TerminalView({ sessionId, cwd }: Props) {
       cursorStyle: "bar",
       allowProposedApi: true,
       scrollback: 5000,
-      theme: {
-        background: "#181c23",
-        foreground: "#e6e8ee",
-        cursor: "#5ad1ff",
-        cursorAccent: "#181c23",
-        selectionBackground: "rgba(124,92,255,0.35)",
-        black: "#1e232c",
-        red: "#f25f5c",
-        green: "#4ade80",
-        yellow: "#f5b14c",
-        blue: "#82aaff",
-        magenta: "#c792ea",
-        cyan: "#5ad1ff",
-        white: "#b6bcc8",
-        brightBlack: "#545b69",
-        brightRed: "#f07178",
-        brightGreen: "#c3e88d",
-        brightYellow: "#ffcb6b",
-        brightBlue: "#7c5cff",
-        brightMagenta: "#c792ea",
-        brightCyan: "#89ddff",
-        brightWhite: "#e6e8ee",
-      },
+      theme: readThemeFromCss(),
     });
 
     const fit = new FitAddon();

@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
+import { DEFAULT_KEYMAP } from "../config/keymap";
 
 /**
  * User preferences for the IDE. Persisted to localStorage so they survive
@@ -38,6 +39,10 @@ export interface UserSettings {
   // Extensibility
   themeId: string;             // id of the active theme manifest
   enabledPlugins: string[];    // ids of plugins activated at startup
+
+  // Keyboard
+  /** action id -> normalised combo (e.g. "view:toggle-sidebar" -> "ctrl+b"). */
+  keymap: Record<string, string>;
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -62,6 +67,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   themeId: "cosmos-dark",
   enabledPlugins: ["builtin.hello-world", "builtin.clock"],
+
+  keymap: { ...DEFAULT_KEYMAP },
 };
 
 const STORAGE_KEY = "my-code-editor:user-settings:v1";
@@ -81,7 +88,11 @@ function loadInitial(): UserSettings {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw);
-    return { ...DEFAULT_SETTINGS, ...parsed };
+    const merged: UserSettings = { ...DEFAULT_SETTINGS, ...parsed };
+    // Merge keymap so newly-added actions still have defaults even when
+    // the persisted file pre-dates them.
+    merged.keymap = { ...DEFAULT_KEYMAP, ...(parsed?.keymap ?? {}) };
+    return merged;
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -114,6 +125,11 @@ export function UserSettingsProvider({ children }: { children: ReactNode }) {
       /* quota / private mode — ignore */
     }
     applyToRoot(settings);
+    // Notify listeners (useAppShortcuts, plugins) without forcing them
+    // to be inside the React tree.
+    window.dispatchEvent(
+      new CustomEvent("user-settings:changed", { detail: settings }),
+    );
   }, [settings]);
 
   const set = useCallback(

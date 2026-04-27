@@ -314,6 +314,92 @@
   padding: 18px !important;
 }
 
+/* Editable bindings ---------------------------------------------- */
+.set-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.set-shortcuts__group {
+  margin-top: 14px;
+}
+.set-shortcuts__group-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-3);
+  margin: 0 0 4px 2px;
+  font-weight: 600;
+}
+.set-shortcuts__label {
+  width: 55%;
+}
+.set-shortcuts__action-id {
+  font-size: 10.5px;
+  color: var(--text-4);
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+.set-shortcuts__combo {
+  text-align: right;
+}
+.set-shortcuts__binding {
+  appearance: none;
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: 6px;
+  padding: 3px 6px;
+  cursor: pointer;
+  color: var(--text-1);
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+.set-shortcuts__binding:hover {
+  border-color: var(--border-2);
+  background: var(--bg-3);
+}
+.set-shortcuts__binding.is-editing {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  animation: set-shortcuts-pulse 1s ease-in-out infinite;
+}
+.set-shortcuts__binding.is-empty {
+  color: var(--text-4);
+  font-style: italic;
+}
+.set-shortcuts__plus {
+  margin: 0 2px;
+  color: var(--text-4);
+}
+.set-shortcuts__row-actions {
+  text-align: right;
+  white-space: nowrap;
+  width: 1%;
+}
+.set-shortcuts__row-actions .settings__ghost {
+  margin-left: 6px;
+  font-size: 11px;
+  padding: 2px 8px;
+}
+.set-shortcuts__error {
+  margin: 6px 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--danger);
+  font-size: 12px;
+  border: 1px solid var(--border-2);
+}
+@keyframes set-shortcuts-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
 /* About ----------------------------------------------------------- */
 .set-about p { margin: 4px 0; font-size: 13px; color: var(--text-2); }
 .set-about__muted { color: var(--text-3); }

@@ -26,6 +26,9 @@ export function applyTheme(theme: ThemeManifest): void {
   appliedVars = next;
   root.setAttribute(ATTR, theme.id);
   root.setAttribute(TYPE_ATTR, theme.type);
+  // Notify reactive consumers (e.g. xterm.js terminal) that the
+  // CSS variable cascade has changed. They can re-read computed styles.
+  window.dispatchEvent(new CustomEvent("theme:applied", { detail: { id: theme.id, type: theme.type } }));
 }
 
 /** Validate & coerce a parsed JSON object into a ThemeManifest. Throws on bad shape. */

@@ -4,6 +4,7 @@
   background: var(--bg-2);
   min-width: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .sidebar__search {

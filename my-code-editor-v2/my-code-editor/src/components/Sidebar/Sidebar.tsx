@@ -4,6 +4,7 @@ import { I } from "../Icons";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { extOf, readDir } from "../../services/fs";
 import type { DirEntry } from "../../services/fs";
+import ResizeHandle from "../ResizeHandle/ResizeHandle";
 import "./Sidebar.css";
 
 /* ---------------------------------------------------------------- */
@@ -191,9 +192,11 @@ function FileNode({
 
 interface SidebarProps {
   onClose?: () => void;
+  width?: number;
+  onResize?: (w: number) => void;
 }
 
-export default function Sidebar({ onClose }: SidebarProps = {}) {
+export default function Sidebar({ onClose, width, onResize }: SidebarProps = {}) {
   const { activeTab, openFile, openFolder, closeFolder, rootPath, rootName, tabs } = useWorkspace();
 
   // Tree state — refs for in-place mutation, with a `tick` to re-render.
@@ -393,6 +396,9 @@ export default function Sidebar({ onClose }: SidebarProps = {}) {
           {dirtyCount > 0 ? `${dirtyCount} unsaved` : "clean"}
         </span>
       </div>
+      {width !== undefined && onResize && (
+        <ResizeHandle edge="right" size={width} onResize={onResize} min={180} max={600} />
+      )}
     </aside>
   );
 }

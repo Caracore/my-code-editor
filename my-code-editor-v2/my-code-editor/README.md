@@ -30,7 +30,7 @@ Dans mon IDE projet ajoutons le drag and drop. DnDkit ? Pour les tabs la sidebar
 - >> Themes
 - rust lib git2 pour mettre en place le git compatible avec l'IDE.
 - >> Faire un système de connexion. + API
-- IA Intégrer
+- IA Intégrer (Copilot)
 - >> Package de pip, cargo, go etc à mettre en place.
 - Debug + breakpoint + dirtdot (save indicator) couleur dans le gutter
 - Remplacer tout hardcoder en config personnalisable (objectif de l'IDE) + interractive :)!
@@ -51,4 +51,4 @@ Dans mon IDE projet ajoutons le drag and drop. DnDkit ? Pour les tabs la sidebar
 # FAIRE LE PLAN POUR LE DESIGN ET BACKEND DE L'IDE
 
 Prompt: 
-Rends les fenetres resizable comme le bottompanel (terminal) + Rightpanel, sidebar, etc. Mais pas touche à la fenêtre.
+<!-- Rends les fenetres resizable comme le bottompanel (terminal) + Rightpanel, sidebar, etc. Mais pas touche à la fenêtre. -->
