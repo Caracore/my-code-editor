@@ -4,7 +4,7 @@ import "./styles/layout.css";
 import { useCallback, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import TitleBar from "./components/TitleBar/TitleBar";
-import ActivityBar from "./components/ActivityBar/ActivityBar";
+import ActivityBar, { type SidebarView } from "./components/ActivityBar/ActivityBar";
 import Sidebar from "./components/Sidebar/Sidebar";
 import EditorArea from "./components/CodeMirror6/EditorArea";
 import RightPanel from "./components/RightPanel/RightPanel";
@@ -23,6 +23,7 @@ export default function App() {
   const [showRight, setShowRight] = useState(true);
   const [showBottom, setShowBottom] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [sidebarView, setSidebarView] = useState<SidebarView>("files");
 
   // Panel sizes (px). Drag handles update these via useResize.
   const [sidebarW, setSidebarW] = useState(260);
@@ -98,11 +99,20 @@ export default function App() {
           <div className="app__body">
             <ActivityBar
               sidebarOpen={showSidebar}
+              sidebarView={sidebarView}
+              onSelectSidebarView={setSidebarView}
               onToggleSidebar={toggleSidebar}
               onOpenSettings={openSettings}
               onOpenExtensions={openExtensions}
             />
-            {showSidebar && <Sidebar onClose={toggleSidebar} width={sidebarW} onResize={setSidebarW} />}
+            {showSidebar && (
+              <Sidebar
+                view={sidebarView}
+                onClose={toggleSidebar}
+                width={sidebarW}
+                onResize={setSidebarW}
+              />
+            )}
             <main className="app__main">
               <div className="app__editor-area">
                 <EditorArea />

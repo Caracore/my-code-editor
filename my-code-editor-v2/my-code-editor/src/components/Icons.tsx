@@ -242,6 +242,17 @@ export const I = {
       <path d="M3 20v-4h4" />
     </svg>
   ),
+  CheckSquare: ({ size, ...p }: IconProps) => (
+    <svg {...base(size)} {...p}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <polyline points="8 12 11 15 16 9" />
+    </svg>
+  ),
+  Square: ({ size, ...p }: IconProps) => (
+    <svg {...base(size)} {...p}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+    </svg>
+  ),
 };
 
 export const Logo = ({ size = 20 }: { size?: number }) => (

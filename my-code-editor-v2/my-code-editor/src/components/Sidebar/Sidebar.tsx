@@ -15,6 +15,7 @@ import {
 import type { DirEntry } from "../../services/fs";
 import ResizeHandle from "../ResizeHandle/ResizeHandle";
 import ContextMenu, { type ContextMenuItem } from "../ContextMenu/ContextMenu";
+import TodoListView from "./TodoListView";
 import "./Sidebar.css";
 
 /** Target of an open context-menu request (or `null` for empty-area). */
@@ -221,12 +222,14 @@ function FileNode({
 /* ---------------------------------------------------------------- */
 
 interface SidebarProps {
+  /** Which view to show in the sidebar body. Defaults to "files". */
+  view?: "files" | "todo";
   onClose?: () => void;
   width?: number;
   onResize?: (w: number) => void;
 }
 
-export default function Sidebar({ onClose, width, onResize }: SidebarProps = {}) {
+export default function Sidebar({ view = "files", onClose, width, onResize }: SidebarProps = {}) {
   const { activeTab, openFile, openFolder, closeFolder, rootPath, rootName, tabs, closeTab } = useWorkspace();
 
   // Tree state — refs for in-place mutation, with a `tick` to re-render.
@@ -519,7 +522,32 @@ export default function Sidebar({ onClose, width, onResize }: SidebarProps = {})
   const selectedPath = activeTab?.path ?? null;
   const dirtyCount = tabs.filter((t) => t.dirty).length;
 
-  // Patch FolderView to apply search filter on the fly
+  // -------- Todo view -----------------------------------------------------
+  if (view === "todo") {
+    return (
+      <aside className="sidebar">
+        <div className="panel-header">
+          <span>TO-DO LIST</span>
+          <div className="panel-header__actions">
+            {onClose && (
+              <button
+                className="panel-header__btn"
+                title="Hide Sidebar (Ctrl+B)"
+                onClick={onClose}
+              >
+                <I.Close size={13} />
+              </button>
+            )}
+          </div>
+        </div>
+        <TodoListView />
+        {width !== undefined && onResize && (
+          <ResizeHandle edge="right" size={width} onResize={onResize} min={180} max={600} />
+        )}
+      </aside>
+    );
+  }
+  // -------- Files view (default) -----------------------------------------
   const renderRoot = () => {
     if (!rootPath) return null;
     const entries = stateRef.current.cache.get(rootPath);

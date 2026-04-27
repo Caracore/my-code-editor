@@ -12,7 +12,6 @@
 ## SIDEBAR - LEFT BAR
 - Faire l'activity bar la class="activitybar" pour être interactive et Personnalisable :)
 
-+ ajout de todolist à la sidebar...
 
 - >> Faire illuminé le fichier dans l'arborescence sélectionner dans le tabs bar et éditeur instance ...
 
