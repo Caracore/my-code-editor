@@ -7,6 +7,7 @@ import {
 } from "../../context/UserSettingsContext";
 import type { UserSettings } from "../../context/UserSettingsContext";
 import { usePlugins } from "../../plugins/PluginsContext";
+import { lspManager } from "../../lsp";
 import {
   KEYMAP_DEFS,
   DEFAULT_KEYMAP,
@@ -346,6 +347,20 @@ function BehaviourSection({ settings, set, filter }: SectionProps) {
       </Field>
       <Field label="Discord Rich Presence" hint="Show what you're coding in Discord" filter={filter}>
         <Toggle checked={settings.discordRpc} onChange={(v) => set("discordRpc", v)} />
+      </Field>
+      <Field
+        label="Language servers (LSP)"
+        hint="Diagnostics, completion and inlay hints from rust-analyzer, pylsp, typescript-language-server…"
+        filter={filter}
+      >
+        <Toggle
+          checked={settings.lspEnabled}
+          onChange={(v) => {
+            set("lspEnabled", v);
+            // Free running servers immediately when the user disables LSP.
+            if (!v) void lspManager.stopAllServers();
+          }}
+        />
       </Field>
     </section>
   );

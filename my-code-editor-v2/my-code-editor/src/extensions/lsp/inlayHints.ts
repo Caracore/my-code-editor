@@ -270,10 +270,11 @@ export function createInlayHintsProvider(
           const range = getVisibleRange(view);
           const hints = await lspManager.getInlayHints(filePath, range);
           
-          // Only update if we got hints and view is still valid
-          if (hints.length > 0 && !view.destroyed) {
+          // Only update if view is still mounted in the DOM.
+          const alive = view.dom.isConnected;
+          if (hints.length > 0 && alive) {
             updateInlayHints(view, hints);
-          } else if (hints.length === 0 && !view.destroyed) {
+          } else if (hints.length === 0 && alive) {
             // Clear hints if none returned
             updateInlayHints(view, []);
           }

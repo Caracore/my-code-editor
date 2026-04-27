@@ -10,6 +10,9 @@ use terminal::{
 mod extensions;
 use extensions::{extensions_dir, list_extensions, read_extension};
 
+mod lsp;
+use lsp::{send_lsp_notification, send_lsp_request, start_lsp, stop_lsp, LspState};
+
 #[derive(Serialize)]
 struct DirEntry {
     name: String,
@@ -87,6 +90,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(TerminalState::default())
+        .manage(LspState::default())
         .invoke_handler(tauri::generate_handler![
             read_dir,
             read_file,
@@ -99,6 +103,10 @@ pub fn run() {
             terminal_write,
             terminal_resize,
             terminal_close,
+            start_lsp,
+            stop_lsp,
+            send_lsp_request,
+            send_lsp_notification,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

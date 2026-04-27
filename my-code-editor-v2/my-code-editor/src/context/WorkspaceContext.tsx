@@ -9,6 +9,7 @@ import {
   readFile,
   writeFile,
 } from "../services/fs";
+import { lspManager } from "../lsp";
 
 /* ============================================================
    Types
@@ -476,6 +477,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     try {
       await readDir(folder);
       setRootPath(folder);
+      lspManager.setRootPath(folder);
     } catch (e) {
       console.error("Cannot open folder:", e);
     }
@@ -487,6 +489,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setPanes([{ id: ROOT_PANE_ID, tabIds: [], activeTabId: null }]);
     setLayout({ cols: 1, rows: 1, panes: { tl: ROOT_PANE_ID } });
     setActivePaneId(ROOT_PANE_ID);
+    void lspManager.stopAllServers();
   }, []);
 
   useEffect(() => {

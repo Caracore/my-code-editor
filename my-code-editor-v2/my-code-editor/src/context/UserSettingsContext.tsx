@@ -35,6 +35,8 @@ export interface UserSettings {
   autoSave: boolean;
   confirmOnExit: boolean;
   discordRpc: boolean;
+  /** When true, the editor talks to language servers (diagnostics, completion, inlay hints). */
+  lspEnabled: boolean;
 
   // Extensibility
   themeId: string;             // id of the active theme manifest
@@ -64,6 +66,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   autoSave: false,
   confirmOnExit: true,
   discordRpc: false,
+  lspEnabled: true,
 
   themeId: "cosmos-dark",
   enabledPlugins: ["builtin.hello-world", "builtin.clock"],

@@ -47,6 +47,15 @@ import { cpp } from "@codemirror/lang-cpp";
 import { smoothCaret } from "../../cursor/cursorlayer";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { useUserSettings } from "../../context/UserSettingsContext";
+import { lspManager } from "../../lsp";
+import type { Diagnostic } from "../../lsp";
+import {
+  lspLinter,
+  updateDiagnostics,
+  lspInlayHints,
+  createInlayHintsProvider,
+  createLspCompletionProvider,
+} from "../../extensions/lsp";
 import Welcome from "../Welcome/Welcome";
 import EditorTabs from "../EditorTabs/EditorTabs";
 import "./EditorArea.css";
@@ -338,6 +347,7 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const filePathRef = useRef(filePath);
   const { settings } = useUserSettings();
   const {
     editorFontSize,
@@ -346,12 +356,40 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
     editorLineNumbers,
     editorWordWrap,
     editorActiveLine,
+    lspEnabled,
   } = settings;
   const { editorExtensions: pluginEditorExtensions } = usePlugins();
+
+  // Map editor language id -> LSP language id (or null when unsupported).
+  const lspLanguage = ((): string | null => {
+    switch (language) {
+      case "py":
+      case "python":
+        return "python";
+      case "rs":
+      case "rust":
+        return "rust";
+      case "ts":
+      case "tsx":
+      case "typescript":
+        return "typescript";
+      case "js":
+      case "jsx":
+      case "javascript":
+        return "javascript";
+      default:
+        return null;
+    }
+  })();
+  const useLsp = lspEnabled && lspLanguage !== null;
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    filePathRef.current = filePath;
+  }, [filePath]);
 
   // Re-create the editor when the language or any rendering-related
   // user setting changes.
@@ -385,6 +423,9 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
         activateOnTyping: true,
         maxRenderedOptions: 30,
         defaultKeymap: true,
+        override: useLsp && lspLanguage
+          ? [createLspCompletionProvider(lspLanguage, () => filePathRef.current)]
+          : undefined,
       }),
       keymap.of([
         indentWithTab,
@@ -401,6 +442,13 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
       buildEditorTheme({ fontSize: editorFontSize, fontFamily: editorFontFamily }),
       smoothCaret,
       updateListener,
+      ...(useLsp
+        ? [
+            lspLinter(),
+            lspInlayHints(),
+            createInlayHintsProvider(() => filePathRef.current),
+          ]
+        : []),
       ...pluginEditorExtensions,
     ];
 
@@ -426,6 +474,8 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
     editorWordWrap,
     editorActiveLine,
     pluginEditorExtensions,
+    useLsp,
+    lspLanguage,
   ]);
 
   // Sync external value (typing in the tab, switching tabs, etc.)
@@ -439,6 +489,37 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
       });
     }
   }, [value]);
+
+  // ------------------------------------------------------------
+  // LSP document lifecycle: open / update (debounced) / close.
+  // ------------------------------------------------------------
+  useEffect(() => {
+    if (!useLsp || !lspLanguage || !filePath) return;
+    let cancelled = false;
+    void lspManager.openDocument(filePath, lspLanguage, value);
+    const unsubscribe = lspManager.onDiagnostics((diagPath: string, diags: Diagnostic[]) => {
+      if (cancelled) return;
+      if (diagPath !== filePath) return;
+      const view = viewRef.current;
+      if (view) updateDiagnostics(view, diags);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+      void lspManager.closeDocument(filePath);
+    };
+    // value is intentionally excluded — opening uses the initial buffer,
+    // subsequent edits are pushed by the update effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filePath, lspLanguage, useLsp]);
+
+  useEffect(() => {
+    if (!useLsp || !lspLanguage || !filePath) return;
+    const handle = setTimeout(() => {
+      void lspManager.updateDocument(filePath, value);
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [value, filePath, lspLanguage, useLsp]);
 
   /* ------------------------------------------------------------
      Interactive breadcrumbs derived from the active tab's path.

@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { I } from "../Icons";
 import TerminalView from "./TerminalView";
+import ProblemsView, { useProblemsCount } from "./ProblemsView";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import { useUserSettings } from "../../context/UserSettingsContext";
 import ResizeHandle from "../ResizeHandle/ResizeHandle";
 import "./BottomPanel.css";
 
 const TABS = [
   { id: "terminal", label: "Terminal", icon: <I.Terminal size={13} /> },
-  { id: "problems", label: "Problems", icon: <I.Error size={13} />, badge: 2 },
+  { id: "problems", label: "Problems", icon: <I.Error size={13} /> },
   { id: "output",   label: "Output",   icon: <I.More size={13} /> },
   { id: "debug",    label: "Debug",    icon: <I.Debug size={13} /> },
   { id: "git",      label: "Git",      icon: <I.Git size={13} /> },
@@ -25,6 +27,8 @@ interface BottomPanelProps {
 export default function BottomPanel({ onClose, height, onResize }: BottomPanelProps = {}) {
   const [tab, setTab] = useState("terminal");
   const { rootPath } = useWorkspace();
+  const { settings } = useUserSettings();
+  const problemsCount = useProblemsCount();
 
   // One or more PTY-backed terminal sessions. Always keep at least one.
   const initialId = useRef(newTermId()).current;
@@ -84,17 +88,20 @@ export default function BottomPanel({ onClose, height, onResize }: BottomPanelPr
         <ResizeHandle edge="top" size={height} onResize={onResize} min={120} max={800} />
       )}
       <div className="bottompanel__tabs">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            className={`bp-tab ${tab === t.id ? "is-active" : ""}`}
-            onClick={() => setTab(t.id)}
-          >
-            {t.icon}
-            <span>{t.label}</span>
-            {t.badge && <span className="bp-tab__badge">{t.badge}</span>}
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const badge = t.id === "problems" && problemsCount > 0 ? problemsCount : null;
+          return (
+            <button
+              key={t.id}
+              className={`bp-tab ${tab === t.id ? "is-active" : ""}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.icon}
+              <span>{t.label}</span>
+              {badge !== null && <span className="bp-tab__badge">{badge}</span>}
+            </button>
+          );
+        })}
         <div style={{ flex: 1 }} />
         <button className="bp-iconbtn" title="New terminal" onClick={addTerminal}>
           <I.Plus size={13} />
@@ -142,24 +149,7 @@ export default function BottomPanel({ onClose, height, onResize }: BottomPanelPr
         </div>
       )}
 
-      {tab === "problems" && (
-        <div className="problems">
-          <div className="problem-row problem-row--err">
-            <I.Error size={13} />
-            <span className="problem-row__file">EditorArea.tsx</span>
-            <span className="problem-row__line">17:24</span>
-            <span className="problem-row__msg">Property 'minimap' does not exist on type 'Document'.</span>
-            <span className="problem-row__src">ts(2339)</span>
-          </div>
-          <div className="problem-row problem-row--warn">
-            <I.Warn size={13} />
-            <span className="problem-row__file">App.tsx</span>
-            <span className="problem-row__line">3:10</span>
-            <span className="problem-row__msg">'useEffect' is declared but its value is never read.</span>
-            <span className="problem-row__src">ts(6133)</span>
-          </div>
-        </div>
-      )}
+      {tab === "problems" && <ProblemsView disabled={!settings.lspEnabled} />}
 
       {tab !== "terminal" && tab !== "problems" && (
         <div className="bp-empty">No content for "{tab}" yet.</div>

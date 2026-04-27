@@ -1,0 +1,5 @@
+src/hooks/useFileSystem.ts(3,31): error TS1261: Already included file name 'C:/Users/jm214/Desktop/temp/my-code-editor/my-code-editor/my-code-editor-v2/my-code-editor/src/types/FileNode.ts' differs from file name 'C:/Users/jm214/Desktop/temp/my-code-editor/my-code-editor/my-code-editor-v2/my-code-editor/src/types/fileNode.ts' only in casing.
+  The file is in the program because:
+    Imported via "../types/FileNode" from file 'C:/Users/jm214/Desktop/temp/my-code-editor/my-code-editor/my-code-editor-v2/my-code-editor/src/hooks/useFileSystem.ts'
+    Imported via "../types/FileNode" from file 'C:/Users/jm214/Desktop/temp/my-code-editor/my-code-editor/my-code-editor-v2/my-code-editor/src/hooks/useFileTree.ts'
+    Matched by include pattern 'src' in 'C:/Users/jm214/Desktop/temp/my-code-editor/my-code-editor/my-code-editor-v2/my-code-editor/tsconfig.json'
