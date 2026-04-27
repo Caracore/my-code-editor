@@ -16,6 +16,9 @@ use lsp::{send_lsp_notification, send_lsp_request, start_lsp, stop_lsp, LspState
 mod discord;
 use discord::{discord_connect, discord_disconnect, discord_update, DiscordState};
 
+mod search;
+use search::{search_files, search_in_files};
+
 #[derive(Serialize)]
 struct DirEntry {
     name: String,
@@ -165,6 +168,8 @@ pub fn run() {
             discord_connect,
             discord_update,
             discord_disconnect,
+            search_files,
+            search_in_files,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

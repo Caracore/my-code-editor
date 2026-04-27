@@ -142,6 +142,32 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
     return () => window.removeEventListener("menu-action", handler as EventListener);
   }, []);
 
+  // Listen for "go to line/column" requests dispatched after a Search
+  // Everywhere result is clicked. Each editor instance only reacts when
+  // the request targets *its* file, so multiple panes don't fight.
+  useEffect(() => {
+    const onGoto = (e: Event) => {
+      const detail = (e as CustomEvent<{ filePath: string; line: number; column?: number }>).detail;
+      if (!detail) return;
+      const view = viewRef.current;
+      if (!view) return;
+      // Compare only when both sides have a path — guards against firing
+      // into a freshly mounted editor whose path ref hasn't synced yet.
+      if (filePathRef.current && detail.filePath !== filePathRef.current) return;
+      const lineNo = Math.max(1, Math.min(view.state.doc.lines, detail.line | 0));
+      const lineObj = view.state.doc.line(lineNo);
+      const col = Math.max(1, detail.column ?? 1);
+      const pos = Math.min(lineObj.from + col - 1, lineObj.to);
+      view.dispatch({
+        selection: { anchor: pos },
+        effects: EditorView.scrollIntoView(pos, { y: "center" }),
+      });
+      view.focus();
+    };
+    window.addEventListener("editor:goto-line", onGoto as EventListener);
+    return () => window.removeEventListener("editor:goto-line", onGoto as EventListener);
+  }, []);
+
   useEffect(() => {
     if (!editorRef.current) return;
 

@@ -11,6 +11,7 @@ import RightPanel from "./components/RightPanel/RightPanel";
 import BottomPanel from "./components/BottomPanel/BottomPanel";
 import StatusBar from "./components/StatusBar/StatusBar";
 import CommandPalette from "./components/CommandPalette/CommandPalette";
+import SearchEverywhere from "./components/SearchEverywhere/SearchEverywhere";
 import SettingsPage from "./components/Settings/SettingsPage";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { UserSettingsProvider } from "./context/UserSettingsContext";
@@ -129,6 +130,7 @@ export default function App() {
             onOpenSettings={openSettings}
           />
           <CommandPalette />
+          <SearchEverywhere />
           {showSettings && <SettingsPage onClose={closeSettings} />}
         </div>
         </AppDndProvider>

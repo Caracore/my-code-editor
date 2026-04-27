@@ -73,6 +73,53 @@ export async function pickFile(): Promise<string | null> {
   return selected as string;
 }
 
+/** Result of the workspace-wide file/folder name search. */
+export interface FileSearchHit {
+  path: string;
+  name: string;
+  is_dir: boolean;
+}
+
+/** Result of a recursive content (`grep -r`) search. */
+export interface GrepHit {
+  path: string;
+  name: string;
+  line: number;
+  column: number;
+  preview: string;
+}
+
+/**
+ * Search the workspace tree for files/folders whose name contains `query`
+ * (case-insensitive). Returns at most `limit` hits (default 200, capped
+ * server-side at 2000). Noisy folders (`node_modules`, `.git`, …) are
+ * skipped.
+ */
+export async function searchFiles(
+  root: string,
+  query: string,
+  limit = 200,
+): Promise<FileSearchHit[]> {
+  return invoke<FileSearchHit[]>("search_files", { root, query, limit });
+}
+
+/**
+ * Recursive grep across the workspace. Returns one entry per matching
+ * line. Files larger than ~2 MiB are skipped.
+ */
+export async function searchInFiles(
+  root: string,
+  query: string,
+  options: { caseSensitive?: boolean; maxResults?: number } = {},
+): Promise<GrepHit[]> {
+  return invoke<GrepHit[]>("search_in_files", {
+    root,
+    query,
+    caseSensitive: options.caseSensitive ?? false,
+    maxResults: options.maxResults ?? 500,
+  });
+}
+
 /** Get the basename (last segment) of a path. Handles both \ and /. */
 export function basename(path: string): string {
   const norm = path.replace(/\\/g, "/").replace(/\/+$/, "");
