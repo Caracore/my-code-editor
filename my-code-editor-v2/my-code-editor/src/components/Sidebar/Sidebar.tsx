@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { I } from "../Icons";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { extOf, readDir } from "../../services/fs";
@@ -98,6 +99,10 @@ function DirNode({
   selectedPath: string | null; onFileClick: (entry: DirEntry) => void;
 }) {
   const isOpen = state.open.has(entry.path);
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: `folder::${entry.path}`,
+    data: { type: "folder", path: entry.path },
+  });
 
   const toggle = async () => {
     if (state.open.has(entry.path)) {
@@ -126,7 +131,8 @@ function DirNode({
   return (
     <div className="tree__node">
       <div
-        className="tree__row tree__row--folder"
+        ref={setDropRef}
+        className={`tree__row tree__row--folder ${isOver ? "is-drop-target" : ""}`}
         style={{ paddingLeft: 8 + depth * 14 }}
         onClick={toggle}
         title={entry.path}
@@ -157,12 +163,21 @@ function FileNode({
   entry: DirEntry; depth: number; selected: boolean; onClick: () => void;
 }) {
   const ext = extOf(entry.name);
+  const {
+    attributes, listeners, setNodeRef, isDragging,
+  } = useDraggable({
+    id: `file::${entry.path}`,
+    data: { type: "file", path: entry.path, name: entry.name },
+  });
   return (
     <div
-      className={`tree__row ${selected ? "is-selected" : ""}`}
+      ref={setNodeRef}
+      className={`tree__row ${selected ? "is-selected" : ""} ${isDragging ? "is-dragging" : ""}`}
       style={{ paddingLeft: 8 + depth * 14 + 14 }}
       onClick={onClick}
       title={entry.path}
+      {...attributes}
+      {...listeners}
     >
       <FileGlyph ext={ext} />
       <span className="tree__label">{entry.name}</span>
@@ -219,6 +234,27 @@ export default function Sidebar({ onClose }: SidebarProps = {}) {
         bump();
       });
   }, [rootPath, bump]);
+
+  // Refresh affected folders after fs mutations (drag & drop moves)
+  useEffect(() => {
+    const onRefresh = async (e: Event) => {
+      const detail = (e as CustomEvent<{ folders: string[] }>).detail;
+      if (!detail?.folders?.length) return;
+      const s = stateRef.current;
+      for (const folder of detail.folders) {
+        if (!folder) continue;
+        try {
+          const entries = await readDir(folder);
+          s.cache.set(folder, entries);
+        } catch (err) {
+          console.error("refresh readDir failed:", err);
+        }
+      }
+      bump();
+    };
+    window.addEventListener("sidebar:refresh-folders", onRefresh as EventListener);
+    return () => window.removeEventListener("sidebar:refresh-folders", onRefresh as EventListener);
+  }, [bump]);
 
   const onFileClick = useCallback(
     (entry: DirEntry) => {
@@ -343,16 +379,7 @@ export default function Sidebar({ onClose }: SidebarProps = {}) {
           </div>
 
           <div className="sidebar__tree">
-            <div
-              className="tree__row tree__row--folder tree__row--root"
-              title={rootPath}
-            >
-              <span className="tree__chev is-open">
-                <I.ChevronRight size={12} />
-              </span>
-              <I.FolderOpen size={14} />
-              <span className="tree__label">{rootName}</span>
-            </div>
+            <RootDropRow rootPath={rootPath} rootName={rootName} />
             {renderRoot()}
           </div>
         </>
@@ -367,5 +394,31 @@ export default function Sidebar({ onClose }: SidebarProps = {}) {
         </span>
       </div>
     </aside>
+  );
+}
+
+function RootDropRow({
+  rootPath,
+  rootName,
+}: {
+  rootPath: string;
+  rootName: string | null;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `folder::${rootPath}`,
+    data: { type: "folder", path: rootPath },
+  });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`tree__row tree__row--folder tree__row--root ${isOver ? "is-drop-target" : ""}`}
+      title={rootPath}
+    >
+      <span className="tree__chev is-open">
+        <I.ChevronRight size={12} />
+      </span>
+      <I.FolderOpen size={14} />
+      <span className="tree__label">{rootName}</span>
+    </div>
   );
 }

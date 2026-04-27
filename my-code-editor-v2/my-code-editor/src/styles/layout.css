@@ -37,8 +37,8 @@
 }
 
 .app__editor-area {
-  display: grid;
-  grid-template-rows: var(--tabs-h) 1fr;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   min-width: 0;
 }
@@ -66,3 +66,93 @@
 }
 .panel-header__btn:hover { background: var(--bg-4); color: var(--text-1); }
 
+/* ============================================================
+   Editor split grid (1×1, 1×2, 2×1, 2×2 panes)
+   ============================================================ */
+.editor-grid {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.editor-grid__cell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: var(--bg-3);
+  position: relative;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  transition: outline-color .15s;
+}
+.editor-grid__cell.is-active {
+  outline-color: var(--accent, #7c5cff);
+}
+.editor-grid__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-3);
+  font-size: 12.5px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 8px,
+      rgba(255,255,255,0.015) 8px 16px
+    ),
+    var(--bg-3);
+}
+.editor-grid__empty small { color: var(--text-4); font-size: 11px; }
+
+/* ============================================================
+   DnD: drop target hints + overlay
+   ============================================================ */
+.tabs__dropzone {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  position: relative;
+}
+.tabs__dropzone.is-over {
+  background: rgba(124, 92, 255, 0.10);
+  box-shadow: inset 0 -2px 0 var(--accent, #7c5cff);
+}
+.tabs__empty {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11.5px;
+  color: var(--text-4);
+  font-style: italic;
+}
+.tree__row.is-drop-target {
+  background: rgba(124, 92, 255, 0.18) !important;
+  outline: 1px solid var(--accent, #7c5cff);
+  outline-offset: -1px;
+}
+.tree__row.is-dragging { opacity: 0.4; }
+
+.dnd-overlay {
+  pointer-events: none;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-2, #181c23);
+  color: var(--text-1, #e6e8ee);
+  font-size: 12px;
+  border: 1px solid var(--accent, #7c5cff);
+  box-shadow: 0 4px 16px rgba(0,0,0,.45);
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dnd-overlay--tab { font-weight: 500; }
+.dnd-overlay--file { font-style: italic; }
+
+/* Active pane gets a slightly more prominent tab strip */
+.tabs.tabs--active-pane {
+  box-shadow: inset 0 -1px 0 var(--accent, #7c5cff);
+}

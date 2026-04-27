@@ -23,6 +23,25 @@ export async function writeFile(path: string, contents: string): Promise<void> {
   return invoke<void>("write_file", { path, contents });
 }
 
+/** Move/rename a file or folder. Returns the new absolute path. */
+export async function movePath(from: string, to: string): Promise<string> {
+  return invoke<string>("move_path", { from, to });
+}
+
+/** Return the parent folder of a path (handles both \ and /). */
+export function dirname(path: string): string {
+  const norm = path.replace(/\\/g, "/").replace(/\/+$/, "");
+  const idx = norm.lastIndexOf("/");
+  return idx >= 0 ? norm.slice(0, idx) : "";
+}
+
+/** Join a folder and a name using the original path's separator style. */
+export function joinPath(folder: string, name: string): string {
+  const sep = folder.includes("\\") && !folder.includes("/") ? "\\" : "/";
+  const trimmed = folder.replace(/[\\/]+$/, "");
+  return `${trimmed}${sep}${name}`;
+}
+
 /** Show the OS folder picker. Returns null if cancelled. */
 export async function pickFolder(): Promise<string | null> {
   const selected = await openDialog({ directory: true, multiple: false });

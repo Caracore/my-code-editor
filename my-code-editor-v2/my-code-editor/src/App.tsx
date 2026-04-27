@@ -6,7 +6,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import TitleBar from "./components/TitleBar/TitleBar";
 import ActivityBar from "./components/ActivityBar/ActivityBar";
 import Sidebar from "./components/Sidebar/Sidebar";
-import EditorTabs from "./components/EditorTabs/EditorTabs";
 import EditorArea from "./components/CodeMirror6/EditorArea";
 import RightPanel from "./components/RightPanel/RightPanel";
 import BottomPanel from "./components/BottomPanel/BottomPanel";
@@ -16,6 +15,7 @@ import SettingsPage from "./components/Settings/SettingsPage";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { UserSettingsProvider } from "./context/UserSettingsContext";
 import { useAppShortcuts } from "./hooks/useAppShortcuts";
+import { AppDndProvider } from "./components/dnd/AppDndProvider";
 
 export default function App() {
   const [showSidebar, setShowSidebar] = useState(true);
@@ -65,6 +65,7 @@ export default function App() {
   return (
     <UserSettingsProvider>
       <WorkspaceProvider>
+        <AppDndProvider>
         <div
           className={[
             "app",
@@ -85,7 +86,6 @@ export default function App() {
             {showSidebar && <Sidebar onClose={toggleSidebar} />}
             <main className="app__main">
               <div className="app__editor-area">
-                <EditorTabs />
                 <EditorArea />
               </div>
               {showBottom && <BottomPanel onClose={toggleBottom} />}
@@ -102,6 +102,7 @@ export default function App() {
           <CommandPalette />
           {showSettings && <SettingsPage onClose={closeSettings} />}
         </div>
+        </AppDndProvider>
       </WorkspaceProvider>
     </UserSettingsProvider>
   );

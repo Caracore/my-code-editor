@@ -8,20 +8,21 @@ type Item = {
   hint?: string;
   shortcut?: string;
   group: string;
+  action?: () => void;
 };
 
 const ITEMS: Item[] = [
-  { group: "Files",   icon: <I.File size={13} />,     title: "Go to File…",          hint: "Search files by name", shortcut: "Ctrl P" },
-  { group: "Files",   icon: <I.Plus size={13} />,     title: "New File",             shortcut: "Ctrl N" },
-  { group: "Code",    icon: <I.Search size={13} />,   title: "Find in Files",        shortcut: "Ctrl Shift F" },
-  { group: "Code",    icon: <I.Sparkle size={13} />,  title: "AI: Refactor selection", shortcut: "Ctrl Shift R" },
-  { group: "Code",    icon: <I.Ai size={13} />,       title: "AI: Generate tests" },
-  { group: "Run",     icon: <I.Play size={13} />,     title: "Run 'dev'",            shortcut: "Shift F10" },
-  { group: "Run",     icon: <I.Debug size={13} />,    title: "Debug current file",   shortcut: "Shift F9" },
-  { group: "Git",     icon: <I.Branch size={13} />,   title: "Git: Switch branch" },
-  { group: "Git",     icon: <I.Git size={13} />,      title: "Git: Commit…" },
-  { group: "Window",  icon: <I.Settings size={13} />, title: "Preferences",          shortcut: "Ctrl ," },
-  { group: "Window",  icon: <I.Terminal size={13} />, title: "Toggle Terminal",      shortcut: "Ctrl `" },
+  { group: "Files",   icon: <I.File size={13} />,     title: "Go to File…",          hint: "Search files by name", shortcut: "Ctrl P", action: () => window.dispatchEvent(new CustomEvent("fileSearch:open")) },
+  { group: "Files",   icon: <I.Plus size={13} />,     title: "New File",             shortcut: "Ctrl N", action: () => window.dispatchEvent(new CustomEvent("file:new")) },
+  { group: "Code",    icon: <I.Search size={13} />,   title: "Find in Files",        shortcut: "Ctrl Shift F", action: () => window.dispatchEvent(new CustomEvent("findInFiles:open")) },
+  { group: "Code",    icon: <I.Sparkle size={13} />,  title: "AI: Refactor selection", shortcut: "Ctrl Shift R", action: () => window.dispatchEvent(new CustomEvent("aiRefactor:open")) },
+  { group: "Code",    icon: <I.Ai size={13} />,       title: "AI: Generate tests",   shortcut: "Ctrl Shift T", action: () => window.dispatchEvent(new CustomEvent("aiGenerateTests:open")) },
+  { group: "Run",     icon: <I.Play size={13} />,     title: "Run 'dev'",            shortcut: "Shift F10", action: () => window.dispatchEvent(new CustomEvent("runCommand", { detail: "dev" })) },
+  { group: "Run",     icon: <I.Debug size={13} />,    title: "Debug current file",   shortcut: "Shift F9", action: () => window.dispatchEvent(new CustomEvent("debug:open")) },
+  { group: "Git",     icon: <I.Branch size={13} />,   title: "Git: Switch branch", action: () => window.dispatchEvent(new CustomEvent("git:switchBranch")) },
+  { group: "Git",     icon: <I.Git size={13} />,      title: "Git: Commit…", action: () => window.dispatchEvent(new CustomEvent("git:commit")) },
+  { group: "Window",  icon: <I.Settings size={13} />, title: "Preferences",          shortcut: "Ctrl ,", action: () => window.dispatchEvent(new CustomEvent("preferences:open")) },
+  { group: "Window",  icon: <I.Terminal size={13} />, title: "Toggle Terminal",      shortcut: "Ctrl `", action: () => window.dispatchEvent(new CustomEvent("terminal:toggle")) },
 ];
 
 export default function CommandPalette() {
@@ -103,7 +104,7 @@ export default function CommandPalette() {
                     key={it.title}
                     className={`cmd__item ${active ? "is-active" : ""}`}
                     onMouseEnter={() => setIdx(flatIndex)}
-                    onClick={() => setOpen(false)}
+                    onClick={() => { setOpen(false); it.action?.(); }}
                   >
                     <span className="cmd__icon">{it.icon}</span>
                     <span className="cmd__title">{it.title}</span>

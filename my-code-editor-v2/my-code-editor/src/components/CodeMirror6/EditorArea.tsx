@@ -47,6 +47,7 @@ import { smoothCaret } from "../../cursor/cursorlayer";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { useUserSettings } from "../../context/UserSettingsContext";
 import Welcome from "../Welcome/Welcome";
+import EditorTabs from "../EditorTabs/EditorTabs";
 import "./EditorArea.css";
 
 
@@ -240,33 +241,86 @@ interface EditorAreaProps {
 
 export default function EditorArea(props: EditorAreaProps = {}) {
   const ws = useWorkspace();
-  const active = ws.activeTab;
 
-  // No file open → render the Welcome page
-  if (!active && props.value === undefined) {
+  // External-content mode (used by tests / standalone embedding).
+  if (props.value !== undefined) {
+    return (
+      <EditorPane
+        value={props.value}
+        language={props.language ?? "tsx"}
+        filePath={props.filePath ?? "untitled"}
+        isDirty={false}
+        tabId={null}
+        onChange={props.onChange ?? (() => {})}
+      />
+    );
+  }
+
+  const { layout, panes, tabs, activePaneId, setActivePane, updateContent } = ws;
+
+  // No tabs anywhere & a single pane → Welcome page (the original behaviour).
+  if (tabs.length === 0 && layout.cols === 1 && layout.rows === 1) {
     return <Welcome />;
   }
 
-  // Bind to the active workspace tab unless explicit props are passed.
-  const language = props.language ?? active?.language ?? "tsx";
-  const filePath = props.filePath ?? active?.path ?? "untitled";
-  const value = props.value ?? active?.content ?? "";
-  const onChange =
-    props.onChange ??
-    ((v: string) => {
-      if (active) ws.updateContent(active.id, v);
-    });
+  const slots: Array<"tl" | "tr" | "bl" | "br"> = (() => {
+    const s: Array<"tl" | "tr" | "bl" | "br"> = ["tl"];
+    if (layout.cols === 2) s.push("tr");
+    if (layout.rows === 2) s.push("bl");
+    if (layout.cols === 2 && layout.rows === 2) s.push("br");
+    return s;
+  })();
+
+  const gridStyle: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: layout.cols === 2 ? "1fr 1fr" : "1fr",
+    gridTemplateRows: layout.rows === 2 ? "1fr 1fr" : "1fr",
+    gap: 1,
+    background: "var(--border-1)",
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
+  };
 
   return (
-    <EditorPane
-      key={active?.id ?? "external"}
-      value={value}
-      language={language}
-      filePath={filePath}
-      isDirty={!!active?.dirty}
-      tabId={active?.id ?? null}
-      onChange={onChange}
-    />
+    <div className="editor-grid" style={gridStyle}>
+      {slots.map((slot) => {
+        const paneId = layout.panes[slot];
+        if (!paneId) return null;
+        const pane = panes.find((p) => p.id === paneId);
+        if (!pane) return null;
+        const active = pane.activeTabId
+          ? tabs.find((t) => t.id === pane.activeTabId) ?? null
+          : null;
+        const isActivePane = paneId === activePaneId;
+        return (
+          <div
+            key={paneId}
+            className={`editor-grid__cell ${isActivePane ? "is-active" : ""}`}
+            onMouseDown={() => setActivePane(paneId)}
+            data-pane-id={paneId}
+          >
+            <EditorTabs paneId={paneId} />
+            {active ? (
+              <EditorPane
+                key={active.id}
+                value={active.content}
+                language={active.language}
+                filePath={active.path}
+                isDirty={!!active.dirty}
+                tabId={active.id}
+                onChange={(v) => updateContent(active.id, v)}
+              />
+            ) : (
+              <div className="editor-grid__empty">
+                <div>Empty editor pane</div>
+                <small>Drop a tab here or open a file from the sidebar.</small>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

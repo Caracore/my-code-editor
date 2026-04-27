@@ -58,6 +58,26 @@ fn write_file(path: String, contents: String) -> Result<(), String> {
     fs::write(&path, contents).map_err(|e| e.to_string())
 }
 
+/// Move (rename) a file or folder. Refuses to overwrite an existing destination.
+#[tauri::command]
+fn move_path(from: String, to: String) -> Result<String, String> {
+    let from_pb = PathBuf::from(&from);
+    let to_pb = PathBuf::from(&to);
+    if !from_pb.exists() {
+        return Err(format!("source does not exist: {from}"));
+    }
+    if to_pb.exists() {
+        return Err(format!("destination already exists: {to}"));
+    }
+    if let Some(parent) = to_pb.parent() {
+        if !parent.exists() {
+            return Err(format!("destination folder does not exist: {}", parent.display()));
+        }
+    }
+    fs::rename(&from_pb, &to_pb).map_err(|e| e.to_string())?;
+    Ok(to_pb.to_string_lossy().to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -68,6 +88,7 @@ pub fn run() {
             read_dir,
             read_file,
             write_file,
+            move_path,
             terminal_open,
             terminal_write,
             terminal_resize,

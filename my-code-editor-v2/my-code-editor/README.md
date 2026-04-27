@@ -11,14 +11,20 @@
 
 [//]: # (- Fermer, minimize et maximize marche pour pouvoir quitter :&#41;)
 - Ajout de responsive
-- Ajouter Drag and drop ! DnDkit ?
+
+- Ajouter Drag and drop ! DnDkit ? : prompt => 
+Dans mon IDE projet ajoutons le drag and drop. DnDkit ? Pour les tabs la sidebar pour mettre les fichiers dans un autre dossier etc. et le code editor pour en ouvrir 2 soit verticale soit horizontal, soit en 4 fichiers max dans le code editor pour vertical + horizontal gauche et droit.
+
 - Ajouter les couleurs dans le gutter (goutière) barre vertical lineNumber;
 
 [//]: # (- MenuDropDown pour le topmenu)
 >> secondaire:
 
 - >> Retravailler le cursor
-- Refaire le commandPalette
+- Settings => Font family déroulant pour choisir sa font au lieu de l'écrire.
+- Settings -> Rendre les shortcut modifiable pour une meilleur exprience utilisateur.
+- Settings escape keymap for quit window everywhere.
+- faire l'interraction de la commandPalette
 - Status bar interractive
 <!-- - Terminal ptys ou mieux à mettre en place. -->
 - >> Themes
@@ -42,3 +48,6 @@
 >>> Ajout de la mini-map et tout complet pour que ce soit traiter backend et non pas frontend. Var css, .
 
 # FAIRE LE PLAN POUR LE DESIGN ET BACKEND DE L'IDE
+
+Prompt: 
+Rends les fenetres resizable comme le bottompanel (terminal) + Rightpanel, sidebar, etc. Mais pas touche à la fenêtre.
