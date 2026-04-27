@@ -38,6 +38,53 @@ export const THEMEABLE_VARS = [
   "--titlebar-bg-from", "--titlebar-bg-to",
   "--statusbar-bg-from", "--statusbar-bg-to",
   "--code-on-light",
+  // Editor (CodeMirror 6) — surfaces
+  "--editor-bg", "--editor-fg", "--editor-cursor",
+  "--editor-selection-bg", "--editor-selection-main-bg", "--editor-selection-match-bg",
+  "--editor-active-line-bg",
+  // Editor — gutter
+  "--editor-gutter-bg", "--editor-gutter-border", "--editor-gutter-hover-bg",
+  "--editor-line-number-fg", "--editor-line-number-active-fg",
+  "--editor-active-line-gutter-bg",
+  // Editor — folding
+  "--editor-fold-placeholder-bg", "--editor-fold-placeholder-fg",
+  "--editor-fold-gutter-fg", "--editor-fold-gutter-hover-fg",
+  // Editor — brackets
+  "--editor-matching-bracket-bg", "--editor-matching-bracket-border",
+  "--editor-nonmatching-bracket-bg", "--editor-nonmatching-bracket-border",
+  // Editor — search
+  "--editor-search-match-bg", "--editor-search-match-selected-bg",
+  // Editor — panels & diagnostics
+  "--editor-panel-bg", "--editor-panel-fg", "--editor-panel-border",
+  "--editor-error-border", "--editor-error-bg",
+  "--editor-warning-border", "--editor-warning-bg",
+  "--editor-info-border", "--editor-info-bg",
+  "--editor-hint-border", "--editor-hint-bg",
+  // Editor — tooltips & autocomplete
+  "--editor-tooltip-bg", "--editor-tooltip-fg",
+  "--editor-tooltip-border", "--editor-tooltip-code-bg",
+  "--editor-autocomplete-bg", "--editor-autocomplete-border",
+  "--editor-autocomplete-fg",
+  "--editor-autocomplete-selected-bg", "--editor-autocomplete-selected-fg",
+  "--editor-autocomplete-match-fg", "--editor-autocomplete-icon-fg",
+  // Editor — scrollbar
+  "--editor-scrollbar-bg", "--editor-scrollbar-hover-bg", "--editor-scrollbar-active-bg",
+  // Editor — syntax (override the Lezer tag → colour map)
+  "--editor-comment", "--editor-keyword",
+  "--editor-operator", "--editor-punctuation",
+  "--editor-string", "--editor-string-special",
+  "--editor-number", "--editor-boolean", "--editor-null",
+  "--editor-variable", "--editor-variable-definition", "--editor-variable-special",
+  "--editor-property", "--editor-property-definition",
+  "--editor-function",
+  "--editor-class", "--editor-class-name",
+  "--editor-type", "--editor-type-name",
+  "--editor-tag",
+  "--editor-attribute", "--editor-attribute-value",
+  "--editor-constant", "--editor-regexp", "--editor-escape", "--editor-meta",
+  "--editor-heading", "--editor-heading-1", "--editor-heading-2", "--editor-heading-3",
+  "--editor-emphasis", "--editor-strong",
+  "--editor-link", "--editor-link-url",
 ] as const;
 
 export type ThemeableVar = (typeof THEMEABLE_VARS)[number];

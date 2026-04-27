@@ -73,6 +73,117 @@
   --activitybar-w: 48px;
   --statusbar-h: 24px;
   --tabs-h: 34px;
+
+  /* =========================================================
+     Editor (CodeMirror 6)
+     All --editor-* tokens default to derived values so a theme
+     can stay minimal. Override any of them in a theme manifest
+     to fine-tune the editor surface.
+     ========================================================= */
+
+  /* Surfaces & caret */
+  --editor-bg:                    var(--bg-3);
+  --editor-fg:                    var(--text-1);
+  --editor-cursor:                var(--accent-2);
+  --editor-selection-bg:          var(--accent-soft);
+  --editor-selection-main-bg:     var(--accent-soft);
+  --editor-selection-match-bg:    var(--accent-glow-soft);
+  --editor-active-line-bg:        rgba(255, 255, 255, 0.04);
+
+  /* Gutter */
+  --editor-gutter-bg:             var(--bg-3);
+  --editor-gutter-border:         var(--border-1);
+  --editor-gutter-hover-bg:       rgba(255, 255, 255, 0.03);
+  --editor-line-number-fg:        var(--text-4);
+  --editor-line-number-active-fg: var(--text-2);
+  --editor-active-line-gutter-bg: rgba(255, 255, 255, 0.05);
+
+  /* Folding */
+  --editor-fold-placeholder-bg:   var(--bg-4);
+  --editor-fold-placeholder-fg:   var(--text-3);
+  --editor-fold-gutter-fg:        var(--text-4);
+  --editor-fold-gutter-hover-fg:  var(--text-2);
+
+  /* Brackets */
+  --editor-matching-bracket-bg:       var(--accent-soft);
+  --editor-matching-bracket-border:   var(--accent);
+  --editor-nonmatching-bracket-bg:    rgba(242, 95, 92, 0.20);
+  --editor-nonmatching-bracket-border:var(--danger);
+
+  /* Search results inside editor */
+  --editor-search-match-bg:           var(--accent-glow-strong);
+  --editor-search-match-selected-bg:  var(--accent-soft);
+
+  /* Floating panels (find/replace, lint) */
+  --editor-panel-bg:              var(--bg-2);
+  --editor-panel-fg:              var(--text-1);
+  --editor-panel-border:          var(--border-1);
+
+  /* Diagnostics (LSP / lint) */
+  --editor-error-border:          var(--danger);
+  --editor-error-bg:              rgba(242, 95, 92, 0.10);
+  --editor-warning-border:        var(--warn);
+  --editor-warning-bg:            rgba(245, 177, 76, 0.10);
+  --editor-info-border:           var(--info);
+  --editor-info-bg:               rgba(90, 209, 255, 0.10);
+  --editor-hint-border:           var(--text-3);
+  --editor-hint-bg:               rgba(125, 133, 147, 0.10);
+
+  /* Tooltips (hover, signature help) */
+  --editor-tooltip-bg:            var(--bg-2);
+  --editor-tooltip-fg:            var(--text-1);
+  --editor-tooltip-border:        var(--border-2);
+  --editor-tooltip-code-bg:       var(--bg-3);
+
+  /* Autocomplete popup */
+  --editor-autocomplete-bg:           var(--bg-2);
+  --editor-autocomplete-border:       var(--border-2);
+  --editor-autocomplete-fg:           var(--text-2);
+  --editor-autocomplete-selected-bg:  var(--accent-soft);
+  --editor-autocomplete-selected-fg:  var(--text-1);
+  --editor-autocomplete-match-fg:     var(--accent-2);
+  --editor-autocomplete-icon-fg:      var(--text-3);
+
+  /* Scrollbar (editor only) */
+  --editor-scrollbar-bg:          var(--scrollbar-thumb);
+  --editor-scrollbar-hover-bg:    var(--scrollbar-thumb-hover);
+  --editor-scrollbar-active-bg:   var(--text-3);
+
+  /* Syntax highlighting (Lezer tag → colour) */
+  --editor-comment:               var(--syn-com);
+  --editor-keyword:               var(--syn-kw);
+  --editor-operator:              var(--syn-punct);
+  --editor-punctuation:           var(--syn-punct);
+  --editor-string:                var(--syn-str);
+  --editor-string-special:        var(--syn-num);
+  --editor-number:                var(--syn-num);
+  --editor-boolean:               var(--syn-kw);
+  --editor-null:                  var(--syn-kw);
+  --editor-variable:              var(--text-1);
+  --editor-variable-definition:   var(--syn-prop);
+  --editor-variable-special:      var(--syn-fn);
+  --editor-property:              var(--syn-prop);
+  --editor-property-definition:   var(--syn-prop);
+  --editor-function:              var(--syn-fn);
+  --editor-class:                 var(--syn-type);
+  --editor-class-name:            var(--syn-type);
+  --editor-type:                  var(--syn-type);
+  --editor-type-name:             var(--syn-type);
+  --editor-tag:                   var(--syn-tag);
+  --editor-attribute:             var(--syn-prop);
+  --editor-attribute-value:       var(--syn-str);
+  --editor-constant:              var(--syn-fn);
+  --editor-regexp:                var(--syn-tag);
+  --editor-escape:                var(--syn-num);
+  --editor-meta:                  var(--syn-kw);
+  --editor-heading:               var(--syn-kw);
+  --editor-heading-1:             var(--syn-kw);
+  --editor-heading-2:             var(--syn-fn);
+  --editor-heading-3:             var(--syn-prop);
+  --editor-emphasis:              var(--text-1);
+  --editor-strong:                var(--text-1);
+  --editor-link:                  var(--syn-fn);
+  --editor-link-url:              var(--syn-str);
 }
 
 * { box-sizing: border-box; }

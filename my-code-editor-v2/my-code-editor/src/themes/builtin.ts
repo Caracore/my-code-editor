@@ -213,6 +213,19 @@ const daylight: ThemeManifest = {
     "--statusbar-bg-from": "#eef0f5",
     "--statusbar-bg-to": "#e2e6ee",
     "--code-on-light": "#ffffff",
+    // Editor — light mode needs darker translucent overlays
+    "--editor-active-line-bg": "rgba(20, 24, 36, 0.05)",
+    "--editor-active-line-gutter-bg": "rgba(20, 24, 36, 0.07)",
+    "--editor-gutter-hover-bg": "rgba(20, 24, 36, 0.04)",
+    "--editor-cursor": "#5b3df5",
+    "--editor-variable": "#1d2230",
+    "--editor-emphasis": "#1d2230",
+    "--editor-strong": "#1d2230",
+    "--editor-error-bg": "rgba(210, 58, 58, 0.10)",
+    "--editor-warning-bg": "rgba(201, 132, 18, 0.10)",
+    "--editor-info-bg": "rgba(10, 160, 197, 0.10)",
+    "--editor-hint-bg": "rgba(107, 115, 136, 0.10)",
+    "--editor-nonmatching-bracket-bg": "rgba(210, 58, 58, 0.18)",
   },
 };
 

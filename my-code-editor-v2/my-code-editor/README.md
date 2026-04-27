@@ -43,7 +43,7 @@ Dans mon IDE projet ajoutons le drag and drop. DnDkit ? Pour les tabs la sidebar
 <!-- - >> Pouvoir fermer et ouvrir le chat AI RightPanel. -->
 - Faire un resize des Bottom panel, etc ... Rightpanel, sidebar + ajout de todolist à la sidebar...
 - Ajout de save et mettre en place des plugin et theme.
-- Extension theme et plugins ouvrir le dossier à corriger.
+- Extension theme et plugins ouvrir le dossier à corriger. + Mettre le theme en adéquation au terminal.
 >>> Settings: paramètres: 
 >>> Shortcut, var css + theme
 >>> Ajout de la mini-map et tout complet pour que ce soit traiter backend et non pas frontend. Var css, .

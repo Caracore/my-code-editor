@@ -114,12 +114,100 @@ Catégories :
 **Sémantiques** `--success`, `--warn`, `--danger`, `--danger-strong`,
 `--info`.
 
-**Syntaxe** (CodeMirror) : `--syn-kw`, `--syn-fn`, `--syn-str`, `--syn-num`,
-`--syn-com`, `--syn-type`, `--syn-prop`, `--syn-tag`, `--syn-punct`.
+**Syntaxe globale** (chrome de l'app, badges, etc.) : `--syn-kw`,
+`--syn-fn`, `--syn-str`, `--syn-num`, `--syn-com`, `--syn-type`,
+`--syn-prop`, `--syn-tag`, `--syn-punct`.
 
 **Divers** : `--code-on-light` (texte sur badges chauds).
 
-### 3.4 Conseils
+### 3.4 Variables de l'éditeur (CodeMirror 6)
+
+L'éditeur de code est entièrement personnalisable via des variables
+dédiées. Toutes ont une **valeur par défaut dérivée** des tokens
+ci-dessus (par ex. `--editor-bg: var(--bg-3)`, `--editor-keyword:
+var(--syn-kw)`) — vous n'êtes donc pas obligé de les redéfinir : un
+thème qui ne touche qu'aux couleurs de base aura un éditeur cohérent
+automatiquement. Surchargez-les pour un contrôle pixel-perfect.
+
+**Surfaces & curseur**
+`--editor-bg`, `--editor-fg`, `--editor-cursor`,
+`--editor-selection-bg`, `--editor-selection-main-bg`,
+`--editor-selection-match-bg`, `--editor-active-line-bg`.
+
+**Gouttière (numéros de ligne)**
+`--editor-gutter-bg`, `--editor-gutter-border`, `--editor-gutter-hover-bg`,
+`--editor-line-number-fg`, `--editor-line-number-active-fg`,
+`--editor-active-line-gutter-bg`.
+
+**Pliage de code**
+`--editor-fold-placeholder-bg`, `--editor-fold-placeholder-fg`,
+`--editor-fold-gutter-fg`, `--editor-fold-gutter-hover-fg`.
+
+**Crochets correspondants**
+`--editor-matching-bracket-bg`, `--editor-matching-bracket-border`,
+`--editor-nonmatching-bracket-bg`, `--editor-nonmatching-bracket-border`.
+
+**Recherche dans l'éditeur**
+`--editor-search-match-bg`, `--editor-search-match-selected-bg`.
+
+**Panneaux & diagnostics (LSP / lint)**
+`--editor-panel-bg`, `--editor-panel-fg`, `--editor-panel-border`,
+`--editor-error-border` / `--editor-error-bg`,
+`--editor-warning-border` / `--editor-warning-bg`,
+`--editor-info-border` / `--editor-info-bg`,
+`--editor-hint-border` / `--editor-hint-bg`.
+
+**Tooltips & autocomplétion**
+`--editor-tooltip-bg`, `--editor-tooltip-fg`,
+`--editor-tooltip-border`, `--editor-tooltip-code-bg`,
+`--editor-autocomplete-bg`, `--editor-autocomplete-border`,
+`--editor-autocomplete-fg`,
+`--editor-autocomplete-selected-bg`, `--editor-autocomplete-selected-fg`,
+`--editor-autocomplete-match-fg`, `--editor-autocomplete-icon-fg`.
+
+**Scrollbar de l'éditeur**
+`--editor-scrollbar-bg`, `--editor-scrollbar-hover-bg`,
+`--editor-scrollbar-active-bg`.
+
+**Coloration syntaxique** (mappage Lezer → couleur, par tag) :
+`--editor-comment`, `--editor-keyword`,
+`--editor-operator`, `--editor-punctuation`,
+`--editor-string`, `--editor-string-special`,
+`--editor-number`, `--editor-boolean`, `--editor-null`,
+`--editor-variable`, `--editor-variable-definition`,
+`--editor-variable-special`,
+`--editor-property`, `--editor-property-definition`,
+`--editor-function`,
+`--editor-class`, `--editor-class-name`,
+`--editor-type`, `--editor-type-name`,
+`--editor-tag`,
+`--editor-attribute`, `--editor-attribute-value`,
+`--editor-constant`, `--editor-regexp`, `--editor-escape`,
+`--editor-meta`,
+`--editor-heading`, `--editor-heading-1`, `--editor-heading-2`,
+`--editor-heading-3`,
+`--editor-emphasis`, `--editor-strong`,
+`--editor-link`, `--editor-link-url`.
+
+> Les changements sont **réactifs** : modifier un thème actualise
+> instantanément l'éditeur — pas besoin de recharger.
+
+#### Exemple : redéfinir uniquement les keywords en rose
+
+```json
+{
+  "id": "pinky",
+  "name": "Pinky",
+  "type": "dark",
+  "variables": {
+    "--editor-keyword": "#ff5dbf",
+    "--editor-function": "#ffd166",
+    "--editor-string":   "#a0e7a0"
+  }
+}
+```
+
+### 3.5 Conseils
 
 - Définissez toujours `--on-accent` cohérent avec `--accent` :
   `#ffffff` pour un thème clair, presque-noir pour un thème sombre.

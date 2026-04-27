@@ -219,81 +219,85 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
     // Only use LSP if enabled
     const effectiveUseLsp = useLsp && lspEnabled;
 
-    // Récupérer les couleurs depuis les variables CSS
+    // Récupérer une variable CSS calculée (réservé aux usages non-réactifs).
+    // NOTE: pour la coloration syntaxique et le thème de l'éditeur, on
+    // utilise directement `var(--editor-*)` afin que l'éditeur réagisse
+    // automatiquement aux changements de thème.
     const getComputedColor = (varName: string) => {
       return getComputedStyle(document.documentElement)
         .getPropertyValue(varName)
         .trim();
     };
+    void getComputedColor;
 
     // Définir le style de coloration syntaxique basé sur les variables CSS
     const customHighlightStyle = HighlightStyle.define([
-      { tag: t.comment, color: getComputedColor("--editor-comment") || "#6A9955" },
-      { tag: t.lineComment, color: getComputedColor("--editor-comment") || "#6A9955" },
-      { tag: t.blockComment, color: getComputedColor("--editor-comment") || "#6A9955" },
-      
-      { tag: t.keyword, color: getComputedColor("--editor-keyword") || "#569CD6" },
-      { tag: t.controlKeyword, color: getComputedColor("--editor-keyword") || "#569CD6" },
-      { tag: t.definitionKeyword, color: getComputedColor("--editor-keyword") || "#569CD6" },
-      { tag: t.modifier, color: getComputedColor("--editor-keyword") || "#569CD6" },
-      
-      { tag: t.operator, color: getComputedColor("--editor-operator") || "#D4D4D4" },
-      { tag: t.punctuation, color: getComputedColor("--editor-punctuation") || "#D4D4D4" },
-      { tag: t.separator, color: getComputedColor("--editor-punctuation") || "#D4D4D4" },
-      
-      { tag: t.string, color: getComputedColor("--editor-string") || "#CE9178" },
-      { tag: t.special(t.string), color: getComputedColor("--editor-string-special") || "#D7BA7D" },
-      { tag: t.character, color: getComputedColor("--editor-string") || "#CE9178" },
-      
-      { tag: t.number, color: getComputedColor("--editor-number") || "#B5CEA8" },
-      { tag: t.integer, color: getComputedColor("--editor-number") || "#B5CEA8" },
-      { tag: t.float, color: getComputedColor("--editor-number") || "#B5CEA8" },
-      
-      { tag: t.bool, color: getComputedColor("--editor-boolean") || "#569CD6" },
-      { tag: t.null, color: getComputedColor("--editor-null") || "#569CD6" },
-      
-      { tag: t.variableName, color: getComputedColor("--editor-variable") || "#9CDCFE" },
-      { tag: t.definition(t.variableName), color: getComputedColor("--editor-variable-definition") || "#9CDCFE" },
-      { tag: t.special(t.variableName), color: getComputedColor("--editor-variable-special") || "#4FC1FF" },
-      
-      { tag: t.propertyName, color: getComputedColor("--editor-property") || "#9CDCFE" },
-      { tag: t.definition(t.propertyName), color: getComputedColor("--editor-property-definition") || "#9CDCFE" },
-      
-      { tag: t.function(t.variableName), color: getComputedColor("--editor-function") || "#DCDCAA" },
-      { tag: t.function(t.propertyName), color: getComputedColor("--editor-function") || "#DCDCAA" },
-      
-      { tag: t.className, color: getComputedColor("--editor-class") || "#4EC9B0" },
-      { tag: t.definition(t.className), color: getComputedColor("--editor-class-name") || "#4EC9B0" },
-      
-      { tag: t.typeName, color: getComputedColor("--editor-type") || "#4EC9B0" },
-      { tag: t.typeOperator, color: getComputedColor("--editor-type") || "#4EC9B0" },
-      { tag: t.standard(t.typeName), color: getComputedColor("--editor-type-name") || "#4EC9B0" },
-      
-      { tag: t.tagName, color: getComputedColor("--editor-tag") || "#569CD6" },
-      { tag: t.angleBracket, color: getComputedColor("--editor-tag") || "#569CD6" },
-      
-      { tag: t.attributeName, color: getComputedColor("--editor-attribute") || "#9CDCFE" },
-      { tag: t.attributeValue, color: getComputedColor("--editor-attribute-value") || "#CE9178" },
-      
-      { tag: t.constant(t.variableName), color: getComputedColor("--editor-constant") || "#4FC1FF" },
-      { tag: t.constant(t.propertyName), color: getComputedColor("--editor-constant") || "#4FC1FF" },
-      
-      { tag: t.regexp, color: getComputedColor("--editor-regexp") || "#D16969" },
-      { tag: t.escape, color: getComputedColor("--editor-escape") || "#D7BA7D" },
-      
-      { tag: t.meta, color: getComputedColor("--editor-meta") || "#569CD6" },
-      { tag: t.processingInstruction, color: getComputedColor("--editor-meta") || "#569CD6" },
-      
-      { tag: t.heading, color: getComputedColor("--editor-heading") || "#569CD6", fontWeight: "bold" },
-      { tag: t.heading1, color: getComputedColor("--editor-heading-1") || "#569CD6", fontWeight: "bold" },
-      { tag: t.heading2, color: getComputedColor("--editor-heading-2") || "#569CD6", fontWeight: "bold" },
-      { tag: t.heading3, color: getComputedColor("--editor-heading-3") || "#569CD6", fontWeight: "bold" },
-      
-      { tag: t.emphasis, color: getComputedColor("--editor-emphasis") || "#D4D4D4", fontStyle: "italic" },
-      { tag: t.strong, color: getComputedColor("--editor-strong") || "#D4D4D4", fontWeight: "bold" },
-      
-      { tag: t.link, color: getComputedColor("--editor-link") || "#4EC9B0" },
-      { tag: t.url, color: getComputedColor("--editor-link-url") || "#CE9178" },
+      { tag: t.comment, color: "var(--editor-comment)" },
+      { tag: t.lineComment, color: "var(--editor-comment)" },
+      { tag: t.blockComment, color: "var(--editor-comment)" },
+
+      { tag: t.keyword, color: "var(--editor-keyword)" },
+      { tag: t.controlKeyword, color: "var(--editor-keyword)" },
+      { tag: t.definitionKeyword, color: "var(--editor-keyword)" },
+      { tag: t.modifier, color: "var(--editor-keyword)" },
+
+      { tag: t.operator, color: "var(--editor-operator)" },
+      { tag: t.punctuation, color: "var(--editor-punctuation)" },
+      { tag: t.separator, color: "var(--editor-punctuation)" },
+
+      { tag: t.string, color: "var(--editor-string)" },
+      { tag: t.special(t.string), color: "var(--editor-string-special)" },
+      { tag: t.character, color: "var(--editor-string)" },
+
+      { tag: t.number, color: "var(--editor-number)" },
+      { tag: t.integer, color: "var(--editor-number)" },
+      { tag: t.float, color: "var(--editor-number)" },
+
+      { tag: t.bool, color: "var(--editor-boolean)" },
+      { tag: t.null, color: "var(--editor-null)" },
+
+      { tag: t.variableName, color: "var(--editor-variable)" },
+      { tag: t.definition(t.variableName), color: "var(--editor-variable-definition)" },
+      { tag: t.special(t.variableName), color: "var(--editor-variable-special)" },
+
+      { tag: t.propertyName, color: "var(--editor-property)" },
+      { tag: t.definition(t.propertyName), color: "var(--editor-property-definition)" },
+
+      { tag: t.function(t.variableName), color: "var(--editor-function)" },
+      { tag: t.function(t.propertyName), color: "var(--editor-function)" },
+
+      { tag: t.className, color: "var(--editor-class)" },
+      { tag: t.definition(t.className), color: "var(--editor-class-name)" },
+
+      { tag: t.typeName, color: "var(--editor-type)" },
+      { tag: t.typeOperator, color: "var(--editor-type)" },
+      { tag: t.standard(t.typeName), color: "var(--editor-type-name)" },
+
+      { tag: t.tagName, color: "var(--editor-tag)" },
+      { tag: t.angleBracket, color: "var(--editor-tag)" },
+
+      { tag: t.attributeName, color: "var(--editor-attribute)" },
+      { tag: t.attributeValue, color: "var(--editor-attribute-value)" },
+
+      { tag: t.constant(t.variableName), color: "var(--editor-constant)" },
+      { tag: t.constant(t.propertyName), color: "var(--editor-constant)" },
+
+      { tag: t.regexp, color: "var(--editor-regexp)" },
+      { tag: t.escape, color: "var(--editor-escape)" },
+
+      { tag: t.meta, color: "var(--editor-meta)" },
+      { tag: t.processingInstruction, color: "var(--editor-meta)" },
+
+      { tag: t.heading, color: "var(--editor-heading)", fontWeight: "bold" },
+      { tag: t.heading1, color: "var(--editor-heading-1)", fontWeight: "bold" },
+      { tag: t.heading2, color: "var(--editor-heading-2)", fontWeight: "bold" },
+      { tag: t.heading3, color: "var(--editor-heading-3)", fontWeight: "bold" },
+
+      { tag: t.emphasis, color: "var(--editor-emphasis)", fontStyle: "italic" },
+      { tag: t.strong, color: "var(--editor-strong)", fontWeight: "bold" },
+
+      { tag: t.link, color: "var(--editor-link)" },
+      { tag: t.url, color: "var(--editor-link-url)" },
     ]);
 
     // Keymap personnalisé qui laisse passer certains raccourcis vers le système
@@ -365,99 +369,98 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
           // === Base de l'éditeur ===
           "&": {
             fontSize: "14px",
-            backgroundColor: getComputedColor("--editor-bg") || "#0d0d0d",
-            color: getComputedColor("--editor-fg") || "#e0e0e0",
+            backgroundColor: "var(--editor-bg)",
+            color: "var(--editor-fg)",
             height: "100%",
           },
           ".cm-content": {
-            caretColor: getComputedColor("--editor-cursor") || "#ffffff",
+            caretColor: "var(--editor-cursor)",
             fontFamily: "Consolas, 'Courier New', monospace",
           },
           ".cm-scroller": {
             fontFamily: "Consolas, 'Courier New', monospace",
           },
-          
+
           // === Curseur natif (visible pour déboguer) ===
-          ".cm-cursor, .cm-dropCursor, .cm-secondaryCursor": {   
-            // borderLeftWidth: "0px !important",
+          ".cm-cursor, .cm-dropCursor, .cm-secondaryCursor": {
             display: "none !important",
-            },
+          },
           // === Sélection ===
           ".cm-selectionBackground, ::selection": {
-            backgroundColor: getComputedColor("--editor-selection-bg") || "#264F78",
+            backgroundColor: "var(--editor-selection-bg)",
           },
           "&.cm-focused .cm-selectionBackground, &.cm-focused ::selection": {
-            backgroundColor: getComputedColor("--editor-selection-main-bg") || getComputedColor("--editor-selection-bg") || "#264F78",
+            backgroundColor: "var(--editor-selection-main-bg)",
           },
           ".cm-selectionMatch": {
-            backgroundColor: getComputedColor("--editor-selection-match-bg") || "#515C6A",
+            backgroundColor: "var(--editor-selection-match-bg)",
           },
-          
+
           // === Ligne active ===
           ".cm-activeLine": {
-            backgroundColor: getComputedColor("--editor-active-line-bg") || "rgba(255, 255, 255, 0.05)",
+            backgroundColor: "var(--editor-active-line-bg)",
           },
-          
+
           // === Gouttières (gutters) ===
           ".cm-gutters": {
-            backgroundColor: getComputedColor("--editor-gutter-bg") || getComputedColor("--editor-bg") || "#0d0d0d",
-            color: getComputedColor("--editor-line-number-fg") || "#858585",
+            backgroundColor: "var(--editor-gutter-bg)",
+            color: "var(--editor-line-number-fg)",
             border: "none",
-            borderRight: `1px solid ${getComputedColor("--editor-gutter-border") || "#333333"}`,
+            borderRight: "1px solid var(--editor-gutter-border)",
           },
           ".cm-activeLineGutter": {
-            backgroundColor: getComputedColor("--editor-active-line-gutter-bg") || "rgba(255, 255, 255, 0.05)",
-            color: getComputedColor("--editor-line-number-active-fg") || "#C6C6C6",
+            backgroundColor: "var(--editor-active-line-gutter-bg)",
+            color: "var(--editor-line-number-active-fg)",
           },
           ".cm-lineNumbers .cm-gutterElement": {
-            color: getComputedColor("--editor-line-number-fg") || "#858585",
+            color: "var(--editor-line-number-fg)",
           },
           ".cm-gutter:hover": {
-            backgroundColor: getComputedColor("--editor-gutter-hover-bg") || "rgba(255, 255, 255, 0.03)",
+            backgroundColor: "var(--editor-gutter-hover-bg)",
           },
-          
+
           // === Pliage de code (folding) ===
           ".cm-foldPlaceholder": {
-            backgroundColor: getComputedColor("--editor-fold-placeholder-bg") || "rgba(133, 133, 133, 0.1)",
-            color: getComputedColor("--editor-fold-placeholder-fg") || "#858585",
+            backgroundColor: "var(--editor-fold-placeholder-bg)",
+            color: "var(--editor-fold-placeholder-fg)",
             border: "none",
             padding: "0 4px",
           },
           ".cm-foldGutter .cm-gutterElement": {
-            color: getComputedColor("--editor-fold-gutter-fg") || "#858585",
+            color: "var(--editor-fold-gutter-fg)",
           },
           ".cm-foldGutter .cm-gutterElement:hover": {
-            color: getComputedColor("--editor-fold-gutter-hover-fg") || "#C6C6C6",
+            color: "var(--editor-fold-gutter-hover-fg)",
           },
-          
+
           // === Correspondances de crochets ===
           ".cm-matchingBracket, .cm-nonmatchingBracket": {
-            backgroundColor: getComputedColor("--editor-matching-bracket-bg") || "rgba(0, 100, 0, 0.3)",
-            border: `1px solid ${getComputedColor("--editor-matching-bracket-border") || "#0F0"}`,
+            backgroundColor: "var(--editor-matching-bracket-bg)",
+            border: "1px solid var(--editor-matching-bracket-border)",
           },
           ".cm-nonmatchingBracket": {
-            backgroundColor: getComputedColor("--editor-nonmatching-bracket-bg") || "rgba(255, 0, 0, 0.3)",
-            border: `1px solid ${getComputedColor("--editor-nonmatching-bracket-border") || "#F00"}`,
+            backgroundColor: "var(--editor-nonmatching-bracket-bg)",
+            border: "1px solid var(--editor-nonmatching-bracket-border)",
           },
-          
+
           // === Résultats de recherche ===
           ".cm-searchMatch": {
-            backgroundColor: getComputedColor("--editor-search-match-bg") || "#515C6A",
+            backgroundColor: "var(--editor-search-match-bg)",
           },
           ".cm-searchMatch.cm-searchMatch-selected": {
-            backgroundColor: getComputedColor("--editor-search-match-selected-bg") || "#6A9955",
+            backgroundColor: "var(--editor-search-match-selected-bg)",
           },
-          
+
           // === Panneaux ===
           ".cm-panel": {
-            backgroundColor: getComputedColor("--editor-panel-bg") || "#1E1E1E",
-            color: getComputedColor("--editor-panel-fg") || "#CCCCCC",
-            borderTop: `1px solid ${getComputedColor("--editor-panel-border") || "#3C3C3C"}`,
+            backgroundColor: "var(--editor-panel-bg)",
+            color: "var(--editor-panel-fg)",
+            borderTop: "1px solid var(--editor-panel-border)",
           },
           ".cm-panel.cm-panel-lint ul": {
-            backgroundColor: getComputedColor("--editor-panel-bg") || "#1E1E1E",
+            backgroundColor: "var(--editor-panel-bg)",
           },
-          
+
           // === Diagnostic / Lint ===
           ".cm-diagnostic": {
             padding: "3px 6px 3px 8px",
@@ -465,67 +468,67 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
             display: "block",
           },
           ".cm-diagnostic-error": {
-            borderLeft: `3px solid ${getComputedColor("--editor-error-border") || "#F48771"}`,
-            backgroundColor: getComputedColor("--editor-error-bg") || "rgba(244, 135, 113, 0.1)",
+            borderLeft: "3px solid var(--editor-error-border)",
+            backgroundColor: "var(--editor-error-bg)",
           },
           ".cm-diagnostic-warning": {
-            borderLeft: `3px solid ${getComputedColor("--editor-warning-border") || "#CCA700"}`,
-            backgroundColor: getComputedColor("--editor-warning-bg") || "rgba(204, 167, 0, 0.1)",
+            borderLeft: "3px solid var(--editor-warning-border)",
+            backgroundColor: "var(--editor-warning-bg)",
           },
           ".cm-diagnostic-info": {
-            borderLeft: `3px solid ${getComputedColor("--editor-info-border") || "#4FC1FF"}`,
-            backgroundColor: getComputedColor("--editor-info-bg") || "rgba(79, 193, 255, 0.1)",
+            borderLeft: "3px solid var(--editor-info-border)",
+            backgroundColor: "var(--editor-info-bg)",
           },
           ".cm-diagnostic-hint": {
-            borderLeft: `3px solid ${getComputedColor("--editor-hint-border") || "#858585"}`,
-            backgroundColor: getComputedColor("--editor-hint-bg") || "rgba(133, 133, 133, 0.1)",
+            borderLeft: "3px solid var(--editor-hint-border)",
+            backgroundColor: "var(--editor-hint-bg)",
           },
-          
+
           // === Tooltip générique ===
           ".cm-tooltip": {
-            backgroundColor: getComputedColor("--editor-tooltip-bg") || "#252526",
-            color: getComputedColor("--editor-tooltip-fg") || "#CCCCCC",
-            border: `1px solid ${getComputedColor("--editor-tooltip-border") || "#454545"}`,
+            backgroundColor: "var(--editor-tooltip-bg)",
+            color: "var(--editor-tooltip-fg)",
+            border: "1px solid var(--editor-tooltip-border)",
             borderRadius: "3px",
           },
           ".cm-tooltip code": {
-            backgroundColor: getComputedColor("--editor-tooltip-code-bg") || "#1E1E1E",
+            backgroundColor: "var(--editor-tooltip-code-bg)",
           },
-          
+
           // === Autocomplétion ===
           ".cm-tooltip-autocomplete": {
-            backgroundColor: getComputedColor("--editor-autocomplete-bg") || "#252526",
-            border: `1px solid ${getComputedColor("--editor-autocomplete-border") || "#454545"}`,
+            backgroundColor: "var(--editor-autocomplete-bg)",
+            border: "1px solid var(--editor-autocomplete-border)",
           },
           ".cm-tooltip-autocomplete ul li[aria-selected]": {
-            backgroundColor: getComputedColor("--editor-autocomplete-selected-bg") || "#094771",
-            color: getComputedColor("--editor-autocomplete-selected-fg") || "#FFFFFF",
+            backgroundColor: "var(--editor-autocomplete-selected-bg)",
+            color: "var(--editor-autocomplete-selected-fg)",
           },
           ".cm-tooltip-autocomplete ul li": {
-            color: getComputedColor("--editor-autocomplete-fg") || "#CCCCCC",
+            color: "var(--editor-autocomplete-fg)",
           },
           ".cm-completionMatchedText": {
-            color: getComputedColor("--editor-autocomplete-match-fg") || "#4EC9B0",
+            color: "var(--editor-autocomplete-match-fg)",
             fontWeight: "bold",
           },
           ".cm-completionIcon": {
-            color: getComputedColor("--editor-autocomplete-icon-fg") || "#C5C5C5",
+            color: "var(--editor-autocomplete-icon-fg)",
           },
-          
+
           // === Scrollbar ===
           ".cm-scroller::-webkit-scrollbar": {
             width: "12px",
             height: "12px",
           },
           ".cm-scroller::-webkit-scrollbar-thumb": {
-            backgroundColor: getComputedColor("--editor-scrollbar-bg") || "rgba(121, 121, 121, 0.4)",
+            backgroundColor: "var(--editor-scrollbar-bg)",
             borderRadius: "6px",
           },
           ".cm-scroller::-webkit-scrollbar-thumb:hover": {
-            backgroundColor: getComputedColor("--editor-scrollbar-hover-bg") || "rgba(100, 100, 100, 0.7)",
+            backgroundColor: "var(--editor-scrollbar-hover-bg)",
           },
           ".cm-scroller::-webkit-scrollbar-thumb:active": {
-            backgroundColor: getComputedColor("--editor-scrollbar-active-bg") || "rgba(191, 191, 191, 0.4)",
+            backgroundColor: "var(--editor-scrollbar-active-bg)",
           },
         }),
       ],
@@ -586,7 +589,7 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
         style={{
           height: "100%",
           width: "100%",
-          backgroundColor: "#0d0d0d",
+          backgroundColor: "var(--editor-bg)",
           position: "relative",
           overflow: "hidden",
         }}
