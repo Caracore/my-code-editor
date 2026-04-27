@@ -75,33 +75,51 @@ export function AppDndProvider({ children }: { children: ReactNode }) {
       }
 
       // ---------- File DnD (sidebar) ----------
-      if (aData.type === "file" && aData.path && oData.type === "folder" && oData.path) {
-        const fromPath = aData.path;
-        const fromDir = fromPath.replace(/[\\/][^\\/]+$/, "");
-        const targetDir = oData.path;
-        if (fromDir === targetDir) return; // no-op
-        // Disallow moving a folder into itself or its descendants
+      if (aData.type === "file" && aData.path) {
+        // Drop on a pane's tab strip (or directly on an existing tab)
+        // → open the file in that pane.
         if (
-          fromPath === targetDir ||
-          targetDir.startsWith(fromPath + "/") ||
-          targetDir.startsWith(fromPath + "\\")
+          (oData.type === "pane-tabs" || oData.type === "tab") &&
+          oData.paneId
         ) {
-          console.warn("Cannot move a folder into itself");
+          try {
+            await ws.openFile(aData.path, oData.paneId);
+          } catch (err) {
+            console.error("openFile failed:", err);
+          }
           return;
         }
-        const name = aData.name ?? basename(fromPath);
-        const toPath = joinPath(targetDir, name);
-        try {
-          const finalPath = await movePath(fromPath, toPath);
-          ws.updateTabPath(fromPath, finalPath);
-          window.dispatchEvent(
-            new CustomEvent("sidebar:refresh-folders", {
-              detail: { folders: [fromDir, targetDir] },
-            })
-          );
-        } catch (err) {
-          console.error("move_path failed:", err);
-          alert(`Cannot move file:\n${String(err)}`);
+
+        // Drop on a folder row → move on disk.
+        if (oData.type === "folder" && oData.path) {
+          const fromPath = aData.path;
+          const fromDir = fromPath.replace(/[\\/][^\\/]+$/, "");
+          const targetDir = oData.path;
+          if (fromDir === targetDir) return; // no-op
+          // Disallow moving a folder into itself or its descendants
+          if (
+            fromPath === targetDir ||
+            targetDir.startsWith(fromPath + "/") ||
+            targetDir.startsWith(fromPath + "\\")
+          ) {
+            console.warn("Cannot move a folder into itself");
+            return;
+          }
+          const name = aData.name ?? basename(fromPath);
+          const toPath = joinPath(targetDir, name);
+          try {
+            const finalPath = await movePath(fromPath, toPath);
+            ws.updateTabPath(fromPath, finalPath);
+            window.dispatchEvent(
+              new CustomEvent("sidebar:refresh-folders", {
+                detail: { folders: [fromDir, targetDir] },
+              })
+            );
+          } catch (err) {
+            console.error("move_path failed:", err);
+            alert(`Cannot move file:\n${String(err)}`);
+          }
+          return;
         }
       }
     },

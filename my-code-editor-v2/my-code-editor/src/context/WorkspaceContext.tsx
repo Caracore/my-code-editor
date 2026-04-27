@@ -61,7 +61,7 @@ interface WorkspaceContextValue {
   setActive: (tabId: string, paneId?: string) => void;
   closeTab: (tabId: string, paneId?: string) => void;
 
-  openFile: (absolutePath: string) => Promise<void>;
+  openFile: (absolutePath: string, paneId?: string) => Promise<void>;
   updateContent: (id: string, content: string) => void;
   saveActive: () => Promise<void>;
   togglePinned: (id: string) => void;
@@ -166,12 +166,34 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openFile = useCallback(
-    async (absolutePath: string) => {
+    async (absolutePath: string, paneId?: string) => {
+      const targetPaneId = paneId ?? activePaneId;
       // Already open in some pane? Activate it.
       const existing = tabs.find((t) => t.path === absolutePath);
       if (existing) {
         const owner = panes.find((p) => p.tabIds.includes(existing.id));
         if (owner) {
+          // If a specific pane was requested and the file is open elsewhere,
+          // move it to the requested pane instead of just focusing the owner.
+          if (paneId && owner.id !== paneId) {
+            setPanes((prev) => {
+              const next = prev.map((p) => ({ ...p, tabIds: [...p.tabIds] }));
+              const from = next.find((p) => p.id === owner.id)!;
+              const to = next.find((p) => p.id === paneId);
+              if (!to) return prev;
+              const idx = from.tabIds.indexOf(existing.id);
+              from.tabIds.splice(idx, 1);
+              if (from.activeTabId === existing.id) {
+                from.activeTabId =
+                  from.tabIds[Math.min(idx, from.tabIds.length - 1)] ?? null;
+              }
+              if (!to.tabIds.includes(existing.id)) to.tabIds.push(existing.id);
+              to.activeTabId = existing.id;
+              return next;
+            });
+            setActivePaneId(paneId);
+            return;
+          }
           setActivePaneId(owner.id);
           setPanes((prev) =>
             prev.map((p) =>
@@ -206,7 +228,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (!existing) setTabs((prev) => [...prev, tab]);
       setPanes((prev) =>
         prev.map((p) =>
-          p.id === activePaneId
+          p.id === targetPaneId
             ? {
                 ...p,
                 tabIds: p.tabIds.includes(tab.id) ? p.tabIds : [...p.tabIds, tab.id],
@@ -215,6 +237,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             : p
         )
       );
+      setActivePaneId(targetPaneId);
     },
     [tabs, panes, activePaneId]
   );
