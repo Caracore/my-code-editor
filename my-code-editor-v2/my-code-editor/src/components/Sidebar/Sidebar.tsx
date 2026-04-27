@@ -15,8 +15,18 @@ import {
 import type { DirEntry } from "../../services/fs";
 import ResizeHandle from "../ResizeHandle/ResizeHandle";
 import ContextMenu, { type ContextMenuItem } from "../ContextMenu/ContextMenu";
+import PromptDialog from "../PromptDialog/PromptDialog";
 import TodoListView from "./TodoListView";
 import "./Sidebar.css";
+
+/** State driving the in-app prompt dialog (replaces `window.prompt`). */
+interface PromptRequest {
+  title: string;
+  label?: string;
+  initial?: string;
+  okLabel?: string;
+  resolve: (value: string | null) => void;
+}
 
 /** Target of an open context-menu request (or `null` for empty-area). */
 interface MenuTarget {
@@ -251,6 +261,19 @@ export default function Sidebar({ view = "files", onClose, width, onResize }: Si
   } | null>(null);
   const closeMenu = useCallback(() => setMenu(null), []);
 
+  // In-app replacement for `window.prompt`. We store the active request
+  // (with its resolver) in state so a single React-rendered dialog can
+  // service every "new file / new folder / rename" call. The native
+  // `localhost says…` prompt is gone.
+  const [promptReq, setPromptReq] = useState<PromptRequest | null>(null);
+  const askName = useCallback(
+    (opts: { title: string; label?: string; initial?: string; okLabel?: string }) =>
+      new Promise<string | null>((resolve) => {
+        setPromptReq({ ...opts, resolve });
+      }),
+    [],
+  );
+
   // Load root contents whenever the workspace folder changes
   useEffect(() => {
     if (!rootPath) {
@@ -368,12 +391,19 @@ export default function Sidebar({ view = "files", onClose, width, onResize }: Si
         }
       };
 
-      const promptName = (title: string, initial = ""): string | null => {
-        const v = window.prompt(title, initial);
+      const promptName = async (
+        title: string,
+        label: string,
+        initial = "",
+        okLabel = "Create",
+      ): Promise<string | null> => {
+        const v = await askName({ title, label, initial, okLabel });
         if (v === null) return null;
         const trimmed = v.trim();
         if (!trimmed) return null;
         if (/[\\/]/.test(trimmed)) {
+          // Validation already runs inside the dialog, but keep this as a
+          // belt-and-braces guard in case the dialog is bypassed.
           window.alert("Name cannot contain slashes.");
           return null;
         }
@@ -381,7 +411,7 @@ export default function Sidebar({ view = "files", onClose, width, onResize }: Si
       };
 
       const doNewFile = async () => {
-        const name = promptName("New file name:");
+        const name = await promptName("New file", "File name:", "", "Create");
         if (!name) return;
         try {
           await ensureOpen(containerDir);
@@ -395,7 +425,7 @@ export default function Sidebar({ view = "files", onClose, width, onResize }: Si
       };
 
       const doNewFolder = async () => {
-        const name = promptName("New folder name:");
+        const name = await promptName("New folder", "Folder name:", "", "Create");
         if (!name) return;
         try {
           await ensureOpen(containerDir);
@@ -409,7 +439,7 @@ export default function Sidebar({ view = "files", onClose, width, onResize }: Si
 
       const doRename = async () => {
         const oldName = target.path.replace(/[\\/]+$/, "").split(/[\\/]/).pop() ?? "";
-        const name = promptName("Rename to:", oldName);
+        const name = await promptName("Rename", "New name:", oldName, "Rename");
         if (!name || name === oldName) return;
         try {
           const parent = dirname(target.path);
@@ -681,6 +711,20 @@ export default function Sidebar({ view = "files", onClose, width, onResize }: Si
           y={menu.y}
           items={buildMenuItems(menu.target)}
           onClose={closeMenu}
+        />
+      )}
+      {promptReq && (
+        <PromptDialog
+          title={promptReq.title}
+          label={promptReq.label}
+          initial={promptReq.initial}
+          okLabel={promptReq.okLabel}
+          validate={(v) => (/[\\/]/.test(v) ? "Name cannot contain slashes." : null)}
+          onClose={(value) => {
+            const req = promptReq;
+            setPromptReq(null);
+            req.resolve(value);
+          }}
         />
       )}
     </aside>

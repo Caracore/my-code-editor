@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { I } from "../Icons";
 import { usePlugins } from "../../plugins/PluginsContext";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { useProblemsCount } from "../BottomPanel/ProblemsView";
 import { lspManager, DiagnosticSeverity } from "../../lsp";
+import ContextMenu, { type ContextMenuItem } from "../ContextMenu/ContextMenu";
 import "./StatusBar.css";
 
 interface StatusBarProps {
@@ -13,6 +15,10 @@ interface StatusBarProps {
   onToggleRight?: () => void;
   onOpenSettings?: () => void;
 }
+
+/** Id of the built-in Discord Rich Presence plugin. Kept here in sync with
+ *  `src/plugins/discordRpc.ts` — both must reference the same id. */
+const DISCORD_PLUGIN_ID = "builtin.discord-rpc";
 
 /** Pretty label for an internal language id. */
 function languageLabel(lang: string | undefined, ext: string | undefined): string {
@@ -45,6 +51,28 @@ export default function StatusBar({
   const { statusItemsLeft, statusItemsRight } = usePlugins();
   const { activeTab } = useWorkspace();
   const problemsCount = useProblemsCount();
+  const { enabledPlugins, togglePlugin, isActive } = usePlugins();
+
+  // Caret position broadcast by the active editor through "editor:cursor".
+  // Falls back to (1, 1) when no editor is focused.
+  const [caret, setCaret] = useState<{ line: number; col: number; filePath?: string | null }>({
+    line: 1,
+    col: 1,
+  });
+  useEffect(() => {
+    const onCursor = (e: Event) => {
+      const detail = (e as CustomEvent<{ line: number; col: number; filePath?: string | null }>).detail;
+      if (!detail) return;
+      setCaret({ line: detail.line, col: detail.col, filePath: detail.filePath ?? null });
+    };
+    window.addEventListener("editor:cursor", onCursor);
+    return () => window.removeEventListener("editor:cursor", onCursor);
+  }, []);
+  // Reset to 1,1 whenever the user switches to a tab without an editor (or
+  // closes the last one) so the readout doesn't show a stale position.
+  useEffect(() => {
+    if (!activeTab) setCaret({ line: 1, col: 1, filePath: null });
+  }, [activeTab]);
 
   // Split problems into errors vs warnings/info so the dedicated badges
   // in the status bar stay accurate.
@@ -71,6 +99,64 @@ export default function StatusBar({
   }, []);
 
   const langLabel = languageLabel(activeTab?.language, activeTab?.ext);
+
+  // ----- Discord Rich Presence quick-config menu -----------------------
+  const discordEnabled = enabledPlugins.has(DISCORD_PLUGIN_ID);
+  const discordActive = isActive(DISCORD_PLUGIN_ID);
+  const [discordMenu, setDiscordMenu] = useState<{ x: number; y: number } | null>(null);
+
+  const openDiscordMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    // Anchor above the status bar button so the menu opens upward.
+    setDiscordMenu({ x: rect.left, y: rect.top });
+  };
+
+  const reconnectDiscord = async () => {
+    try {
+      await invoke("discord_disconnect");
+    } catch {
+      /* ignore */
+    }
+    try {
+      await invoke("discord_connect", { appId: "1451676636259811368" });
+      window.dispatchEvent(new CustomEvent("discord-presence:request"));
+    } catch (err) {
+      console.warn("Discord reconnect failed:", err);
+    }
+  };
+
+  const discordMenuItems: ContextMenuItem[] = useMemo(
+    () => [
+      {
+        id: "toggle",
+        label: discordEnabled ? "Disable Rich Presence" : "Enable Rich Presence",
+        icon: <I.CheckSquare size={12} />,
+        onSelect: () => void togglePlugin(DISCORD_PLUGIN_ID, !discordEnabled),
+      },
+      {
+        id: "reconnect",
+        label: "Reconnect to Discord",
+        icon: <I.Branch size={12} />,
+        disabled: !discordActive,
+        onSelect: () => void reconnectDiscord(),
+      },
+      { id: "sep", separator: true },
+      {
+        id: "settings",
+        label: "Open Extensions Settings…",
+        icon: <I.Settings size={12} />,
+        onSelect: () => onOpenSettings?.(),
+      },
+    ],
+    [discordEnabled, discordActive, togglePlugin, onOpenSettings],
+  );
+
+  // Status text shown on the button itself.
+  const discordStatus = !discordEnabled
+    ? "Discord: off"
+    : discordActive
+      ? "Discord"
+      : "Discord…";
 
   return (
     <footer className="statusbar">
@@ -116,12 +202,28 @@ export default function StatusBar({
       </div>
 
       <div className="statusbar__group">
-        <button className="sb-item">Ln 1, Col 1</button>
+        <button
+          className="sb-item"
+          title={
+            activeTab
+              ? `Line ${caret.line}, Column ${caret.col}`
+              : "No file open"
+          }
+        >
+          Ln {caret.line}, Col {caret.col}
+        </button>
         <button className="sb-item">Spaces: 2</button>
         <button className="sb-item">UTF-8</button>
         <button className="sb-item">LF</button>
         <button className="sb-item" title={activeTab?.path ?? "No file"}>
           {langLabel}
+        </button>
+        <button
+          className={`sb-item ${discordEnabled && discordActive ? "is-active" : ""}`}
+          title="Discord Rich Presence — click to configure"
+          onClick={openDiscordMenu}
+        >
+          <I.Sparkle size={12} /> {discordStatus}
         </button>
         {statusItemsRight.map((it) => (
           <button
@@ -157,6 +259,14 @@ export default function StatusBar({
           <I.Settings size={12} />
         </button>
       </div>
+      {discordMenu && (
+        <ContextMenu
+          x={discordMenu.x}
+          y={discordMenu.y}
+          items={discordMenuItems}
+          onClose={() => setDiscordMenu(null)}
+        />
+      )}
     </footer>
   );
 }

@@ -138,14 +138,6 @@ const discordRpc: Plugin = {
       },
     });
 
-    api.registerStatusBarItem({
-      id: "discord",
-      align: "right",
-      order: 50,
-      tooltip: "Discord Rich Presence",
-      render: () => "Discord",
-    });
-
     // Connect now and request the workspace to broadcast the current state.
     // Fire-and-forget: we never `await` this so toggling the plugin in
     // Settings stays instantaneous, even if Discord isn't running and the

@@ -1,0 +1,101 @@
+.prompt-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: prompt-dialog-fade 120ms ease-out;
+}
+
+@keyframes prompt-dialog-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.prompt-dialog {
+  min-width: 360px;
+  max-width: 480px;
+  background: var(--panel-2, var(--bg-2, #1f1f1f));
+  color: var(--text-1, #e6e6e6);
+  border: 1px solid var(--border-1, #333);
+  border-radius: 6px;
+  padding: 16px 18px 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  animation: prompt-dialog-pop 140ms ease-out;
+}
+
+@keyframes prompt-dialog-pop {
+  from { transform: translateY(-4px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0) scale(1);       opacity: 1; }
+}
+
+.prompt-dialog__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1, #f0f0f0);
+  margin-bottom: 8px;
+}
+
+.prompt-dialog__label {
+  font-size: 12px;
+  color: var(--text-3, #aaa);
+  margin-bottom: 6px;
+}
+
+.prompt-dialog__input {
+  width: 100%;
+  background: var(--input-bg, var(--bg-1, #111));
+  color: var(--text-1, #f0f0f0);
+  border: 1px solid var(--border-2, #444);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 80ms ease;
+}
+.prompt-dialog__input:focus {
+  border-color: var(--accent, #2d7df6);
+  box-shadow: 0 0 0 1px var(--accent, #2d7df6);
+}
+
+.prompt-dialog__error {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--danger, #ff6b6b);
+}
+
+.prompt-dialog__actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.prompt-dialog__btn {
+  height: 26px;
+  padding: 0 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border-2, #444);
+  background: var(--bg-3, #2a2a2a);
+  color: var(--text-1, #f0f0f0);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 80ms ease, border-color 80ms ease;
+}
+.prompt-dialog__btn:hover {
+  background: var(--bg-4, #333);
+}
+
+.prompt-dialog__btn--primary {
+  background: var(--accent, #2d7df6);
+  border-color: var(--accent, #2d7df6);
+  color: var(--on-accent, #fff);
+}
+.prompt-dialog__btn--primary:hover {
+  background: var(--accent-2, #4a92ff);
+  border-color: var(--accent-2, #4a92ff);
+}

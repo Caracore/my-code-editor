@@ -150,6 +150,22 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
         const newValue = update.state.doc.toString();
         onChange(newValue);
       }
+      // Broadcast the caret position so the status bar (and anyone else
+      // who cares) can stay in sync. We emit on doc/selection/focus change
+      // so jumping tabs and clicking around all update the readout.
+      if (update.docChanged || update.selectionSet || update.focusChanged) {
+        const head = update.state.selection.main.head;
+        const line = update.state.doc.lineAt(head);
+        window.dispatchEvent(
+          new CustomEvent("editor:cursor", {
+            detail: {
+              line: line.number,
+              col: head - line.from + 1,
+              filePath: filePathRef.current,
+            },
+          })
+        );
+      }
     });
 
     // Détection dynamique du langage et des completion sources
@@ -540,6 +556,23 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
     });
 
     viewRef.current = view;
+
+    // Fire one cursor event right after mount so the status bar can show
+    // a correct Ln/Col immediately, without waiting for the user to move
+    // the caret.
+    {
+      const head = view.state.selection.main.head;
+      const line = view.state.doc.lineAt(head);
+      window.dispatchEvent(
+        new CustomEvent("editor:cursor", {
+          detail: {
+            line: line.number,
+            col: head - line.from + 1,
+            filePath: filePathRef.current,
+          },
+        })
+      );
+    }
 
     // NE PAS ajouter de gestionnaires personnalisés pour copier/coller/couper
     // CodeMirror les gère déjà nativement via minimalSetup

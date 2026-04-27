@@ -10,7 +10,6 @@
 - Faire un load file comme pour les dossier mais pour charger qu'un fichier. + créer un fichier puis saveas...
 
 ## SIDEBAR - LEFT BAR
-- Faire l'activity bar la class="activitybar" pour être interactive et Personnalisable :) pour future plugin
 
 - >> Faire illuminé le fichier dans l'arborescence sélectionner dans le tabs bar et éditeur instance ...
 - Pouvoir fermer le dossier racine parent en réduit.
@@ -43,6 +42,8 @@ Faire les icons notification, etc ... Interractive bottom statusbar
 
 ## EXTENSIONS AND PLUGINS:
 - Rendre les shortcut modifiable pour une meilleur expérience utilisateur. (Ajouter auto les nouveaux plugins commands et raccourcis).
+
+- Faire l'activity bar la class="activitybar" pour être interactive et Personnalisable :) pour future plugin
 
 - Discord Rich Presence
 
@@ -82,3 +83,6 @@ DEV DESIGN AJOUT DE COULEUR DANS LE GUTTER (goutière):
 - >> Themes
 - >> Package de pip, cargo, go etc à mettre en place. Listing
 - >> Ajout de save et mettre en place des plugins et themes.
+
+
+J'aimerai que le status bar donne la vrai line (ligne et colonne) dans le fichier actif ou il y a le focus. J'aimerai une status bar plus interractive comme le plugin discord rich presence si actif alors pouvoir gérer les options depuis le status bar. Et créer un git plugin pareil il y a un git2 lib en rust pour ça et le mettre aussi actif (ce plugin) dans l'activity bar
