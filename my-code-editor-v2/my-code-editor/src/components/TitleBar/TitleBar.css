@@ -1,6 +1,6 @@
 .titlebar {
   height: var(--titlebar-h);
-  background: linear-gradient(180deg, #12151b 0%, #0f1115 100%);
+  background: linear-gradient(180deg, var(--titlebar-bg-from) 0%, var(--titlebar-bg-to) 100%);
   border-bottom: 1px solid var(--border-1);
   display: flex;
   align-items: center;
@@ -86,7 +86,7 @@
   border-radius: 50%;
   font-size: 11px; font-weight: 700;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #0f1115;
+  color: var(--on-accent);
 }
 
 .titlebar__window { display: flex; gap: 0; margin-left: 4px; }
@@ -97,5 +97,5 @@
   border-radius: var(--radius-sm);
 }
 .win-btn:hover { background: var(--bg-4); color: var(--text-1); }
-.win-btn--close:hover { background: #e53935; color: #fff; }
+.win-btn--close:hover { background: var(--danger-strong); color: var(--code-on-light); }
 

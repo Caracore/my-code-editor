@@ -25,9 +25,17 @@
   --accent: #7c5cff;          /* indigo / violet */
   --accent-2: #5ad1ff;        /* cyan */
   --accent-soft: rgba(124, 92, 255, 0.18);
+  --accent-glow-soft: rgba(124, 92, 255, 0.10);
+  --accent-glow-strong: rgba(124, 92, 255, 0.28);
+  --accent-2-soft: rgba(90, 209, 255, 0.16);
+  --shadow-accent: 0 6px 18px rgba(124, 92, 255, 0.35);
+  /* Foreground used on accent-coloured surfaces (buttons, hover bg, etc.). */
+  --on-accent: #0f1115;
+  --on-accent-soft: rgba(15, 17, 21, 0.65);
   --success: #4ade80;
   --warn:    #f5b14c;
   --danger:  #f25f5c;
+  --danger-strong: #e53935;
   --info:    #5ad1ff;
 
   /* Syntax */
@@ -47,6 +55,16 @@
   --radius-lg: 10px;
   --shadow-1:  0 4px 16px rgba(0,0,0,.35);
   --shadow-2:  0 12px 40px rgba(0,0,0,.55);
+
+  /* Surfaces — derived from --bg-* for theme overridability. */
+  --overlay-bg:           rgba(0, 0, 0, 0.55);
+  --scrollbar-thumb:      #2a313d;
+  --scrollbar-thumb-hover:#39414f;
+  --titlebar-bg-from:     #12151b;
+  --titlebar-bg-to:       #0f1115;
+  --statusbar-bg-from:    #0f1115;
+  --statusbar-bg-to:      #0c0e12;
+  --code-on-light:        #ffffff;
 
   --font-ui:   "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
@@ -76,10 +94,10 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: #2a313d;
+  background: var(--scrollbar-thumb);
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover { background: #39414f; background-clip: padding-box; border: 2px solid transparent; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); background-clip: padding-box; border: 2px solid transparent; }
 

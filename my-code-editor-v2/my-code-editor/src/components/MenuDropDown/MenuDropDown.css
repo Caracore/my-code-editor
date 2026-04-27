@@ -34,11 +34,11 @@
   white-space: nowrap;
 }
 .menu-dropdown__item:hover {
-  background: linear-gradient(90deg, rgba(124, 92, 255, 0.18), rgba(90, 209, 255, 0.10));
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent-glow-soft));
   color: var(--text-1);
 }
 .menu-dropdown__item:active {
-  background: rgba(124, 92, 255, 0.28);
+  background: var(--accent-glow-strong);
 }
 
 .menu-dropdown__label {

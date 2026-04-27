@@ -18,13 +18,26 @@ export interface ThemeManifest {
 
 /** Variables we are willing to accept from a theme file. Acts as a whitelist. */
 export const THEMEABLE_VARS = [
+  // Surfaces
   "--bg-0", "--bg-1", "--bg-2", "--bg-3", "--bg-4", "--bg-5",
   "--border-1", "--border-2",
   "--text-1", "--text-2", "--text-3", "--text-4",
+  // Accents
   "--accent", "--accent-2", "--accent-soft",
-  "--success", "--warn", "--danger", "--info",
+  "--accent-glow-soft", "--accent-glow-strong", "--accent-2-soft",
+  "--shadow-accent",
+  "--on-accent", "--on-accent-soft",
+  // Semantics
+  "--success", "--warn", "--danger", "--danger-strong", "--info",
+  // Syntax
   "--syn-kw", "--syn-fn", "--syn-str", "--syn-num", "--syn-com",
   "--syn-type", "--syn-prop", "--syn-tag", "--syn-punct",
+  // Chrome
+  "--overlay-bg",
+  "--scrollbar-thumb", "--scrollbar-thumb-hover",
+  "--titlebar-bg-from", "--titlebar-bg-to",
+  "--statusbar-bg-from", "--statusbar-bg-to",
+  "--code-on-light",
 ] as const;
 
 export type ThemeableVar = (typeof THEMEABLE_VARS)[number];

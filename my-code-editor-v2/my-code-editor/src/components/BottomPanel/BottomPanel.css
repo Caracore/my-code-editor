@@ -30,7 +30,7 @@
 }
 .bp-tab__badge {
   background: var(--danger);
-  color: #fff;
+  color: var(--code-on-light);
   font-size: 9px; font-weight: 700;
   padding: 0 5px;
   border-radius: 8px;

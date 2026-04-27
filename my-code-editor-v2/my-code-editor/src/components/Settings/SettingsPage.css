@@ -5,7 +5,7 @@
 .settings-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 9, 12, 0.55);
+  background: var(--overlay-bg);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
