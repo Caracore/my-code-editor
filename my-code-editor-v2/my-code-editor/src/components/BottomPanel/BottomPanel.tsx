@@ -74,11 +74,17 @@ export default function BottomPanel({ onClose, height, onResize }: BottomPanelPr
         ta?.focus();
       });
     };
+    const onPanelFocus = (e: Event) => {
+      const id = (e as CustomEvent<string>).detail;
+      if (typeof id === "string") setTab(id);
+    };
     window.addEventListener("terminal:new", onNew);
     window.addEventListener("terminal:focus", onFocus);
+    window.addEventListener("bottompanel:focus", onPanelFocus as EventListener);
     return () => {
       window.removeEventListener("terminal:new", onNew);
       window.removeEventListener("terminal:focus", onFocus);
+      window.removeEventListener("bottompanel:focus", onPanelFocus as EventListener);
     };
   }, []);
 

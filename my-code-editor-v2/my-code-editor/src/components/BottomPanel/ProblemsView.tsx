@@ -18,7 +18,15 @@ interface ProblemsViewProps {
  * Subscribes to `lspManager.onDiagnostics` and renders one row per problem.
  */
 export default function ProblemsView({ disabled }: ProblemsViewProps) {
-  const [diags, setDiags] = useState<DiagnosticsMap>(new Map());
+  // Seed from the manager so problems published while this view was
+  // unmounted (user was in another bottom-panel tab) still appear.
+  const [diags, setDiags] = useState<DiagnosticsMap>(() => {
+    const initial: DiagnosticsMap = new Map();
+    for (const { path, diagnostics } of lspManager.getAllDiagnostics()) {
+      initial.set(path.toLowerCase(), { path, list: diagnostics });
+    }
+    return initial;
+  });
   const { openFile } = useWorkspace();
 
   useEffect(() => {
@@ -105,15 +113,12 @@ export default function ProblemsView({ disabled }: ProblemsViewProps) {
 
 /** Hook used by the bottom-panel tab bar to display the live problem count. */
 export function useProblemsCount(): number {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(() => lspManager.getProblemCount());
   useEffect(() => {
-    const map = new Map<string, number>();
-    const unsub = lspManager.onDiagnostics((path, list) => {
-      if (list.length === 0) map.delete(path);
-      else map.set(path, list.length);
-      let total = 0;
-      for (const n of map.values()) total += n;
-      setCount(total);
+    // Re-read from the manager on each publish so the counter stays in
+    // sync regardless of which tab was active when diagnostics arrived.
+    const unsub = lspManager.onDiagnostics(() => {
+      setCount(lspManager.getProblemCount());
     });
     return unsub;
   }, []);

@@ -9,6 +9,14 @@ export class LspManager {
   private rootPath: string = "";
   private diagnosticsCallbacks: DiagnosticsCallback[] = [];
   private openDocuments: Map<string, { language: string; content: string }> = new Map();
+  /**
+   * Latest diagnostics for every file the LSP servers have ever published
+   * for. Persists across React mount/unmount cycles so the Problems panel
+   * can show the full set even when the user toggles tabs in the bottom
+   * panel. Keyed by lowercase path so duplicates from different casings
+   * collapse into a single entry.
+   */
+  private diagnosticsByFile: Map<string, { path: string; diagnostics: Diagnostic[] }> = new Map();
 
   setRootPath(path: string): void {
     this.rootPath = path;
@@ -39,6 +47,14 @@ export class LspManager {
     
     // Subscribe to diagnostics
     client.onDiagnostics((filePath, diagnostics) => {
+      // Cache the latest diagnostics so newly mounted views can seed
+      // their state without waiting for the next publish.
+      const key = filePath.toLowerCase();
+      if (diagnostics.length === 0) {
+        this.diagnosticsByFile.delete(key);
+      } else {
+        this.diagnosticsByFile.set(key, { path: filePath, diagnostics });
+      }
       this.diagnosticsCallbacks.forEach((cb) => cb(filePath, diagnostics));
     });
 
@@ -148,6 +164,21 @@ export class LspManager {
         this.diagnosticsCallbacks.splice(index, 1);
       }
     };
+  }
+
+  /** Snapshot of every file -> diagnostics currently known. */
+  getAllDiagnostics(): Array<{ path: string; diagnostics: Diagnostic[] }> {
+    return Array.from(this.diagnosticsByFile.values()).map((v) => ({
+      path: v.path,
+      diagnostics: v.diagnostics.slice(),
+    }));
+  }
+
+  /** Total problem count across every file. */
+  getProblemCount(): number {
+    let total = 0;
+    for (const v of this.diagnosticsByFile.values()) total += v.diagnostics.length;
+    return total;
   }
 
   // Inlay Hints
