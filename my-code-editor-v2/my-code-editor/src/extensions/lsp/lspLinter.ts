@@ -25,13 +25,30 @@ const diagnosticsField = StateField.define<Diagnostic[]>({
 });
 
 // Convert LSP diagnostic to CodeMirror diagnostic
-function lspDiagnosticToCm(doc: { line: (n: number) => { from: number; to: number } }, diag: Diagnostic): CmDiagnostic | null {
+function lspDiagnosticToCm(
+  doc: { line: (n: number) => { from: number; to: number }; lines: number; length: number },
+  diag: Diagnostic
+): CmDiagnostic | null {
   try {
-    const startLine = doc.line(diag.range.start.line + 1);
-    const endLine = doc.line(diag.range.end.line + 1);
-    
-    const from = startLine.from + diag.range.start.character;
-    const to = endLine.from + diag.range.end.character;
+    const totalLines = doc.lines;
+    const startLineNum = Math.min(Math.max(diag.range.start.line + 1, 1), totalLines);
+    const endLineNum = Math.min(Math.max(diag.range.end.line + 1, 1), totalLines);
+    const startLine = doc.line(startLineNum);
+    const endLine = doc.line(endLineNum);
+
+    let from = Math.min(startLine.from + diag.range.start.character, startLine.to);
+    let to = Math.min(endLine.from + diag.range.end.character, endLine.to);
+
+    // CodeMirror requires `to > from` for the underline to render. If the
+    // server reports an empty range (e.g. "unused variable" hints), expand
+    // by one character so the diagnostic is still visible.
+    if (to <= from) {
+      if (from < doc.length) {
+        to = from + 1;
+      } else if (from > 0) {
+        from = from - 1;
+      }
+    }
 
     let severity: "error" | "warning" | "info" | "hint" = "info";
     switch (diag.severity) {
@@ -78,7 +95,13 @@ export function lspLinter(): Extension {
 
       return cmDiagnostics;
     }, {
-      delay: 100,
+      delay: 50,
+      // Force the linter to recompute as soon as new LSP diagnostics arrive,
+      // not only when the document is edited.
+      needsRefresh: (update) =>
+        update.transactions.some((tr) =>
+          tr.effects.some((e) => e.is(setDiagnosticsEffect))
+        ),
     }),
   ];
 }

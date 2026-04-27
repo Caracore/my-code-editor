@@ -63,7 +63,16 @@ export class LspClient {
       await this.initialize();
       return true;
     } catch (error) {
-      console.error(`[LSP ${this.language}] Failed to start:`, error);
+      console.error(
+        `[LSP ${this.language}] Failed to start (is \`${config.command}\` installed and on PATH?):`,
+        error
+      );
+      // Surface the error to the rest of the app (e.g. status bar / toast).
+      window.dispatchEvent(
+        new CustomEvent("lsp:error", {
+          detail: { language: this.language, command: config.command, error: String(error) },
+        })
+      );
       return false;
     }
   }
@@ -327,10 +336,17 @@ export class LspClient {
 
   private uriToPath(uri: string): string {
     let path = uri.replace(/^file:\/\/\/?/, "");
-    // On Windows, handle drive letters
-    if (path.match(/^[a-zA-Z]%3A/i)) {
+    try {
       path = decodeURIComponent(path);
+    } catch {
+      /* keep raw */
     }
-    return path.replace(/\//g, "\\");
+    // Windows: file:///c:/foo  -> c:/foo. Convert to backslashes and
+    // upper-case the drive letter so it matches paths produced by Tauri.
+    if (/^[a-zA-Z]:/.test(path)) {
+      path = path[0].toUpperCase() + path.slice(1);
+      path = path.replace(/\//g, "\\");
+    }
+    return path;
   }
 }

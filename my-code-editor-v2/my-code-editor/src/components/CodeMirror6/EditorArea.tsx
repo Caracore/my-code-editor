@@ -497,9 +497,10 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
     if (!useLsp || !lspLanguage || !filePath) return;
     let cancelled = false;
     void lspManager.openDocument(filePath, lspLanguage, value);
+    const targetKey = filePath.toLowerCase();
     const unsubscribe = lspManager.onDiagnostics((diagPath: string, diags: Diagnostic[]) => {
       if (cancelled) return;
-      if (diagPath !== filePath) return;
+      if (diagPath.toLowerCase() !== targetKey) return;
       const view = viewRef.current;
       if (view) updateDiagnostics(view, diags);
     });

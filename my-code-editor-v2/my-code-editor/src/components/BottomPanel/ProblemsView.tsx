@@ -6,7 +6,7 @@ import type { Diagnostic } from "../../lsp";
 import { useWorkspace } from "../../context/WorkspaceContext";
 
 /** Map of file path -> diagnostics emitted by every LSP client. */
-type DiagnosticsMap = Map<string, Diagnostic[]>;
+type DiagnosticsMap = Map<string, { path: string; list: Diagnostic[] }>;
 
 interface ProblemsViewProps {
   /** Visual hint for the empty state. Filled when LSP is disabled in settings. */
@@ -23,12 +23,15 @@ export default function ProblemsView({ disabled }: ProblemsViewProps) {
 
   useEffect(() => {
     const unsub = lspManager.onDiagnostics((path, list) => {
+      // Normalise so the same file reported by different LSP servers /
+      // path casings collapses into a single entry.
+      const key = path.toLowerCase();
       setDiags((prev) => {
         const next = new Map(prev);
         if (list.length === 0) {
-          next.delete(path);
+          next.delete(key);
         } else {
-          next.set(path, list);
+          next.set(key, { path, list });
         }
         return next;
       });
@@ -38,7 +41,7 @@ export default function ProblemsView({ disabled }: ProblemsViewProps) {
 
   const flat = useMemo(() => {
     const rows: { path: string; diag: Diagnostic }[] = [];
-    for (const [path, list] of diags) {
+    for (const { path, list } of diags.values()) {
       for (const d of list) rows.push({ path, diag: d });
     }
     rows.sort((a, b) => {

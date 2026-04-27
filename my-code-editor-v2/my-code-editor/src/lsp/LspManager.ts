@@ -86,6 +86,13 @@ export class LspManager {
   async openDocument(filePath: string, language: string, content: string): Promise<void> {
     this.openDocuments.set(filePath, { language, content });
 
+    // If no workspace folder is open yet, fall back to the file's parent
+    // directory so the LSP server still has a sensible root.
+    if (!this.rootPath) {
+      const parent = filePath.replace(/[\\/][^\\/]*$/, "");
+      if (parent) this.rootPath = parent;
+    }
+
     // Try to start server if not running
     if (!this.clients.has(language) && LSP_CONFIGS[language]) {
       await this.startServer(language);
