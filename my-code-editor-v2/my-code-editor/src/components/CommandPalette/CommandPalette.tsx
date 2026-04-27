@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { I } from "../Icons";
 import { usePlugins } from "../../plugins/PluginsContext";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 import "./CommandPalette.css";
 
 type Item = {
@@ -43,6 +44,9 @@ export default function CommandPalette() {
     return [...ITEMS, ...pluginItems];
   }, [pluginCommands]);
 
+  // Esc closes the palette while it is open (capture-phase, see hook).
+  useEscapeKey(open, () => setOpen(false));
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k" && !e.shiftKey && !e.altKey) {
@@ -50,8 +54,6 @@ export default function CommandPalette() {
         setOpen((v) => !v);
         setQ("");
         setIdx(0);
-      } else if (e.key === "Escape") {
-        setOpen(false);
       }
     };
     const onOpen = () => {

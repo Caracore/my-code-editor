@@ -15,6 +15,7 @@ import {
   displayCombo,
   isModifierOnly,
 } from "../../config/keymap";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 import "./SettingsPage.css";
 
 interface Props {
@@ -44,21 +45,20 @@ export default function SettingsPage({ onClose }: Props) {
   const [section, setSection] = useState<SectionId>("editor");
   const [query, setQuery] = useState("");
 
+  // Esc closes the settings window. Registered in capture phase so it works
+  // even when focus is inside an input / widget (see useEscapeKey).
+  useEscapeKey(true, onClose);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
     const onSection = (e: Event) => {
       const id = (e as CustomEvent).detail;
       if (typeof id === "string") setSection(id as SectionId);
     };
-    window.addEventListener("keydown", onKey);
     window.addEventListener("settings:set-section", onSection);
     return () => {
-      window.removeEventListener("keydown", onKey);
       window.removeEventListener("settings:set-section", onSection);
     };
-  }, [onClose]);
+  }, []);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();

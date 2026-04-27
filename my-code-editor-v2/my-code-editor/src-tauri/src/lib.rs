@@ -13,6 +13,9 @@ use extensions::{extensions_dir, import_extension, list_extensions, read_extensi
 mod lsp;
 use lsp::{send_lsp_notification, send_lsp_request, start_lsp, stop_lsp, LspState};
 
+mod discord;
+use discord::{discord_connect, discord_disconnect, discord_update, DiscordState};
+
 #[derive(Serialize)]
 struct DirEntry {
     name: String,
@@ -138,6 +141,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(TerminalState::default())
         .manage(LspState::default())
+        .manage(DiscordState::default())
         .invoke_handler(tauri::generate_handler![
             read_dir,
             read_file,
@@ -158,6 +162,9 @@ pub fn run() {
             stop_lsp,
             send_lsp_request,
             send_lsp_notification,
+            discord_connect,
+            discord_update,
+            discord_disconnect,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

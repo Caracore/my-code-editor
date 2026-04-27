@@ -1,4 +1,5 @@
 import type { Plugin } from "./types";
+import discordRpc from "./discordRpc";
 
 /**
  * Built-in showcase plugin: registers a "Hello, world" command so users can
@@ -76,4 +77,4 @@ const clock: Plugin = {
   },
 };
 
-export const BUILTIN_PLUGINS: Plugin[] = [helloWorld, clock];
+export const BUILTIN_PLUGINS: Plugin[] = [helloWorld, clock, discordRpc];

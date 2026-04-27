@@ -1,20 +1,20 @@
 # IDE my - code - editor GENERAL:
+- Activer le "inspecter" pour dev avec click droit ou keymap. 
+
 - "Relier le backend"
 
 - Ajout de responsive avec mode compact et comfortable
 
-- Settings escape keymap for quit window everywhere. Quitter toute fenêtre comme settings windows etc ... Avec escape (echap)
-
 - Remplacer tout hardcoder en config personnalisable (objectif de l'IDE) + interractive :)!
 
-- Faire un load file comme pour les dossier mais pour charger qu'un fichier.
+- Faire un load file comme pour les dossier mais pour charger qu'un fichier. + créer un fichier puis saveas...
 
 ## SIDEBAR - LEFT BAR
-- Faire l'activity bar la class="activitybar" pour être interactive et Personnalisable :)
-
+- Faire l'activity bar la class="activitybar" pour être interactive et Personnalisable :) pour future plugin
 
 - >> Faire illuminé le fichier dans l'arborescence sélectionner dans le tabs bar et éditeur instance ...
-
+- Pouvoir fermer le dossier racine parent en réduit.
+- Embellir le message et rendre plus pro la création de dossier et fichier.
 
 ## RIGHT BAR - IA BAR
 - Faire class="rightpanel__tabs" => interactif et work. **1/3**
@@ -47,7 +47,7 @@ Faire les icons notification, etc ... Interractive bottom statusbar
 - Discord Rich Presence
 
 ## DISCORD RICH PRESENCE:
-- Refaire les images discord de mon my-code-editor :)
+- Refaire les images discord de mon my-code-editor :) + mettre en place la sélection du language.
 
 
 ## WELCOME PAGE
@@ -55,15 +55,13 @@ Faire les icons notification, etc ... Interractive bottom statusbar
 
 - Gestion de titre My code editor avec light theme ne se voit pas.
 
-
 ## LSP
 - Refresh le lsp pour pas qui reste sur un warning par exemple rust analyser quand je préfix _ la variable pour non usage...
-
+- Ajout de python en plus de rust et tout les autres languages prise en charge par Code Mirror 6 !
 - Check orthographe fault ... Grammarly, et french pour commencer.
 
 ## CONTEXT MENU: Click droit Gestion :)
-- Enlever le click droit de base par défaut et en fabriquer un avec créer un dossier/fichier etc... supprimer...
-
+Remettre l'inspecteur en place.
 
 ## MINIMAP:
 ACTIVER ET INTERRACTION MINIMAP:

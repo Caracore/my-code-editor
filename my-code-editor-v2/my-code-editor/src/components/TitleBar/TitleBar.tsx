@@ -97,7 +97,8 @@ export default function TitleBar() {
 
       <div className="titlebar__center">
         <div className="titlebar__project">
-          <span className="titlebar__project-name">my-code-editor</span>
+          {/* <span className="titlebar__project-name">my-code-editor</span> */}
+          <span className="titlebar__project-name">My Code Editor</span>
           <span className="titlebar__sep">›</span>
           <span className="titlebar__project-file">src / components / EditorArea.tsx</span>
         </div>
@@ -106,6 +107,7 @@ export default function TitleBar() {
       <div className="titlebar__right">
         <div className="titlebar__runner">
           <select className="titlebar__config" defaultValue="dev">
+            {/* Changer la configuration ici dev ou new debugger */}
             <option value="dev">▶ dev</option>
             <option value="build">build</option>
             <option value="tauri">tauri:dev</option>

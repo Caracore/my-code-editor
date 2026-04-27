@@ -527,6 +527,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     [rootPath]
   );
 
+  // Broadcast presence info (active file + workspace) to listeners such as
+  // the Discord Rich Presence plugin. Fires on changes, and also in reply to
+  // a `discord-presence:request` event so a freshly-activated plugin can ask
+  // for the current state without having to read React context.
+  useEffect(() => {
+    const detail = {
+      file: activeTab?.name ?? "Idle",
+      language: activeTab?.language ?? "Code",
+      project: rootName ?? "my-code-editor",
+    };
+    window.dispatchEvent(
+      new CustomEvent("discord-presence:update", { detail }),
+    );
+    const onRequest = () => {
+      window.dispatchEvent(
+        new CustomEvent("discord-presence:update", { detail }),
+      );
+    };
+    window.addEventListener("discord-presence:request", onRequest);
+    return () =>
+      window.removeEventListener("discord-presence:request", onRequest);
+  }, [activeTab?.name, activeTab?.language, rootName]);
+
   const value = useMemo<WorkspaceContextValue>(
     () => ({
       tabs,
