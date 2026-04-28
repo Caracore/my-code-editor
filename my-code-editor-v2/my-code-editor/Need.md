@@ -1,6 +1,8 @@
 # IDE my - code - editor GENERAL:
 - Activer le "inspecter" pour dev avec click droit ou keymap. 
 
+- souris click outside the window = close window
+
 - Ajout de responsive avec mode compact et comfortable
 
 - Remplacer tout hardcoder en config personnalisable (objectif de l'IDE) + interractive :)!
@@ -25,6 +27,12 @@ Faire les icons notification, etc ... Interractive bottom statusbar
 
 # COMMAND PALETTE
 - faire l'interraction de la commandPalette
+: New file
+: AI Selection
+: AI Generate tests
+: Run `dev`
+: Debug
+: GIT Commands
 
 
 ## SETTINGS Windows
