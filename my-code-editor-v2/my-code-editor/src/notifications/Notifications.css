@@ -1,0 +1,79 @@
+.notif-stack {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 12000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(380px, 92vw);
+  pointer-events: none;
+}
+
+.notif {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: 22px 1fr 22px;
+  gap: 8px;
+  align-items: start;
+  padding: 10px 10px 10px 12px;
+  background: var(--bg-2, #1f1f1f);
+  color: var(--text-1, #f0f0f0);
+  border: 1px solid var(--border-2, #3a3a3a);
+  border-left-width: 3px;
+  border-radius: 6px;
+  box-shadow: var(--shadow-2, 0 8px 24px rgba(0, 0, 0, 0.45));
+  font-size: 12.5px;
+  animation: notif-pop 160ms ease-out;
+}
+@keyframes notif-pop {
+  from { transform: translateY(-6px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.notif__icon { color: var(--text-3, #aaa); padding-top: 1px; }
+.notif__body { min-width: 0; line-height: 1.4; }
+.notif__title { font-weight: 600; margin-bottom: 2px; color: var(--text-1, #f0f0f0); }
+.notif__msg { color: var(--text-2, #d2d2d2); white-space: pre-wrap; word-break: break-word; }
+
+.notif__action {
+  margin-top: 6px;
+  background: transparent;
+  color: var(--accent, #2d7df6);
+  border: 1px solid var(--accent, #2d7df6);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.notif__action:hover {
+  background: var(--accent, #2d7df6);
+  color: var(--on-accent, #fff);
+}
+
+.notif__close {
+  background: transparent;
+  border: 0;
+  color: var(--text-3, #aaa);
+  cursor: pointer;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
+}
+.notif__close:hover { color: var(--text-1, #fff); background: var(--bg-3, #2b2b2b); }
+
+/* Kind-specific accents (left border + icon colour). */
+.notif--info    { border-left-color: var(--accent,  #2d7df6); }
+.notif--info    .notif__icon { color: var(--accent,  #2d7df6); }
+
+.notif--success { border-left-color: var(--success, #3ec773); }
+.notif--success .notif__icon { color: var(--success, #3ec773); }
+
+.notif--warn    { border-left-color: var(--warn,    #f5b14c); }
+.notif--warn    .notif__icon { color: var(--warn,    #f5b14c); }
+
+.notif--error   { border-left-color: var(--danger,  #ff6b6b); }
+.notif--error   .notif__icon { color: var(--danger,  #ff6b6b); }

@@ -269,8 +269,27 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             : t
         )
       );
+      // Soft confirmation toast — auto-dismisses after a few seconds.
+      window.dispatchEvent(
+        new CustomEvent("notify", {
+          detail: {
+            kind: "success",
+            message: `Saved ${activeTab.name}`,
+            timeout: 2200,
+          },
+        }),
+      );
     } catch (e) {
       console.error("Failed to save file:", e);
+      window.dispatchEvent(
+        new CustomEvent("notify", {
+          detail: {
+            kind: "error",
+            title: "Save failed",
+            message: `${activeTab.name}: ${String(e)}`,
+          },
+        }),
+      );
     }
   }, [activeTab]);
 

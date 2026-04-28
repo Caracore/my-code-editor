@@ -18,6 +18,7 @@ import { UserSettingsProvider } from "./context/UserSettingsContext";
 import { PluginsProvider } from "./plugins/PluginsContext";
 import { useAppShortcuts } from "./hooks/useAppShortcuts";
 import { AppDndProvider } from "./components/dnd/AppDndProvider";
+import { NotificationsProvider } from "./notifications/Notifications";
 
 export default function App() {
   const [showSidebar, setShowSidebar] = useState(true);
@@ -81,6 +82,7 @@ export default function App() {
       <PluginsProvider>
       <WorkspaceProvider>
         <AppDndProvider>
+        <NotificationsProvider>
         <div
           className={[
             "app",
@@ -133,6 +135,7 @@ export default function App() {
           <SearchEverywhere />
           {showSettings && <SettingsPage onClose={closeSettings} />}
         </div>
+        </NotificationsProvider>
         </AppDndProvider>
       </WorkspaceProvider>
       </PluginsProvider>

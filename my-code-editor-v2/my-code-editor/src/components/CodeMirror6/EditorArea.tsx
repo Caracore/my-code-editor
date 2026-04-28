@@ -56,6 +56,7 @@ import {
   createInlayHintsProvider,
   createLspCompletionProvider,
 } from "../../extensions/lsp";
+import { minimap } from "../../extensions/minimap";
 import Welcome from "../Welcome/Welcome";
 import EditorTabs from "../EditorTabs/EditorTabs";
 import "./EditorArea.css";
@@ -356,6 +357,7 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
     editorLineNumbers,
     editorWordWrap,
     editorActiveLine,
+    editorMinimap,
     lspEnabled,
   } = settings;
   const { editorExtensions: pluginEditorExtensions } = usePlugins();
@@ -449,6 +451,7 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
             createInlayHintsProvider(() => filePathRef.current),
           ]
         : []),
+      ...(editorMinimap ? [minimap()] : []),
       ...pluginEditorExtensions,
     ];
 
@@ -473,6 +476,7 @@ function EditorPane({ value, language, filePath, isDirty, tabId, onChange }: Edi
     editorLineNumbers,
     editorWordWrap,
     editorActiveLine,
+    editorMinimap,
     pluginEditorExtensions,
     useLsp,
     lspLanguage,

@@ -1,14 +1,13 @@
 # IDE my - code - editor GENERAL:
 - Activer le "inspecter" pour dev avec click droit ou keymap. 
 
-- "Relier le backend"
-
 - Ajout de responsive avec mode compact et comfortable
 
 - Remplacer tout hardcoder en config personnalisable (objectif de l'IDE) + interractive :)!
 
 - Faire un load file comme pour les dossier mais pour charger qu'un fichier. + créer un fichier puis saveas...
 
+- Refresh la sidebar tree quand supprimer ou créer un nouveau fichier ou dossier. !!!!
 ## SIDEBAR - LEFT BAR
 
 - >> Faire illuminé le fichier dans l'arborescence sélectionner dans le tabs bar et éditeur instance ...
@@ -65,9 +64,6 @@ Faire les icons notification, etc ... Interractive bottom statusbar
 Remettre l'inspecteur en place.
 
 ## MINIMAP:
-ACTIVER ET INTERRACTION MINIMAP:
-- Ajout de la mini-map et tout complet pour que ce soit traiter backend et non pas frontend. Var css, .
-
 
 ## CODE MIRROR 6:
 
