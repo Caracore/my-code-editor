@@ -17,6 +17,7 @@ import ResizeHandle from "../ResizeHandle/ResizeHandle";
 import ContextMenu, { type ContextMenuItem } from "../ContextMenu/ContextMenu";
 import PromptDialog from "../PromptDialog/PromptDialog";
 import TodoListView from "./TodoListView";
+import DataBaseView from "./DataBaseView";
 import "./Sidebar.css";
 
 /** State driving the in-app prompt dialog (replaces `window.prompt`). */
@@ -233,7 +234,7 @@ function FileNode({
 
 interface SidebarProps {
   /** Which view to show in the sidebar body. Defaults to "files". */
-  view?: "files" | "todo";
+  view?: "files" | "todo" | "db";
   onClose?: () => void;
   width?: number;
   onResize?: (w: number) => void;
@@ -571,6 +572,31 @@ export default function Sidebar({ view = "files", onClose, width, onResize }: Si
           </div>
         </div>
         <TodoListView />
+        {width !== undefined && onResize && (
+          <ResizeHandle edge="right" size={width} onResize={onResize} min={180} max={600} />
+        )}
+      </aside>
+    );
+  }
+  // -------- Database view ------------------------------------------------
+  if (view === "db") {
+    return (
+      <aside className="sidebar">
+        <div className="panel-header">
+          <span>DATABASE</span>
+          <div className="panel-header__actions">
+            {onClose && (
+              <button
+                className="panel-header__btn"
+                title="Hide Sidebar (Ctrl+B)"
+                onClick={onClose}
+              >
+                <I.Close size={13} />
+              </button>
+            )}
+          </div>
+        </div>
+        <DataBaseView />
         {width !== undefined && onResize && (
           <ResizeHandle edge="right" size={width} onResize={onResize} min={180} max={600} />
         )}

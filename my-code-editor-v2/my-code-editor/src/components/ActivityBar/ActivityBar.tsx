@@ -16,7 +16,7 @@ const BOTTOM = [
   { id: "settings",label: "Settings", icon: <I.Settings /> },
 ];
 
-export type SidebarView = "files" | "todo";
+export type SidebarView = "files" | "todo" | "db";
 
 interface ActivityBarProps {
   sidebarOpen?: boolean;
@@ -40,7 +40,7 @@ export default function ActivityBar({
   const handleClick = (id: string) => {
     // Sidebar-bound views: clicking the active one hides the sidebar; otherwise
     // switch to that view (and ensure the sidebar is open).
-    if (id === "files" || id === "todo") {
+    if (id === "files" || id === "todo" || id === "db") {
       if (sidebarOpen && sidebarView === id) {
         onToggleSidebar?.();
       } else {
@@ -61,7 +61,7 @@ export default function ActivityBar({
       onOpenExtensions?.();
       return;
     }
-    // search/git/debug/db: no-op for now.
+    // search/git/debug: no-op for now.
   };
 
   return (

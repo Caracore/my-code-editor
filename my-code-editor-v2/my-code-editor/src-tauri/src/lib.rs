@@ -19,6 +19,9 @@ use discord::{discord_connect, discord_disconnect, discord_update, DiscordState}
 mod search;
 use search::{search_files, search_in_files};
 
+mod db;
+use db::{db_disconnect, db_query, DbState};
+
 #[derive(Serialize)]
 struct DirEntry {
     name: String,
@@ -145,6 +148,7 @@ pub fn run() {
         .manage(TerminalState::default())
         .manage(LspState::default())
         .manage(DiscordState::default())
+        .manage(DbState::default())
         .invoke_handler(tauri::generate_handler![
             read_dir,
             read_file,
@@ -170,6 +174,8 @@ pub fn run() {
             discord_disconnect,
             search_files,
             search_in_files,
+            db_query,
+            db_disconnect,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
