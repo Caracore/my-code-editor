@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   basename,
   extOf,
+  extToDiscordAsset,
   extToLanguage,
   pickFolder,
   readDir,
@@ -551,9 +552,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   // a `discord-presence:request` event so a freshly-activated plugin can ask
   // for the current state without having to read React context.
   useEffect(() => {
+    const asset = activeTab
+      ? extToDiscordAsset(activeTab.ext)
+      : { image: "code", label: "Idle" };
     const detail = {
       file: activeTab?.name ?? "Idle",
-      language: activeTab?.language ?? "Code",
+      language: asset.label,
+      languageImage: asset.image,
       project: rootName ?? "my-code-editor",
     };
     window.dispatchEvent(
@@ -567,7 +572,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     window.addEventListener("discord-presence:request", onRequest);
     return () =>
       window.removeEventListener("discord-presence:request", onRequest);
-  }, [activeTab?.name, activeTab?.language, rootName]);
+  }, [activeTab?.name, activeTab?.ext, rootName]);
 
   const value = useMemo<WorkspaceContextValue>(
     () => ({

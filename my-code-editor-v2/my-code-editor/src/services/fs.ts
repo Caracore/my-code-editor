@@ -152,3 +152,33 @@ export function extToLanguage(ext: string): string {
   }
 }
 
+/**
+ * Discord Rich Presence asset key + display label for a file extension.
+ *
+ * Asset keys must match images uploaded to the Discord application
+ * "Rich Presence → Art Assets" page. Unknown extensions fall back to
+ * the generic "code" image.
+ */
+export function extToDiscordAsset(ext: string): { image: string; label: string } {
+  switch (ext) {
+    case "ts":   return { image: "javascript", label: "TypeScript" };
+    case "tsx":  return { image: "javascript", label: "TypeScript React" };
+    case "js":   return { image: "javascript", label: "JavaScript" };
+    case "jsx":  return { image: "javascript", label: "JavaScript React" };
+    case "py":   return { image: "python",     label: "Python" };
+    case "rs":   return { image: "rust",       label: "Rust" };
+    case "cpp": case "cc": case "cxx": case "hpp": case "hh":
+      return { image: "cpp", label: "C++" };
+    case "c": case "h":
+      return { image: "cpp", label: "C" };
+    case "css":  return { image: "css",        label: "CSS" };
+    case "html": case "htm":
+      return { image: "html", label: "HTML" };
+    case "json": return { image: "json",       label: "JSON" };
+    case "md":   return { image: "code",       label: "Markdown" };
+    case "toml": return { image: "code",       label: "TOML" };
+    case "":     return { image: "code",       label: "Text" };
+    default:     return { image: "code",       label: ext.toUpperCase() };
+  }
+}
+

@@ -150,20 +150,20 @@ function DirNode({
       return;
     }
     state.open.add(entry.path);
+    // Always refresh from disk on expand so the listing reflects any
+    // external changes (new/deleted files, renames done outside the IDE).
+    const hadCache = state.cache.has(entry.path);
+    if (!hadCache) state.loading.add(entry.path);
     bump();
-    if (!state.cache.has(entry.path)) {
-      state.loading.add(entry.path);
+    try {
+      const contents = await readDir(entry.path);
+      state.cache.set(entry.path, contents);
+    } catch (e) {
+      console.error("readDir failed:", e);
+      if (!hadCache) state.cache.set(entry.path, []);
+    } finally {
+      state.loading.delete(entry.path);
       bump();
-      try {
-        const contents = await readDir(entry.path);
-        state.cache.set(entry.path, contents);
-      } catch (e) {
-        console.error("readDir failed:", e);
-        state.cache.set(entry.path, []);
-      } finally {
-        state.loading.delete(entry.path);
-        bump();
-      }
     }
   };
 

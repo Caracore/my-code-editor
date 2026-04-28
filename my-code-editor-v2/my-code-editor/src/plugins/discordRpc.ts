@@ -14,6 +14,7 @@ const UPDATE_THROTTLE_MS = 4000;
 interface PresenceSnapshot {
   file: string;
   language: string;
+  languageImage: string;
   project: string;
 }
 
@@ -87,6 +88,7 @@ const discordRpc: Plugin = {
         lastSent &&
         lastSent.file === snap.file &&
         lastSent.language === snap.language &&
+        lastSent.languageImage === snap.languageImage &&
         lastSent.project === snap.project
       ) {
         return;
@@ -106,6 +108,7 @@ const discordRpc: Plugin = {
       queueUpdate({
         file: detail.file ?? "Idle",
         language: detail.language ?? "Code",
+        languageImage: detail.languageImage ?? "code",
         project: detail.project ?? "my-code-editor",
       });
     };

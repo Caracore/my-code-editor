@@ -42,6 +42,10 @@ pub struct DiscordUpdatePayload {
     /// Human-readable language label (e.g. "Rust").
     #[serde(default)]
     pub language: Option<String>,
+    /// Discord asset key (image name) for the language icon
+    /// (e.g. "rust", "python", "cpp"). Falls back to "code".
+    #[serde(default, alias = "languageImage")]
+    pub language_image: Option<String>,
     /// Project / workspace name.
     #[serde(default)]
     pub project: Option<String>,
@@ -96,6 +100,10 @@ pub async fn discord_update(
     let inner = state.inner.clone();
     let file = payload.file.unwrap_or_else(|| "Idle".to_string());
     let language = payload.language.unwrap_or_else(|| "Code".to_string());
+    let language_image = payload
+        .language_image
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "code".to_string());
     let project = payload
         .project
         .unwrap_or_else(|| "my-code-editor".to_string());
@@ -109,9 +117,12 @@ pub async fn discord_update(
         let details = format!("Editing {file}");
         let state_str = format!("{language} • {project}");
         let timestamps = Timestamps::new().start(slot.started_at);
+        let large_text = format!("{language} — my-code-editor");
         let assets = Assets::new()
-            .large_image("logo")
-            .large_text("my-code-editor");
+            .large_image(&language_image)
+            .large_text(&large_text)
+            .small_image("logo")
+            .small_text("my-code-editor");
 
         let activity = Activity::new()
             .details(&details)
