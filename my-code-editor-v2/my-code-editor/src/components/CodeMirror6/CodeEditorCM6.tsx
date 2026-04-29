@@ -231,7 +231,13 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
       console.log("Detected language:", language);
       languageExtension = cpp();
       completionSources = [cppSmartProvider];
-    } else if (language === "rs" || language === "rust") {
+    }
+    // else if (language === "c") {
+      // console.log("Detected language:", language);
+      // languageExtension = c();
+      // completionSources = []
+    // }
+    else if (language === "rs" || language === "rust") {
       console.log("Detected language:", language);
       languageExtension = rust();
       completionSources = [rustSmartProvider];
