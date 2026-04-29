@@ -76,6 +76,9 @@ export default function CodeEditorCM6({ value, onChange, language = "css", fileP
       case "jsx":
       case "javascript":
         return "javascript";
+      case "c":
+      case "h":
+        return "c";
       default:
         return null;
     }

@@ -170,7 +170,7 @@ export function extToDiscordAsset(ext: string): { image: string; label: string }
     case "cpp": case "cc": case "cxx": case "hpp": case "hh":
       return { image: "cpp", label: "C++" };
     case "c": case "h":
-      return { image: "cpp", label: "C" };
+      return { image: "c", label: "C" };
     case "css":  return { image: "css",        label: "CSS" };
     case "html": case "htm":
       return { image: "html", label: "HTML" };
